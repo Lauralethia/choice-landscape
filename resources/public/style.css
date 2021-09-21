@@ -1,0 +1,24 @@
+body{
+   text-align: center;
+   width:  558px;
+   margin: auto;
+}
+#background {
+   background: url("imgs/desert_nowater.jpg");
+   width:  558px;
+   height:  299px;
+   position: absolute;
+}
+img#water {
+   bottom: 30px;
+   left: 50px;
+   position: absolute;
+   scale: 5%;
+}
+
+#debug{ 
+   position: absolute;
+   bottom: 10px;
+   margin: 0;
+}
+
