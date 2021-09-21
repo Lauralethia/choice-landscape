@@ -2,6 +2,7 @@
   (:require
    [landscape.loop :as lp]
    [landscape.key]
+   [landscape.view :as view]
    [landscape.model :refer [STATE]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
