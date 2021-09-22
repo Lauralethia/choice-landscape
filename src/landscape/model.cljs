@@ -60,7 +60,7 @@
         [apos now well]
         (if (and (= 0 (:active-at well))
                  (collide? (:pos well) apos))
-          (assoc well :active-at now)
+          (assoc well :active-at now :score (utils/prob-gets-points? (:prob well)))
           well))
 
 (defn wells-check-collide
@@ -103,7 +103,7 @@
             ))))
 
 (defn well-off [time well]
-  ;; TODO: 1000 should come from sprite value!?
+  ;; TODO: 1000 should come from sprite total-size?
   (update-in well [:active-at] #(if (> (- time %) 1000) 0 %)))
 
 (defn wells-turn-off [{:keys [wells time-cur] :as state}]

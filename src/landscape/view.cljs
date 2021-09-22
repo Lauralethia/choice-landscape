@@ -33,11 +33,16 @@
 
 
 (defn well-show "draw single well. maybe animate sprite"
-    [{:keys [time-cur] :as state}
-     {:keys [active-at] :as well}]
-  (let [tstep (sprite/get-step time-cur active-at (:dur-ms sprite/well))
-        css (sprite/css sprite/well tstep)]
-    (html [:div.well {:style css}])))
+        [{:keys [time-cur] :as state}
+         {:keys [active-at score] :as well}]
+        (let [tstep (sprite/get-step time-cur active-at (:dur-ms sprite/well))
+              css (sprite/css sprite/well tstep)
+              ;; if not score, move bg down to get the failed well offset
+              v-offset (if score {}
+                           {:background-position-y
+                            (str "-" (:height sprite/well) "px")}
+                           )]
+          (html [:div.well {:style (merge css v-offset)}])))
 
 (defn avatar-disp "draw avatar traveling a direction"
     [{:keys [time-cur] :as state}
@@ -83,11 +88,16 @@
 
 ;; 
 ;; debug/devcards
-(defcard well0
+(defcard well-score-nil
   "well animation by steps. should animate with js/animate"
   (fn [state owner]
     (utils/wrap-state state (well-show @state @state)))
   {:time-cur 100 :active-at 100})
+(defcard well-score1
+  "well animation by steps. should animate with js/animate"
+  (fn [state owner]
+    (utils/wrap-state state (well-show @state @state)))
+  {:time-cur 100 :active-at 100 :score 1})
 
 (defcard avatar
   "step through avatar"
