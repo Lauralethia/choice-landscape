@@ -3,7 +3,7 @@
    [landscape.loop :as lp]
    [landscape.key]
    [landscape.view :as view]
-   [landscape.model :refer [STATE]]
+   [landscape.model :as model :refer [STATE]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
    [cljsjs.react]
@@ -21,7 +21,7 @@
 (defn -main []
   (gev/listen (KeyHandler. js/document)
               (-> KeyHandler .-EventType .-KEY) ; "key", not same across browsers?
-              (partial landscape.key/keypress-updown! :key))
+              (partial swap! STATE model/add-key-to-state))
   (add-watch STATE :renderer (fn [_ _ _ state] (lp/renderer (lp/world state))))
   ;; why ?
   (reset! STATE  @STATE)

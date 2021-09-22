@@ -47,6 +47,8 @@
               (keypress-callback @KEYPRESSTIME :callback-hold key))))))
 
 
+(defn keynum [e] (.. e -keyCode))
+
 (defn keypress-updown! [direction e]
   "passthrough function. partial used on listener wont get repl updates.
   so this intermidate exists and dispatches to approprate up or down"

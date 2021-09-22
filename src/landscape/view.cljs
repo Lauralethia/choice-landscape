@@ -92,6 +92,8 @@
             ]))
 
 
+;; 
+;; debug/devcards
 (defcard well0
   "well animation by steps. should animate with js/animate"
   (fn [state owner]

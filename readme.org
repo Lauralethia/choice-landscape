@@ -1,0 +1,57 @@
+* Landscape choice
+
+motivated by Dubois et al 2021 elife task: landscape with choices
+
+* implementation plan
+** wells
+*** placement logic
+    :LOGBOOK:
+    CLOCK: [2021-09-22 Wed 08:06]--[2021-09-22 Wed 09:17] =>  1:11
+    :END:
+    also fixed a loop bug and stopped animation if active-at is 0
+**** TODO: exponential decrease. make function to be reused by stepping stones
+*** TODO hawk blocks well that isn't available 
+*** TODO color icon to distinguish wells
+** avatar movement
+   :LOGBOOK:
+   CLOCK: [2021-09-22 Wed 09:27]--[2021-09-22 Wed 11:43] =>  2:16
+   :END:
+   had up/down swapped in ~which-dir~. took forever to debug!
+   how fast to move? accepting keypress?
+** TODO handle key presses
+   :LOGBOOK:
+   CLOCK: [2021-09-22 Wed 11:57]
+   :END:
+   
+*** keypress depends on state? separate atom?
+** TODO arrows
+*** sprites.
+   maybe css instead? colored?
+*** placement logic
+** TODO instructions/state advance
+   want state to be easy to change for instructions step through
+   but also for advancing during task
+*** allow for fixed timing
+   scanner will be given explicit onset targets
+** TODO feedback
+    stars, text, and water fill
+** TODO ISI/ITI
+   * maybe shake the well for variable time before showing reward
+   * helper animal goes into the well?
+     or avatar goes into the well?
+** TODO item to identify each well
+** TODO visually collect status of wells
+   bar at bottom with color for success?
+   X or O next to the well?
+** TODO add animation to devcards
+** TODO add body background to match scene
+   * check if we can use svg in all browsers
+     * center night/day transition with no-repeat
+   * set color to sand brown
+* Scene
+
+** avatar 
+** arrows
+** water
+** wells
+** steps
