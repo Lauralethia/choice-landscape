@@ -17,6 +17,13 @@
       (.render js/ReactDOM reactdom node)))
 
 
+(defn position-at
+  [{:keys [x y] :as pos} inner]
+  (html [:div.abs {:style {:position "absolute"
+                           :left (str x "px ")
+                           :top (str y "px")}}
+         inner]))
+
 ;; 
 ;; scene components
 (defn water [fill]
@@ -24,9 +31,9 @@
 
 
 
-(defn well-one "draw single well. maybe animate sprite"
+(defn well-show "draw single well. maybe animate sprite"
     [{:keys [time-cur] :as state}
-     {:keys [name center-distance active-at] :as well}]
+     {:keys [active-at] :as well}]
   (let [step (sprite/get-step time-cur active-at (:dur-ms sprite/well))
         css (sprite/css sprite/well step)]
     (html [:div.well {:style css}])))
@@ -40,17 +47,33 @@
         css (merge css {:background-position-y (* -1 y-offset)})]
     (html [:div.well {:style css}])))
 
-(defn well-all
-  "3 wells not all equadistant. sprite for animate"
-  [state wells]
-  (well-one state {:name :left :center-distance 2 :active-at nil }))
 
-(defn position-at
-  [{:keys [x y] :as pos} inner]
-  (html [:div.abs {:style {:position "absolute"
-                           :top (str x "px ")
-                           :left (str y "px")}}
-         inner]))
+(defn well-pos
+  [side step]
+  (let [center-x 250
+        bottom-y 260
+        step-size 100
+        move-by (* step step-size)]
+    (case side
+      :left  {:x (- center-x move-by) :y bottom-y}
+      :up    {:x center-x             :y (- bottom-y move-by)}
+      :right {:x (+ center-x move-by) :y bottom-y}
+      {:x 0 :y 0})))
+
+(defn well-side
+  "side is :left :up :right"
+  [{:keys [wells] :as state} side]
+  (position-at (well-pos side (get-in wells [side :step]))
+               (well-show state (side wells))))
+
+(defn well-show-all
+  "3 wells not all equadistant. sprite for animate"
+  [{:keys [wells] :as state}]
+  (html [:div.wells
+         (well-side state :left)
+         (well-side state :up)
+         (well-side state :right)]))
+
 
 (defn display-state
   "html to render for display. updates for any change in display"
@@ -58,12 +81,13 @@
            [:div#background
             ;; draw wells
             ;; draw avatar
-            (position-at (get-in state [:avatar :pos])
-                         (avatar-disp state (:avatar state)))
             ;; draw arrows
             ;; draw blocked
             ;; draw feedback
             (water 50)
+            (well-show-all state)
+            (position-at (get-in state [:avatar :pos])
+                         (avatar-disp state (:avatar state)))
             ]))
 
 
@@ -79,7 +103,7 @@
 (defcard well0
   "well animation by steps. should animate with js/animate"
   (fn [state owner]
-    (wrap-state state (well-one @state @state)))
+    (wrap-state state (well-show @state @state)))
   {:time-cur 100 :active-at 100})
 
 (defcard avatar

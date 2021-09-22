@@ -23,7 +23,7 @@
   [cur start-at dur]
   (let[ delta (- cur start-at)
        time (mod delta dur)]
-    (/ time dur)))
+    (if (= start-at 0) 0 (/ time dur))))
 
 (defn bg-pos [{:keys [frame-size frames] :as sprite } step]
         (let [frame-num (int  (.toFixed (* step frames) 0))]
