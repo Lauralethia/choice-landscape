@@ -2,6 +2,7 @@ body{
    text-align: center;
    width:  558px;
    margin: auto;
+   background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
 #background {
    background: url("imgs/desert_nowater.jpg");
