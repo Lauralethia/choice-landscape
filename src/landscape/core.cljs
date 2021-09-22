@@ -1,4 +1,4 @@
-(ns cardtask.core
+(ns landscape.core
   (:require
    [landscape.loop :as lp]
    [landscape.key]
@@ -24,6 +24,8 @@
               (partial landscape.key/keypress-updown! :key))
   (add-watch STATE :renderer (fn [_ _ _ state] (lp/renderer (lp/world state))))
   ;; why ?
-  (reset! STATE  @STATE))
+  (reset! STATE  @STATE)
+  ; start
+  (lp/run-start STATE))
 
 (-main)

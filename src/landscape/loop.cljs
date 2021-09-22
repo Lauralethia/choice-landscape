@@ -9,7 +9,7 @@
 (defn renderer
   "used by watcher. triggered by animation step's change to time"
   [full-state]
-  (view/change-body (view/display-state full-state)))
+  (view/change-dom (view/display-state full-state)))
 
 (defn world
   "function for anything used to wrap state.

@@ -9,8 +9,11 @@
   []
   {
    :running? true
-   :time-cur 0
    :start-time 0
-   :time-flip 0})
+   :time-cur 0
+   :time-flip 0
+   :avatar {:pos {:x 100 :y 100}
+            :active-at 0 :direction :left}
+   })
 
 (def STATE (atom (state-fresh)))
