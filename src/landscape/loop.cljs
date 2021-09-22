@@ -21,14 +21,14 @@
 (defn time-update
   "what to do at each timestep of AnimationFrame (run-loop).
    first call will be on unintialized time values"
-  [time {:keys [start-time time-flip]} state]
+  [time {:keys [start-time time-flip] :as state}]
   (-> state
       (assoc :time-cur time
              :time-delta (- time start-time)
              :time-since (- time time-flip))
       (model/next-step time)))
 
-(defn run-loop [time state-atom]
+(defn run-loop [state-atom time]
   "recursive loop to keep the task running.
    only changes time, which is picked up by watcher that runs render"
   (let [new-state (swap! state-atom (partial time-update time))]
@@ -44,4 +44,4 @@
    (fn [time]
      ;(if (= (-> @state-atom :time-cur) 0)
      ;  (reset! state-atom (model/state-fresh @state-atom time)))
-     (run-loop time state-atom))))
+     (run-loop state-atom time))))
