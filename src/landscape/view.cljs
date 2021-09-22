@@ -1,6 +1,7 @@
 (ns landscape.view
   (:require
    [landscape.sprite :as sprite]
+   [landscape.utils :as utils]
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
@@ -43,7 +44,7 @@
      {:keys [direction active-at] :as avatar}]
   (let [step (sprite/get-step time-cur active-at (:dur-ms sprite/avatar))
         css (sprite/css sprite/avatar step)
-        y-offset (case direction :down 0 :left 70 :right 140 :up 210 0)
+        y-offset (case direction :down 0 :left 70 :right 140 :up 211 0)
         css (merge css {:background-position-y (* -1 y-offset)})]
     (html [:div.well {:style css}])))
 
@@ -91,26 +92,17 @@
             ]))
 
 
-(defn inc-time [state-atom]
-  (swap! state-atom update :time-cur  #(+ 100 %)))
-(defn wrap-state [state-atom chunk]
-  (html [:div.wrapped 
-         chunk
-         [:div
-          [:button {:onClick (fn [_] (inc-time state-atom))} "+100ms"]
-          (str " time: " (:time-cur @state-atom))]]))
-
 (defcard well0
   "well animation by steps. should animate with js/animate"
   (fn [state owner]
-    (wrap-state state (well-show @state @state)))
+    (utils/wrap-state state (well-show @state @state)))
   {:time-cur 100 :active-at 100})
 
 (defcard avatar
   "step through avatar"
   (fn [state owner]
     (html [:div
-           (wrap-state state (avatar-disp @state @state))
+           (utils/wrap-state state (avatar-disp @state @state))
            [:button {:on-click (fn [] (swap! state assoc :direction :left))} "left"]
            [:button {:on-click (fn [] (swap! state assoc :direction :right))} "right"]
            [:button {:on-click (fn [] (swap! state assoc :direction :up))} "up"]

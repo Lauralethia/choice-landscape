@@ -12,8 +12,8 @@
                           :dur-ms 500
                           :url "imgs/well_sprites.png"}))
 
-(def avatar (sprite-create {:width 70 :height 70
-                          :frame-size 70 :frames 3
+(def avatar (sprite-create {:width 68 :height 70
+                          :frame-size 68 :frames 3
                           :dur-ms 500
                           :url "imgs/lizard_blue.png"}))
 
