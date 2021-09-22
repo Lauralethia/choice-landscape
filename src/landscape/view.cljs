@@ -74,12 +74,11 @@
   "html to render for display. updates for any change in display"
   [state] (sab/html
            [:div#background
-            ;; draw wells
             ;; draw avatar
             ;; draw arrows
             ;; draw blocked
             ;; draw feedback
-            (water 50)
+            (water (:water state))
             (well-show-all state)
             (position-at (get-in state [:avatar :pos])
                          (avatar-disp state (:avatar state)))

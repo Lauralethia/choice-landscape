@@ -55,13 +55,13 @@
         thres)))
 
 (defn activate-well
-        "activate well if collide.
-  should also score and stop if animation has played?"
-        [apos now well]
-        (if (and (= 0 (:active-at well))
-                 (collide? (:pos well) apos))
-          (assoc well :active-at now :score (utils/prob-gets-points? (:prob well)))
-          well))
+  "when collision with 'apos' check prob and set score.
+  NB. see any :active-at == :time-cur to trigger other things"
+  [apos now well]
+  (if (and (= 0 (:active-at well))
+           (collide? (:pos well) apos))
+    (assoc well :active-at now :score (utils/prob-gets-points? (:prob well)))
+    well))
 
 (defn wells-check-collide
         "use active-well to set active-at (start animation) if avatar is over well"
@@ -98,7 +98,7 @@
     (if (not dir) state
         (-> state
             (assoc-in [:avatar :destination] (avatar-dest state dir))
-            (assoc-in [:avatar :move-count] inc)
+            (update-in [:avatar :move-count] inc)
             (assoc-in [:key :have] nil)
             ))))
 
@@ -110,6 +110,34 @@
   (assoc state :wells
     (reduce #(update %1 %2 (partial well-off time-cur)) wells (keys wells))))
 
+(defn hit-now
+  [wells time-cur]
+  (filter some? (map  #(if (= time-cur (-> wells % :active-at)) % nil) (keys wells))))
+
+(defn wells-fire-hits
+  "if we went to a well. update the parts of the state that aren't a well
+  (propagate up into structure)
+  increase water
+  also should play sound.
+  "
+  [{:keys [wells time-cur] :as state}]
+  (let [hit-side (first (hit-now wells time-cur))
+        score (get-in wells [hit-side :score])
+        score-state
+          (if (some? hit-side)
+            (-> state
+                ;; (update-in [:events] concat (str time-cur (now)))
+                (update-in [:phase :picked] hit-side)
+                (assoc-in [:avatar :destination] (avatar-dest state :down))
+                (assoc-in [:avatar :move-count] 0))
+            state)]
+    (if score
+      (-> score-state
+          (update-in [:water] #(+ 1 %))
+          (assoc-in [:phase :scored] true)
+          )
+      score-state)))
+
 (defn next-step
   "does heavy lifting for state changes. update state with next step
   e.g. trigger feedback. move avatar. stop animations"
@@ -118,10 +146,11 @@
       read-keys
       move-avatar
       wells-check-collide
-      ;; avatar-send-home-if-collide
-      ;; keys-set-want
       wells-turn-off
+      wells-fire-hits
       ;; wells-update-prob
+      ;; check-timeout
+      ;; keys-set-want
       ))
 
 (defn add-key-to-state [state keypress]
@@ -174,6 +203,8 @@
    :time-cur 0
    :key {:until nil :want [] :next nil :have nil}
    :wells (wells-state-fresh nil)
+   :water 10
+   :phase {:name :chose :scored nil :picked nil}
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down
@@ -181,5 +212,5 @@
             :move-count 0
             :destination {:x (:center-x BOARD)
                           :y (:bottom-y BOARD)}}})
- 
+
 (def STATE (atom (state-fresh)))

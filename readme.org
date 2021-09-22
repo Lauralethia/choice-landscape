@@ -24,7 +24,8 @@ motivated by Dubois et al 2021 elife task: landscape with choices
    :END:
    keypress injected directly into state
 *** TODO restrict keypress, don't hard code positions
-   
+** TODO sounds
+   hopefully can just copy over
 ** TODO arrows
 *** sprites.
    maybe css instead? colored?
