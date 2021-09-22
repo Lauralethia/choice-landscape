@@ -18,12 +18,13 @@ motivated by Dubois et al 2021 elife task: landscape with choices
    :END:
    had up/down swapped in ~which-dir~. took forever to debug!
    how fast to move? accepting keypress?
-** TODO handle key presses
+** handle key presses
    :LOGBOOK:
-   CLOCK: [2021-09-22 Wed 11:57]
+   CLOCK: [2021-09-22 Wed 11:57]--[2021-09-22 Wed 12:54] =>  0:57
    :END:
+   keypress injected directly into state
+*** TODO restrict keypress, don't hard code positions
    
-*** keypress depends on state? separate atom?
 ** TODO arrows
 *** sprites.
    maybe css instead? colored?

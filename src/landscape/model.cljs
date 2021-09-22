@@ -44,10 +44,37 @@
         (update-in [:avatar :active-at]
                   (partial move-active-time dest moved time-cur)))))
 
-(defn activate-well [state]
-  (if nil (assoc-in state [:wells :left :active-at ] 1)) state)
+(defn collide?
+  "euclidian: sqrt sum of squares"
+  [a b]
+  (let [thres 10]
+    (<  (.pow js/Math
+              (+ (.pow js/Math (- (:x b) (:x a)) 2)
+                 (.pow js/Math (- (:y b) (:y a)) 2))
+              .5)
+        thres)))
 
-(defn avatar-dest [{:keys [wells avatar] :as state} dir]
+(defn activate-well
+        "activate well if collide.
+  should also score and stop if animation has played?"
+        [apos now well]
+        (if (and (= 0 (:active-at well))
+                 (collide? (:pos well) apos))
+          (assoc well :active-at now)
+          well))
+
+(defn wells-check-collide
+        "use active-well to set active-at (start animation) if avatar is over well"
+        [{:keys  [wells avatar time-cur] :as state}]
+        (let [apos (:pos avatar)]
+          (assoc state :wells
+                 (reduce #(update %1 %2 (partial activate-well apos time-cur))
+                         wells
+                         (keys wells)))))
+
+(defn avatar-dest
+  "set new avatar destitionation. used by readkeys on keypush"
+  [{:keys [wells avatar] :as state} dir]
         (let[cx (-> avatar :pos :x)
              cy (-> avatar :pos :y)]
           (case dir
@@ -58,7 +85,9 @@
             (-> avatar :pos))))
 
 ;; :key {:until nil :want [] :next nil :have nil}
-(defn read-keys [{:keys [key] :as state}]
+(defn read-keys
+  "read any keypush, clear, and translate to avatar motion"
+  [{:keys [key] :as state}]
   (let [pushed (:have key)
         dir (case pushed
               37 :left
@@ -69,17 +98,31 @@
     (if (not dir) state
         (-> state
             (assoc-in [:avatar :destination] (avatar-dest state dir))
+            (assoc-in [:avatar :move-count] inc)
             (assoc-in [:key :have] nil)
             ))))
 
+(defn well-off [time well]
+  ;; TODO: 1000 should come from sprite value!?
+  (update-in well [:active-at] #(if (> (- time %) 1000) 0 %)))
+
+(defn wells-turn-off [{:keys [wells time-cur] :as state}]
+  (assoc state :wells
+    (reduce #(update %1 %2 (partial well-off time-cur)) wells (keys wells))))
+
 (defn next-step
-  "TODO: heavy lifting. update state with next step
+  "does heavy lifting for state changes. update state with next step
   e.g. trigger feedback. move avatar. stop animations"
   [state time]
   (-> state
       read-keys
       move-avatar
-      activate-well))
+      wells-check-collide
+      ;; avatar-send-home-if-collide
+      ;; keys-set-want
+      wells-turn-off
+      ;; wells-update-prob
+      ))
 
 (defn add-key-to-state [state keypress]
   (let [key (landscape.key/keynum keypress)]
@@ -89,6 +132,39 @@
           (assoc-in [:key :time] (utils/now)))
       state)))
 
+(def BOARD "bounds and properties of the background board"
+  {:center-x 250
+   :bottom-y 260
+   :step-sizes [100 50 25 25 25 25]
+   })
+
+(defn well-pos
+  "{:x # :y #} for a number of steps/count to a well"
+  [side step]
+  (let [center-x (:center-x BOARD)
+        bottom-y (- (:bottom-y BOARD) 5)
+        move-by (reduce + (take step (:step-sizes BOARD)))]
+    (case side
+      :left  {:x (- center-x move-by) :y bottom-y}
+      :up    {:x center-x             :y (- bottom-y move-by)}
+      :right {:x (+ center-x move-by) :y bottom-y}
+      {:x 0 :y 0})))
+
+(defn well-add-pos
+  "uses :step to calc :pos on well info (e.g. map within [:wells :left]) "
+  [side {:keys [step] :as well}]
+  (assoc well :pos (well-pos side step)))
+
+(defn wells-state-fresh
+  ;; include default settings
+  [wells]
+  (let [wells (if wells
+                 wells
+                 {:left  {:step 1 :open true :active-at 0 :prob 50 :color :red}
+                  :up    {:step 1 :open true :active-at 0 :prob 50 :color :green}
+                  :right {:step 1 :open true :active-at 0 :prob 50 :color :blue}})]
+    (reduce #(update %1 %2 (partial well-add-pos %2)) wells (keys wells))))
+
 (defn state-fresh
   "initial state. empty timing"
   []
@@ -97,13 +173,13 @@
    :start-time 0
    :time-cur 0
    :key {:until nil :want [] :next nil :have nil}
-   :wells {:left  {:step 1 :open true :active-at 0 :color :red}
-           :up    {:step 1 :open true :active-at 0 :color :green}
-           :right {:step 1 :open true :active-at 0 :color :blue}}
+   :wells (wells-state-fresh nil)
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down
             :last-move 0
-            :destination {:x 245 :y 260}}})
-
+            :move-count 0
+            :destination {:x (:center-x BOARD)
+                          :y (:bottom-y BOARD)}}})
+ 
 (def STATE (atom (state-fresh)))
