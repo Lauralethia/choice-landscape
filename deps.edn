@@ -18,5 +18,3 @@
                   }
                  :extra-paths ["target" "test"]}}
  :build {:main-opts ["--main" "figwheel.main" "--build" "dev" "--repl"]}}
-
-; clj -M --main cljs.main --compile cardtask.core
