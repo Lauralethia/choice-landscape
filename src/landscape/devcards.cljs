@@ -31,6 +31,18 @@
              :last-move 0}
    :time-cur 0})
 
+
+
+(defcard water-pulse
+  "run through water pulsing"
+  (fn[state o] (html [:div
+                     (view/water @state)
+                     (utils/wrap-state state #())
+                     [:p (str @state)]
+                     [:button {:on-click (fn [_] (swap! state (fn[_] {:water {:level 5 :active-at 10} :time-cur 0} )))} "reset"]
+                     [:button {:on-click (fn [_] (swap! state model/water-pulse))} "step"]]
+                    ))
+  {:water {:level 5 :active-at 10} :time-cur 10})
 ;; help from 
 ;; https://github.com/onetom/clj-figwheel-main-devcards
 ;; https://github.com/bhauman/devcards/issues/148

@@ -2,6 +2,7 @@
   (:require
    [landscape.sprite :as sprite]
    [landscape.utils :as utils]
+   [landscape.model :as model]
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
@@ -26,8 +27,12 @@
 
 ;; 
 ;; scene components
-(defn water [fill]
+(defn water-fill [fill]
   (html [:img#water {:src "imgs/water.png" :style {:scale (str fill "%")}}]))
+
+(defn water [state]
+  (let [fill (get-in state [:water :scale])]
+    (water-fill fill)))
 
 
 
@@ -77,7 +82,7 @@
             ;; draw arrows
             ;; draw blocked
             ;; draw feedback
-            (water (:water state))
+            (water state)
             (well-show-all state)
             (position-at (get-in state [:avatar :pos])
                          (avatar-disp state (:avatar state)))

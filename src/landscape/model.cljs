@@ -5,6 +5,13 @@
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
   (:require-macros [devcards.core :refer [defcard]]))
 
+
+(def BOARD "bounds and properties of the background board"
+  {:center-x 250
+   :bottom-y 260
+   :step-sizes [100 50 25 25 25 25]
+   })
+
 (defn which-dir [cur dest]
   (cond
     (= cur dest) :none
@@ -114,6 +121,41 @@
   [wells time-cur]
   (filter some? (map  #(if (= time-cur (-> wells % :active-at)) % nil) (keys wells))))
 
+;;  water
+
+(defn water-state-fresh [] {:level 10 :scale 10 :active-at 0})
+
+(defn water-inc
+  "increase water level. should probably only happen when well is hit"
+  [water time-cur]
+  (-> water
+      (update-in [:level] #(+ 1 %))
+      (assoc-in [:active-at] time-cur)))
+
+(defn water-pulse-water
+  "if active-at is not zero. modulate water level with a sin wave.
+  will set active-at to zero when pulsed long enough"
+  [water time-cur]
+  (let [sin-dur 500                   ; ms
+        npulses 1                     ; n times to go up and back down
+        dur-total (* npulses sin-dur)
+        mag 2                         ; % scale increase
+        time-at (:active-at water)
+        dur-cur (- time-cur time-at)
+        active-at (if (> dur-cur dur-total) 0 (:active-at water))
+        level (:level water)
+        scale (if (not= active-at 0)
+                (+ 10 level (js/Math.sin (* 2 js/Math.PI (/ dur-total dur-cur))))
+                level)]
+    (-> water
+        (assoc-in [:scale] scale)
+        (assoc-in [:active-at] active-at))))
+
+(defn water-pulse [state]
+  (update state :water #(water-pulse-water % (:time-cur state))))
+
+
+;;  well
 (defn wells-fire-hits
   "if we went to a well. update the parts of the state that aren't a well
   (propagate up into structure)
@@ -124,48 +166,19 @@
   (let [hit-side (first (hit-now wells time-cur))
         score (get-in wells [hit-side :score])
         score-state
-          (if (some? hit-side)
-            (-> state
-                ;; (update-in [:events] concat (str time-cur (now)))
-                (update-in [:phase :picked] hit-side)
-                (assoc-in [:avatar :destination] (avatar-dest state :down))
-                (assoc-in [:avatar :move-count] 0))
-            state)]
+        (if (some? hit-side)
+          (-> state
+              ;; (update-in [:events] concat (str time-cur (now)))
+              (update-in [:phase :picked] hit-side)
+              (assoc-in [:avatar :destination] (avatar-dest state :down))
+              (assoc-in [:avatar :move-count] 0))
+          state)]
     (if score
       (-> score-state
-          (update-in [:water] #(+ 1 %))
+          (update-in [:water] #(water-inc % time-cur))
           (assoc-in [:phase :scored] true)
           )
       score-state)))
-
-(defn next-step
-  "does heavy lifting for state changes. update state with next step
-  e.g. trigger feedback. move avatar. stop animations"
-  [state time]
-  (-> state
-      read-keys
-      move-avatar
-      wells-check-collide
-      wells-turn-off
-      wells-fire-hits
-      ;; wells-update-prob
-      ;; check-timeout
-      ;; keys-set-want
-      ))
-
-(defn add-key-to-state [state keypress]
-  (let [key (landscape.key/keynum keypress)]
-    (if keypress
-      (-> state
-          (assoc-in [:key :have] key)
-          (assoc-in [:key :time] (utils/now)))
-      state)))
-
-(def BOARD "bounds and properties of the background board"
-  {:center-x 250
-   :bottom-y 260
-   :step-sizes [100 50 25 25 25 25]
-   })
 
 (defn well-pos
   "{:x # :y #} for a number of steps/count to a well"
@@ -194,6 +207,32 @@
                   :right {:step 1 :open true :active-at 0 :prob 50 :color :blue}})]
     (reduce #(update %1 %2 (partial well-add-pos %2)) wells (keys wells))))
 
+
+;;  state
+(defn next-step
+  "does heavy lifting for state changes. update state with next step
+  e.g. trigger feedback. move avatar. stop animations"
+  [state time]
+  (-> state
+      read-keys
+      move-avatar
+      wells-check-collide
+      wells-turn-off
+      wells-fire-hits
+      water-pulse
+      ;; wells-update-prob
+      ;; check-timeout
+      ;; keys-set-want
+      ))
+
+(defn add-key-to-state [state keypress]
+  (let [key (landscape.key/keynum keypress)]
+    (if keypress
+      (-> state
+          (assoc-in [:key :have] key)
+          (assoc-in [:key :time] (utils/now)))
+      state)))
+
 (defn state-fresh
   "initial state. empty timing"
   []
@@ -203,7 +242,7 @@
    :time-cur 0
    :key {:until nil :want [] :next nil :have nil}
    :wells (wells-state-fresh nil)
-   :water 10
+   :water (water-state-fresh)
    :phase {:name :chose :scored nil :picked nil}
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
