@@ -21,8 +21,7 @@
 (defn position-at
   [{:keys [x y] :as pos} inner]
   (html [:div.abs {:style {:position "absolute"
-                           :left (str x "px ")
-                           :top (str y "px")}}
+                           :transform (str "translate(" x "px, " y "px")}}
          inner]))
 
 ;; 
