@@ -49,10 +49,11 @@
           (html [:div.well {:style (merge css v-offset)}])))
 
 (defn avatar-disp "draw avatar traveling a direction"
-    [{:keys [time-cur] :as state}
+    [{:keys [time-cur sprite-picked] :as state}
      {:keys [direction active-at] :as avatar}]
-  (let [tstep (sprite/get-step time-cur active-at (:dur-ms sprite/avatar))
-        css (sprite/css sprite/avatar tstep)
+  (let [sprite (if (nil? sprite-picked) sprite/avatar (get sprite/avatars sprite-picked))
+        tstep (sprite/get-step time-cur active-at (:dur-ms sprite))
+        css (sprite/css sprite tstep)
         y-offset (case direction :down 0 :left 70 :right 140 :up 211 0)
         css (merge css {:background-position-y (* -1 y-offset)})]
     (html [:div.well {:style css}])))

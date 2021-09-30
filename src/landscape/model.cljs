@@ -245,6 +245,7 @@
    :wells (wells-state-fresh nil)
    :water (water-state-fresh)
    :phase {:name :chose :scored nil :picked nil}
+   :sprite-picked :astro
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down

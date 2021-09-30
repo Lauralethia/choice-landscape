@@ -12,11 +12,26 @@
                           :dur-ms 500
                           :url "imgs/well_sprites.png"}))
 
-(def avatar (sprite-create {:width 68 :height 70
-                          :frame-size 68 :frames 3
-                          :dur-ms 500
-                          :url "imgs/lizard_blue.png"}))
+(def avatars
+  {:lizard (sprite-create {:width 68 :height 70
+                           :frame-size 68 :frames 3
+                           :dur-ms 500
+                           :url "imgs/lizard_blue.png"})
+  :astro (sprite-create {:width 50 :height 80
+                         :frame-size 50 :frames 4
+                         :dur-ms 500
+                         :url "imgs/astronaut.png"})
+  :alien (sprite-create {:width 35 :height 74
+                         :frame-size 35 :frames 3
+                         :dur-ms 500
+                         :url "imgs/alien-green.png"})
+  :robot (sprite-create {:width 32 :height 32
+                         :frame-size 32 :frames 3
+                         :dur-ms 500
+                         :url "imgs/robot-blue.png"})
+})
 
+(def avatar (:lizard avatars))
 
 (defn get-step
   "0 started to 1 finished"
