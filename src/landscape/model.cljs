@@ -1,7 +1,8 @@
 (ns landscape.model
   (:require
    [landscape.key]
-   [landscape.utils :as utils ]
+   [landscape.utils :as utils]
+   [landscape.sound :as snd]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
   (:require-macros [devcards.core :refer [defcard]]))
 
@@ -103,12 +104,16 @@
               39 :right
               40 :down   ;; maybe disallow
               nil)]
-    (if (not dir) state
-        (-> state
-            (assoc-in [:avatar :destination] (avatar-dest state dir))
-            (update-in [:avatar :move-count] inc)
-            (assoc-in [:key :have] nil)
-            ))))
+    (if
+      ;; chose phase only time we can pick. and only when we haven't already
+      (and (= :chose (get-in state [:phase :name])) (some? dir))
+      (-> state
+          (assoc-in [:avatar :destination] (avatar-dest state dir))
+          (update-in [:avatar :move-count] inc)
+          (assoc-in [:phase :picked] dir)
+          (assoc-in [:key :have] nil)
+          )
+      state)))
 
 (defn well-off [time well]
   ;; TODO: 1000 should come from sprite total-size?
@@ -156,6 +161,42 @@
   (update state :water #(water-pulse-water % (:time-cur state))))
 
 
+;;  snd
+(defn feedback-snd [win? time-cur prev]
+        (let [snd (if win? :reward :empty)]
+          (when (not prev) (doall (snd/play-sound snd)))
+          (if prev prev time-cur)))
+
+;;
+(defn avatar-home? [state]
+  (collide? (get-in state [:avatar :pos]) (:avatar-home BOARD)))
+
+(defn set-phase-fresh [name time-cur]
+  {:name name :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
+
+(defn phase-update [{:keys [phase time-cur] :as state}]
+  (let [pname (get phase :name)
+        hit (get phase :hit)
+        picked (get phase :picked)
+        phase-next (cond
+                     ;; as soon as we pick, switch to waiting
+                     (and (= pname :chose) (some? picked))
+                     (assoc phase :name :waiting)
+
+                     ;; as soon as we hit, switch to feedback (sound)
+                     (and (= pname :waiting) (some? hit))
+                     (assoc phase :name :feedback :sound-at nil :start-at time-cur)
+
+                     ;; restart at chose when avatar's back home
+                     (and (= pname :feedback) (avatar-home? state))
+                     (set-phase-fresh :chose time-cur)
+
+                     ;; no change if none needed
+                     :else phase)
+        ]
+    ;; TODO - push current phase onto stack of events (historical record)
+    (assoc state :phase phase-next)))
+
 ;;  well
 (defn wells-fire-hits
   "if we went to a well. update the parts of the state that aren't a well
@@ -169,15 +210,17 @@
         score-state
         (if (some? hit-side)
           (-> state
-              ;; (update-in [:events] concat (str time-cur (now)))
-              (update-in [:phase :picked] hit-side)
-              (assoc-in [:avatar :destination] (avatar-dest state :down))
-              (assoc-in [:avatar :move-count] 0))
+               (assoc-in [:phase :hit] hit-side)
+               (assoc-in [:phase :scored] score)
+               (update-in [:phase :sound-at] #(feedback-snd score time-cur %))
+               ;; move avatar back home
+               (assoc-in [:avatar :destination] (avatar-dest state :down))
+               (assoc-in [:avatar :move-count] 0))
           state)]
+    ;; update score
     (if score
       (-> score-state
           (update-in [:water] #(water-inc % time-cur))
-          (assoc-in [:phase :scored] true)
           )
       score-state)))
 
@@ -221,6 +264,7 @@
       wells-turn-off
       wells-fire-hits
       water-pulse
+      phase-update
       ;; wells-update-prob
       ;; check-timeout
       ;; keys-set-want
@@ -244,7 +288,7 @@
    :key {:until nil :want [] :next nil :have nil}
    :wells (wells-state-fresh nil)
    :water (water-state-fresh)
-   :phase {:name :chose :scored nil :picked nil}
+   :phase (set-phase-fresh :chose nil)
    :sprite-picked :astro
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
