@@ -9,6 +9,7 @@
 (def BOARD "bounds and properties of the background board"
   {:center-x 250
    :bottom-y 260
+   :avatar-home {:x 250 :y 250}
    :step-sizes [100 50 25 25 25 25]
    })
 
@@ -88,7 +89,7 @@
             :left  {:x 0   :y cy}
             :right {:x 400 :y cy}
             :up {:x cx :y 100}
-            :down {:x 245 :y 260}
+            :down (:avatar-home BOARD)
             (-> avatar :pos))))
 
 ;; :key {:until nil :want [] :next nil :have nil}
@@ -249,7 +250,6 @@
             :direction :down
             :last-move 0
             :move-count 0
-            :destination {:x (:center-x BOARD)
-                          :y (:bottom-y BOARD)}}})
+            :destination (:avatar-home BOARD)}})
 
 (def STATE (atom (state-fresh)))
