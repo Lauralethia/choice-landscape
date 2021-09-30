@@ -12,6 +12,7 @@
    :bottom-y 260
    :avatar-home {:x 250 :y 250}
    :step-sizes [100 50 25 25 25 25]
+   :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    })
 
 (defn which-dir [cur dest]
@@ -102,7 +103,7 @@
               37 :left
               38 :up
               39 :right
-              40 :down   ;; maybe disallow
+              ;40 :down   ;; maybe disallow
               nil)]
     (if
       ;; chose phase only time we can pick. and only when we haven't already
@@ -117,7 +118,7 @@
 
 (defn well-off [time well]
   ;; TODO: 1000 should come from sprite total-size?
-  (update-in well [:active-at] #(if (> (- time %) 1000) 0 %)))
+  (update-in well [:active-at] #(if (> (- time %) (:wait-time BOARD)) 0 %)))
 
 (defn wells-turn-off [{:keys [wells time-cur] :as state}]
   (assoc state :wells
