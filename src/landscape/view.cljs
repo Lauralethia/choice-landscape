@@ -58,6 +58,11 @@
         css (merge css {:background-position-y (* -1 y-offset)})]
     (html [:div.well {:style css}])))
 
+(defn instruction-disp "show instruction text box" [state]
+  (let [inst (:instruction state)]
+    (if inst
+      (position-at (:pos inst)
+                   (html [:div#instruction (:text inst) ])))))
 
 
 (defn well-side
