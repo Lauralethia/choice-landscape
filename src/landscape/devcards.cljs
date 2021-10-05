@@ -4,6 +4,7 @@
    [landscape.utils :as utils]
    [landscape.view :as view]
    [landscape.model :as model]
+   [landscape.model.avatar :as avatar]
    [sablono.core :as sab :include-macros true :refer-macros [html]])
   (:require-macros [devcards.core :refer [defcard]]))
 (enable-console-print!)
@@ -19,7 +20,7 @@
             [:button {:on-click (fn[] (reset!
                                       state
                                       (-> @state 
-                                          model/move-avatar
+                                          avatar/move-avatar
                                           (update-in [:time-cur] #(+ 100 %)))))}
              "inc" ]
             [:button {:on-click (fn[](swap! state assoc-in [:avatar :pos :x] 0))}

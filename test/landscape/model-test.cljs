@@ -1,6 +1,9 @@
 (ns landscape.model-test
 (:require
- [landscape.model :refer [move-closer activate-well hit-now wells-fire-hits]]
+ [landscape.model :refer [wells-fire-hits]]
+ [landscape.model.wells :refer [activate-well hit-now]]
+ [landscape.model.avatar :refer [move-closer]]
+ [landscape.model.water :refer [water-pulse-water]]
  [clojure.test :refer [is]]))
 
 ;; moving right changes x
@@ -19,13 +22,13 @@
 (is ( < 0 (:water (wells-fire-hits {:water 0 :time-cur 10 :wells {:left {:active-at 10 :score false} :right {:active-at 2}}}))))
 
 (is (= 10 (:scale
-           (landscape.model/water-pulse-water {:active-at 0 :level 10 :scale 10} 10))))
+           (water-pulse-water {:active-at 0 :level 10 :scale 10} 10))))
 
 ; water-pulse held when not active, increases when is, deactivates
 (is (= 10 (:scale
-           (landscape.model/water-pulse-water {:active-at 0 :level 10 :scale 10} 10))))
+           (water-pulse-water {:active-at 0 :level 10 :scale 10} 10))))
 (is (< 10 (:scale
-           (landscape.model/water-pulse-water {:active-at 10 :level 10 :scale 10} 11))))
+           (water-pulse-water {:active-at 10 :level 10 :scale 10} 11))))
 
 (is (= 0 (:active-at
-           (landscape.model/water-pulse-water {:active-at 10 :level 10 :scale 10} 999999))))
+           (water-pulse-water {:active-at 10 :level 10 :scale 10} 999999))))

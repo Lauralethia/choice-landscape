@@ -36,3 +36,10 @@
   "play sound for a given rew-key (:reward or :empty)"
   (let [snd (first (shuffle (rew-key SOUNDS)))]
   (play-audio snd 1)))
+
+(defn feedback-snd
+  "play sound based on bool win? and return time"
+  [win? time-cur time-prev]
+  (let [snd (if win? :reward :empty)]
+    (when (not time-prev) (doall (play-sound snd)))
+    (if time-prev time-prev time-cur)))

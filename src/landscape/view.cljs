@@ -20,7 +20,6 @@
     (let [node (.getElementById js/document CHANGE-DOM-ID)]
       (.render js/ReactDOM reactdom node)))
 
-
 (defn position-at
   [{:keys [x y] :as pos} inner]
   (html [:div.abs {:style {:position "absolute"
@@ -37,10 +36,11 @@
     (water-fill fill)))
 
 
+(def bucket (html [:img {:src "imgs/bucket.png" :style {:transform "translate(20px, 30px)"}}]))
 
 (defn well-show "draw single well. maybe animate sprite"
         [{:keys [time-cur] :as state}
-         {:keys [active-at score] :as well}]
+         {:keys [active-at score open] :as well}]
         (let [tstep (sprite/get-step time-cur active-at (:dur-ms sprite/well))
               css (sprite/css sprite/well tstep)
               ;; if not score, move bg down to get the failed well offset
@@ -48,7 +48,8 @@
                            {:background-position-y
                             (str "-" (:height sprite/well) "px")}
                            )]
-          (html [:div.well {:style (merge css v-offset)}])))
+          (html [:div.well {:style (merge css v-offset)}
+                 (if open bucket)])))
 
 (defn avatar-disp "draw avatar traveling a direction"
     [{:keys [time-cur sprite-picked] :as state}
