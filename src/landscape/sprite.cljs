@@ -8,7 +8,7 @@
          :half-width (/ width 2)))
 
 (def well (sprite-create {:width 53 :height 47
-                          :frame-size 53 :frames 8
+                          :frame-size 53 :frames 7
                           :dur-ms 500
                           :url "imgs/well_sprites.png"}))
 
