@@ -108,7 +108,7 @@
       wells/wells-check-collide     ; start animation
       wells/wells-turn-off          ; stop animations
       wells-fire-hits               ; update not well stuff on well hit
-      ;water/water-pulse            ; causes jitter. TODO: debug
+      water/water-pulse            ; causes jitter. TODO: debug
       phase-update                  ; discrete phases
       wells/wells-update-which-open ; set random wells to be used. clear when not using
       ;; wells-update-prob
