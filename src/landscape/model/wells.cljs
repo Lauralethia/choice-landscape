@@ -1,5 +1,6 @@
 (ns landscape.model.wells
 (:require [landscape.settings :refer [BOARD]]
+          [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
           [landscape.utils :as utils]
           [landscape.sound :as snd]))
 
@@ -46,13 +47,18 @@
   (wells-set-open-or-close state (take 2 (shuffle [:left :up :right])) true))
 
 (defn wells-update-which-open
-  "when just came into chose state, set wells
+        "when just came into chose state, set wells
   TODO: maybe not random but set before"
-  [{:keys [time-cur phase] :as state}]
- (if (and (= (:start-at phase) time-cur)
-          (= :chose (:name phase)))
-   (wells-open-rand state)
-   state))
+        [{:keys [time-cur phase] :as state}]
+        (let [phasechange? (= (:start-at phase) time-cur)
+              phasename (:name phase)]
+          (if (not phasechange?)
+            state
+            (case phasename
+              :chose (wells-open-rand state)
+              :waiting (wells-close state)
+              ;; :feedback state
+              state))))
 
 (defn hit-now
   [wells time-cur]

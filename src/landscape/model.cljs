@@ -78,7 +78,7 @@
         phase-next (cond
                      ;; as soon as we pick, switch to waiting
                      (and (= pname :chose) (some? picked))
-                     (assoc phase :name :waiting)
+                     (assoc phase :name :waiting :start-at time-cur)
 
                      ;; as soon as we hit, switch to feedback (sound)
                      (and (= pname :waiting) (some? hit))
@@ -99,17 +99,18 @@
 ;;  state
 (defn next-step
   "does heavy lifting for state changes. update state with next step
-  e.g. trigger feedback. move avatar. stop animations"
+   e.g. trigger feedback. move avatar. stop animations
+  run by loop/time-update after updating state:time-cur"
   [state time]
   (-> state
       read-keys
       avatar/move-avatar
-      wells/wells-check-collide
-      wells/wells-turn-off
-      wells-fire-hits
-      water/water-pulse
-      phase-update
-      ;wells-update-which-open
+      wells/wells-check-collide     ; start animation
+      wells/wells-turn-off          ; stop animations
+      wells-fire-hits               ; update not well stuff on well hit
+      ;water/water-pulse            ; causes jitter. TODO: debug
+      phase-update                  ; discrete phases
+      wells/wells-update-which-open ; set random wells to be used. clear when not using
       ;; wells-update-prob
       ;; check-timeout
       ;; keys-set-want -- not needed, get from well :open state
@@ -120,6 +121,7 @@
   [state keypress]
   (let [key (landscape.key/keynum keypress)]
     (if keypress
+             ;(= :chose (get-in state [:phase :name])))
       (-> state
           (assoc-in [:key :have] key)
           (assoc-in [:key :time] (utils/now)))
