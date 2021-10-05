@@ -10,7 +10,11 @@
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
 
-(def DEBUG "show phase edn? display will no longer be pixel perfect" true)
+;;
+(def ^:export DEBUG
+  "show phase edn? display will no longer be pixel perfect
+  use in javscript console like: landscape.view.DEBUG = true"
+  false)
 
 (def CHANGE-DOM-ID "id of element where updates will go"
   "main-container")
