@@ -7,7 +7,7 @@
          :total-size (* frames frame-size)
          :half-width (/ width 2)))
 
-(def well (sprite-create {:width 53 :height 46
+(def well (sprite-create {:width 53 :height 47
                           :frame-size 53 :frames 8
                           :dur-ms 500
                           :url "imgs/well_sprites.png"}))

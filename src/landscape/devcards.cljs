@@ -32,16 +32,22 @@
    :time-cur 0})
 
 
+;; (def water-atom-devcard
+;;   (let [state (atom {:water {:level 5 :active-at 10} :time-cur 10})]
+;;     (js/setInterval (fn[] (swap! state update :time-cur inc) ;; (reset! state
+;;                          ;;          (-> @state
+;;                          ;;              (update :time-cur #(mod (inc %) 2000))
+;;                          ;;              (model/water-pulse)))
+;;                       ))))
 
 (defcard water-pulse
-  "run through water pulsing"
-  (fn[state o] (html [:div
-                     (view/water @state)
-                     (utils/wrap-state state #())
-                     [:p (str @state)]
-                     [:button {:on-click (fn [_] (swap! state (fn[_] {:water {:level 5 :active-at 10} :time-cur 0} )))} "reset"]
-                     [:button {:on-click (fn [_] (swap! state model/water-pulse))} "step"]]
-                    ))
+  "run through osilating water pulsing"
+  (fn[state o]
+       (html [:div (view/water @state)
+           [:br]
+           [:p (str @state)]
+           [:button {:on-click (fn [_] (swap! state (fn[_] {:water {:level 5 :active-at 10} :time-cur 0} )))} "reset"]]
+          ))
   {:water {:level 5 :active-at 10} :time-cur 10})
 ;; help from 
 ;; https://github.com/onetom/clj-figwheel-main-devcards

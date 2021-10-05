@@ -10,6 +10,8 @@
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
 
+(def DEBUG "show phase edn? display will no longer be pixel perfect" true)
+
 (def CHANGE-DOM-ID "id of element where updates will go"
   "main-container")
 (defn change-dom
@@ -84,6 +86,7 @@
   "html to render for display. updates for any change in display"
   [state] (sab/html
            [:div#background
+            (if DEBUG [:div {:style {:color "white"}} (str (:phase state))])
             ;; draw avatar
             ;; draw arrows
             ;; draw blocked

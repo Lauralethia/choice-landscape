@@ -16,5 +16,12 @@
                   philoskim/debux {:mvn/version "0.8.1"}                 ;; dbg dbgn 
                   clj-commons/pomegranate {:mvn/version "1.2.1"}         ;; load depends in repl
                   }
-                 :extra-paths ["target" "test"]}}
+                 :extra-paths ["target" "test"]}
+           ;:cardbuild {
+           ;            :main "landscape.main"
+           ;            :devcards true
+           ;            :optimizations :advanced
+           ;            :output-to "out/cards.js"
+           ;            :main-opts ["--main" "cljs.main" "--compile" "landscape.devcards"]}
+}
  :build {:main-opts ["--main" "figwheel.main" "--build" "dev" "--repl"]}}
