@@ -1,10 +1,36 @@
 * Landscape choice
 
-motivated by Dubois et al 2021 elife task: landscape with choices
+ * see running version: https://labneurocogdevel.github.io/choice-landscape/
+ * aesthetic motivated by [[https://elifesciences.org/articles/59907][Dubois et al 2021 elife]] task: [[https://iiif.elifesciences.org/lax/59907%2Felife-59907-fig1-v2.tif/full/1500,/0/default.jpg][landscape with choices]]
 
-https://labneurocogdevel.github.io/choice-landscape/
+* Bugs
+** too many buckets 
+   can have all 3 wells w/ :open true. probably are not clearing active state correctly?
 
-* implementation plan
+* implementation
+** TODO [#A] instructions/state advance
+   want state to be easy to change for instructions step through
+   but also for advancing during task
+*** allow for fixed timing
+   scanner will be given explicit onset targets
+** TODO [#A] integrate with http server
+** TODO [#B] arrows
+*** sprites.
+   maybe css instead? colored?
+*** placement logic
+** TODO [#B] use full screen
+*** zoom body?
+    ~translation: scale(1.5)~ works for content but does not scale background.
+    with lower wells, maybe less of a problem
+*** bigger images?
+    bad idea for smaller screens?
+** TODO [#B] touch well simulates keypress
+   would make task usable on a phone
+** TODO [#C] visually collect status of wells
+   not necissary. maybe problematic
+
+   bar at bottom with color for success?
+   X or O next to the well?
 ** wells
 *** placement logic
     :LOGBOOK:
@@ -14,9 +40,15 @@ https://labneurocogdevel.github.io/choice-landscape/
 **** exponential decrease. make function to be reused by stepping stones
      hard coded sequence ~:step-sizes~ in ~model/BOARD~
 
-*** TODO set and indicate disabled well 
-    maybe a hawk sprite.
+*** set and indicate dis/enabled well 
+    currently have a bucket on active wells. could still use animations
+**** TODO [#C] animate bucket
+     have start of animation in wells.svg but crashes inkscape. not critical to task
+
+    
 *** TODO color icon to distinguish wells
+    maybe this isn't needed
+
 ** avatar movement
    :LOGBOOK:
    CLOCK: [2021-09-22 Wed 09:27]--[2021-09-22 Wed 11:43] =>  2:16
@@ -32,36 +64,14 @@ https://labneurocogdevel.github.io/choice-landscape/
 ** github pages
  useful to share. need ~.nojekyll~ file to use index.html and friends.
 
-** TODO sounds
-   hopefully can just copy over
-** TODO arrows
-*** sprites.
-   maybe css instead? colored?
-*** placement logic
-** TODO instructions/state advance
-   want state to be easy to change for instructions step through
-   but also for advancing during task
-*** allow for fixed timing
-   scanner will be given explicit onset targets
-** TODO feedback
-    stars, text, and water fill
+** sounds
+   copied cash and buz
+** feedback
+   water fill and sound
+*** TODO [#C] maybe add text or stars?
 ** TODO ISI/ITI
-   * maybe shake the well for variable time before showing reward
-   * helper animal goes into the well?
-     or avatar goes into the well?
-** TODO item to identify each well
-** TODO visually collect status of wells
-   bar at bottom with color for success?
-   X or O next to the well?
+   * might not need. depends on modeling 
+   * shake the well for variable time before showing reward
+   * intermediate helper goes to the well instead. (bring bucket, drill, etc).
+     can be disgruntled or happy
 ** TODO add animation to devcards
-** TODO add body background to match scene
-   * check if we can use svg in all browsers
-     * center night/day transition with no-repeat
-   * set color to sand brown
-* Scene
-
-** avatar 
-** arrows
-** water
-** wells
-** steps

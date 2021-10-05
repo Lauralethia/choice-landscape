@@ -17,21 +17,24 @@
                            :frame-size 68 :frames 3
                            :dur-ms 500
                            :url "imgs/lizard_blue.png"})
-  :astro (sprite-create {:width 50 :height 80
-                         :frame-size 50 :frames 4
+  :astro (sprite-create {:width 50 :height 75
+                         :frame-size 50 :frames 3
                          :dur-ms 500
                          :url "imgs/astronaut.png"})
-  :alien (sprite-create {:width 35 :height 74
-                         :frame-size 35 :frames 3
+  :alien (sprite-create {:width 47 :height 48
+                         :frame-size 47 :frames 2
                          :dur-ms 500
                          :url "imgs/alien-green.png"})
   :robot (sprite-create {:width 32 :height 32
-                         :frame-size 32 :frames 3
+                         :frame-size 32 :frames 2
                          :dur-ms 500
                          :url "imgs/robot-blue.png"})
 })
 
 (def avatar (:lizard avatars))
+
+(defn y-offset [{:keys [height] :as sprite} direction]
+  (* height (case direction :down 0 :left 1 :right 2 :up 3 0)))
 
 (defn get-step
   "0 started to 1 finished"

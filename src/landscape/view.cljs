@@ -61,7 +61,7 @@
   (let [sprite (if (nil? sprite-picked) sprite/avatar (get sprite/avatars sprite-picked))
         tstep (sprite/get-step time-cur active-at (:dur-ms sprite))
         css (sprite/css sprite tstep)
-        y-offset (case direction :down 0 :left 70 :right 140 :up 211 0)
+        y-offset (sprite/y-offset sprite direction)
         css (merge css {:background-position-y (* -1 y-offset)})]
     (html [:div.well {:style css}])))
 
@@ -125,6 +125,9 @@
            [:button {:on-click (fn [] (swap! state assoc :direction :right))} "right"]
            [:button {:on-click (fn [] (swap! state assoc :direction :up))} "up"]
            [:button {:on-click (fn [] (swap! state assoc :direction :down))} "down"]
+           [:br]
+           [:select {:on-change #(swap! state assoc :sprite-picked (-> % .-target .-value keyword))}
+            (map #(html [:option { :value (name %)} (name %)]) (keys sprite/avatars))]
            [:br]
            (str @state)
            ]))
