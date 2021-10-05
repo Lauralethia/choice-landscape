@@ -26,9 +26,9 @@
   [wells]
   (let [wells (if wells
                  wells
-                 {:left  {:step 1 :open true :active-at 0 :prob 50 :color :red}
-                  :up    {:step 1 :open true :active-at 0 :prob 50 :color :green}
-                  :right {:step 1 :open true :active-at 0 :prob 50 :color :blue}})]
+                 {:left  {:step 2 :open true :active-at 0 :prob 100 :color :red}
+                  :up    {:step 1 :open true :active-at 0 :prob 20  :color :green}
+                  :right {:step 1 :open true :active-at 0 :prob 80  :color :blue}})]
     (reduce #(update %1 %2 (partial well-add-pos %2)) wells (keys wells))))
 
 (defn wells-set-open-or-close

@@ -2,8 +2,8 @@
 
 (def BOARD "bounds and properties of the background board"
   {:center-x 250
-   :bottom-y 260
-   :avatar-home {:x 250 :y 250}
-   :step-sizes [100 50 25 25 25 25]
+   :bottom-y 400
+   :avatar-home {:x 250 :y 400}
+   :step-sizes [100 150 50 25 25 25 25] ; currently only first 2 are used 20211005
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    })

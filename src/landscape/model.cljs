@@ -139,7 +139,7 @@
    :water (water/water-state-fresh)
    :phase (set-phase-fresh :chose nil)
    :sprite-picked :astro
-   :avatar {:pos {:x 245 :y 0}
+   :avatar {:pos {:x 245 :y 500}
             :active-at 0
             :direction :down
             :last-move 0
