@@ -6,6 +6,10 @@
 * Bugs
 ** too many buckets 
    can have all 3 wells w/ :open true. probably are not clearing active state correctly?
+** uses keypress sent during :waiting/:feedback for next :chose
+   need to block so keypress is only listening during :chose
+   or clear any keypresses when phase changes?
+   -- might want some cheat codes (e.g. d enables debug, r for restart, etc)
 
 * implementation
 ** TODO [#A] instructions/state advance
@@ -13,6 +17,8 @@
    but also for advancing during task
 *** allow for fixed timing
    scanner will be given explicit onset targets
+** TODO [#A] update well probabilities after n? trials 
+   how many changes, how many total trials
 ** TODO [#A] integrate with http server
 ** TODO [#B] arrows
 *** sprites.
@@ -25,6 +31,7 @@
 *** bigger images?
     bad idea for smaller screens?
 ** TODO [#B] touch well simulates keypress
+** TODO [#C] set scale of water relative to total points needed
    would make task usable on a phone
 ** TODO [#C] visually collect status of wells
    not necissary. maybe problematic
