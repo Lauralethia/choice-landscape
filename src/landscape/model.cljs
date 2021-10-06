@@ -95,12 +95,20 @@
     (assoc state :phase phase-next)))
 
 
+(defn next-step
+  "disbatch to instruction or task
+  run by loop/time-update after updating state:time-cur "
+  [{:keys [phase] :as state} time]
+  (case (:name phase)
+    :instruction (instruction/step state time)
+                                        ;:chose, :waiting, :feedback
+    (step-task state time)))
 
 ;;  state
-(defn next-step
+(defn step-task
   "does heavy lifting for state changes. update state with next step
    e.g. trigger feedback. move avatar. stop animations
-  run by loop/time-update after updating state:time-cur"
+  run by next-step from loop/time-update after updating state:time-cur"
   [state time]
   (-> state
       read-keys

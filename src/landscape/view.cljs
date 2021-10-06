@@ -3,6 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.utils :as utils]
    [landscape.model :as model]
+   [landscape.instruction :as instruction]
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
@@ -87,19 +88,30 @@
          (well-side state :right)]))
 
 
+(defn instruction-view [{:keys [phase] :as state}]
+  (let [idx (or (:idx phase) 0)
+        instr (get instruction/INSTRUCTION idx)
+        pos (or (:pos instr) {:x 100 :y 100})]
+    (position-at pos
+                 (html [:div#instruction (:text instr)]))))
+
 (defn display-state
   "html to render for display. updates for any change in display"
-  [state] (sab/html
+  [{:keys [phase avatar] :as state}] (sab/html
            [:div#background
-            (if DEBUG [:div {:style {:color "white"}} (str (:phase state))])
-            ;; draw avatar
-            ;; draw arrows
-            ;; draw blocked
-            ;; draw feedback
+            (if DEBUG [:div {:style {:color "white"}} (str phase)])
             (water state)
             (well-show-all state)
             (position-at (get-in state [:avatar :pos])
-                         (avatar-disp state (:avatar state)))
+                         (avatar-disp state avatar))
+            ;; TODO?
+            ;; draw arrows
+            ;; draw blocked
+            ;; draw feedback
+
+            ;; instructions on top so covers anything else
+            ;; -- maybe we want them under?
+            (if (= :instruction (:name phase)) (instruction-view state))
             ]))
 
 

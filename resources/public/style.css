@@ -23,3 +23,12 @@ img#water {
    margin: 0;
 }
 
+#instruction{ background: white;
+min-height: 100px;
+min-width: 100px;
+margin: auto;
+padding: 10px;
+text-align: center;
+border: solid black 1 px;
+opacity: .5;
+}
