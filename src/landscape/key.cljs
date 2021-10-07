@@ -67,7 +67,7 @@
 ;; https://stackoverflow.com/questions/596481/is-it-possible-to-simulate-key-press-events-programmatically
 ;; document.addEventListener("keydown", x=>console.log(x))
 ;; document.dispatchEvent(new KeyboardEvent('keydown', {keyCode: 38}));
-(defn sym-key
+(defn sim-key
   "simulate keypress using keyCode"
   [keysym]
   (let [keycode (keysym KEYCODES)

@@ -32,7 +32,7 @@
                            :transform (str "translate(" x "px, " y "px")}}
          inner]))
 
-;; 
+
 ;; scene components
 (defn water-fill [fill]
   (html [:img#water {:src "imgs/water.png" :style {:scale (str fill "%")}}]))
@@ -72,7 +72,8 @@
   "side is :left :up :right"
   [{:keys [wells] :as state} side]
   (position-at (get-in wells [side :pos])
-               (well-show state (side wells))))
+               (html [:div {:on-click #(key/sim-key side)}
+                      (well-show state (side wells))])))
 
 (defn well-show-all
   "3 wells not all equadistant. sprite for animate"
@@ -90,8 +91,8 @@
     (position-at pos
                  (html [:div#instruction (:text instr)
                           [:div.bottom
-                           [:button {:on-click #(key/sym-key :left)} "< "]
-                           [:button {:on-click #(key/sym-key :right)} "->"]
+                           [:button {:on-click #(key/sim-key :left)} "< "]
+                           [:button {:on-click #(key/sim-key :right)} " >"]
                            ]
                         ]))))
 
@@ -115,7 +116,7 @@
             ]))
 
 
-;; 
+
 ;; debug/devcards
 (defcard well-score-nil
   "well animation by steps. should animate with js/animate"
