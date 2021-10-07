@@ -8,6 +8,7 @@
    [landscape.model.wells :as wells]
    [landscape.model.avatar :as avatar]
    [landscape.model.water :as water]
+   [landscape.model.phase :as phase]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
   (:require-macros [devcards.core :refer [defcard]]))
 
@@ -69,32 +70,6 @@
       state)))
 
 
-(defn set-phase-fresh [name time-cur]
-  {:name name :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
-
-(defn phase-update [{:keys [phase time-cur] :as state}]
-  (let [pname (get phase :name)
-        hit (get phase :hit)
-        picked (get phase :picked)
-        phase-next (cond
-                     ;; as soon as we pick, switch to waiting
-                     (and (= pname :chose) (some? picked))
-                     (assoc phase :name :waiting :start-at time-cur)
-
-                     ;; as soon as we hit, switch to feedback (sound)
-                     (and (= pname :waiting) (some? hit))
-                     (assoc phase :name :feedback :sound-at nil :start-at time-cur)
-
-                     ;; restart at chose when avatar's back home
-                     (and (= pname :feedback) (avatar/avatar-home? state))
-                     (set-phase-fresh :chose time-cur)
-
-                     ;; no change if none needed
-                     :else phase)
-        ]
-    ;; TODO - push current phase onto stack of events (historical record)
-    (assoc state :phase phase-next)))
-
 ;;  state
 (defn step-task
   "does heavy lifting for state changes. update state with next step
@@ -108,7 +83,7 @@
       wells/wells-turn-off          ; stop animations
       wells-fire-hits               ; update not well stuff on well hit
       water/water-pulse            ; causes jitter. TODO: debug
-      phase-update                  ; discrete phases
+      phase/phase-update                  ; discrete phases
       wells/wells-update-which-open ; set random wells to be used. clear when not using
       ;; wells-update-prob
       ;; check-timeout
@@ -146,7 +121,7 @@
    :key {:until nil :want [] :next nil :have nil}
    :wells (wells/wells-state-fresh nil)
    :water (water/water-state-fresh)
-   :phase (set-phase-fresh :chose nil)
+   :phase (phase/set-phase-fresh :chose nil)
    :sprite-picked :astro
    :avatar {:pos {:x 245 :y 500}
             :active-at 0

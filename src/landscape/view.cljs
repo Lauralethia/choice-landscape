@@ -57,16 +57,6 @@
           (html [:div.well {:style (merge css v-offset)}
                  (if open bucket)])))
 
-(defn avatar-disp "draw avatar traveling a direction"
-    [{:keys [time-cur sprite-picked] :as state}
-     {:keys [direction active-at] :as avatar}]
-  (let [sprite (if (nil? sprite-picked) sprite/avatar (get sprite/avatars sprite-picked))
-        tstep (sprite/get-step time-cur active-at (:dur-ms sprite))
-        css (sprite/css sprite tstep)
-        y-offset (sprite/y-offset sprite direction)
-        css (merge css {:background-position-y (* -1 y-offset)})]
-    (html [:div.well {:style css}])))
-
 
 (defn well-side
   "side is :left :up :right"
@@ -92,7 +82,8 @@
                  (html [:div#instruction
                         (str (inc idx) "/" (count instruction/INSTRUCTION))
                         [:br]
-                        (:text instr)
+                        ((:text instr) state)
+                        [:br]
                         [:div.bottom
                          [:button {:on-click #(key/sim-key :left)} "< "]
                          [:button {:on-click #(key/sim-key :right)} " >"]
@@ -107,7 +98,7 @@
             (water state)
             (well-show-all state)
             (position-at (get-in state [:avatar :pos])
-                         (avatar-disp state avatar))
+                         (sprite/avatar-disp state avatar))
             ;; TODO?
             ;; draw arrows
             ;; draw blocked
@@ -136,7 +127,7 @@
   "step through avatar"
   (fn [state owner]
     (html [:div
-           (utils/wrap-state state (avatar-disp @state @state))
+           (utils/wrap-state state (sprite/avatar-disp @state @state))
            [:button {:on-click (fn [] (swap! state assoc :direction :left))} "left"]
            [:button {:on-click (fn [] (swap! state assoc :direction :right))} "right"]
            [:button {:on-click (fn [] (swap! state assoc :direction :up))} "up"]

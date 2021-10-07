@@ -1,5 +1,7 @@
 (ns landscape.sprite
-  (:require [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+  (:require
+   [sablono.core :as sab :include-macros true :refer-macros [html]]
+   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
 (defn sprite-create
   [{ :keys [ width height frame-size frames url dur-ms] :as sprit-info }]
@@ -14,7 +16,7 @@
 
 (def avatars
   {:lizard (sprite-create {:width 68 :height 70
-                           :frame-size 68 :frames 3
+                           :frame-size 68 :frames 2
                            :dur-ms 500
                            :url "imgs/lizard_blue.png"})
   :astro (sprite-create {:width 50 :height 75
@@ -54,3 +56,14 @@
    :background-position-x (str (bg-pos sprite-info step) "px")
    :background-position-y "0px"         ;; to be overwritten if image includes more than one sprite
    :background-repeat "no-repeat"})
+
+
+(defn avatar-disp "draw avatar traveling a direction"
+    [{:keys [time-cur sprite-picked] :as state}
+     {:keys [direction active-at] :as avatar}]
+  (let [sprite (if (nil? sprite-picked) avatar (get avatars sprite-picked))
+        tstep (get-step time-cur active-at (:dur-ms sprite))
+        this-css (css sprite tstep)
+        this-y-offset (y-offset sprite direction)
+        this-css (merge this-css {:background-position-y (* -1 this-y-offset)})]
+    (html [:div.avatar {:style this-css}])))

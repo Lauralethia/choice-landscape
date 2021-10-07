@@ -1,6 +1,7 @@
 (ns landscape.instruction
   (:require
    [landscape.sprite :as sprite]
+   [landscape.model.phase :as phase]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
@@ -14,24 +15,61 @@
 ;; functions that can manipualte state will be useful
 ;; To that end, instruction has it's own ~step~ function that will not include
 ;; the functions that update phase or react to water-well+avatar "hits"
-;; 
+;;
 ;; instruction phase should have weither or not we can proceed
 ;; and we'll only pass onto readkeys if that's true
 ;; otherwise keys fn handles it
 ;; if key is nil, default to okay to proceed
+(defn avatar-example [{:keys [time-cur sprite-picked] :as state} avatar-name]
+  (html [:div
+         {:style {:margin "auto"  :margin-bottom "10px"
+                  :background (if (= sprite-picked avatar-name) "blue" "gray")}}
+         (sprite/avatar-disp {:time-cur time-cur :sprite-picked avatar-name}
+                             {:direction :down :active-at 1})]))
+(defn next-sprite [cur]
+        (let [names (keys sprite/avatars)
+              ntot  (count names)
+              cur-i (or (.indexOf names cur) -1)
+              next-i (mod (dec cur-i) ntot)]
+          (nth names next-i)))
+
 (def INSTRUCTION
   [
-   {:text "Welcome to our game!"
+   {:text (fn[state]
+            (html
+             [:div [:h1  "Welcome to our game!"]
+              [:br]
+              "Push the right arrow key to get to the next instruction. "
+              "You can also click the \">\" button below"
+              ]))
     :pos #({:x 100 :y 100})
     :start identity
     :stop identity
     :key nil}
-   {:text "This well is far away. but it's always good" 
+   {:text (fn[state]
+            (html
+             [:div  "But! Before we start, pick a character!"
+              [:br]
+              "Use the up arrow to change your selection."
+              [:br]
+              "right arrow to choose"
+              [:div#pick-avatars
+               (map (partial avatar-example state) (keys sprite/avatars))]]))
+    :pos #({:x 100 :y 100})
+    :start identity
+    :stop identity
+    :key {:up (fn[state] (update state :sprite-picked next-sprite))}}
+   {:text (fn[state] "This well is far away. but it's always good")
     :pos (fn[state] (-> state find-far-well first val :pos))
     :start (fn[state] state)}
-   {:text "the closer wells wont always have water" 
+   {:text (fn[state] "the closer wells wont always have water")
     :pos #({:x 100 :y 100})
     :start (fn[state] state)}
+   {:text (fn[state] "Ready?")
+    :pos #({:x 100 :y 100})
+    :stop (fn[state]
+            (assoc state :phase (phase/set-phase-fresh :chose nil)))
+    }
    ])
 
 (defn instruction-goto
@@ -68,15 +106,22 @@
               40 :down ;; maybe disallow
               nil)
         i-cur (:idx phase)
+        i-keyfn (get-in INSTRUCTION [i-cur :key dir])
         i-next (if dir (instruction-goto i-cur dir) i-cur)
         ]
-    (if (not= i-cur i-next)
+    (cond
+      (and i-keyfn 1)
+      (-> state i-keyfn (assoc-in [:key :have] nil))
+      (not= i-cur i-next)
       (-> state
           (assoc-in [:phase :idx] i-next)
           (assoc-in [:key :have] nil)
           (update-to-from i-cur i-next))
+      (and  (= :right dir) (= i-cur (count INSTRUCTION)))
+      ((get-in state INSTRUCTION [i-cur :stop]) state)
+      :else
       state)))
-  
+
 (defn step
   "run by model/next-step from loop/time-update"
   [state time]

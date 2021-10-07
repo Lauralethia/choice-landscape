@@ -25,6 +25,9 @@
   (add-watch STATE :renderer (fn [_ _ _ state] (lp/renderer (lp/world state))))
   ;; why ?
   (reset! STATE  @STATE)
+
+  ; start with instructions
+  (swap! STATE assoc-in [:phase :name] :instruction)
   ; start
   (lp/run-start STATE))
 
