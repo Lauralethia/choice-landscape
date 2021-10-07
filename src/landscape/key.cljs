@@ -81,3 +81,13 @@
     ;; (.dispatchEvent el event-press)
     ;; (.dispatchEvent el event-up)
     ))
+
+(defn key-state-fresh
+  "clean slate for keys.
+  20211007 - currently not using util, want, or next"
+  []
+  {:until nil :want [] :next nil :have nil :time nil})
+(defn remove-key
+  "remove any keypress from state"
+  [{:key [key] :as state}]
+  (assoc-in state [:key :have]))

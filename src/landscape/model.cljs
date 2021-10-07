@@ -3,6 +3,7 @@
    [landscape.key]
    [landscape.utils :as utils]
    [landscape.sound :as snd]
+   [landscape.key :as key]
    [landscape.settings :refer [BOARD]]
    [landscape.instruction :as instruction]
    [landscape.model.wells :as wells]
@@ -118,7 +119,7 @@
    :running? true
    :start-time 0
    :time-cur 0
-   :key {:until nil :want [] :next nil :have nil}
+   :key (key/key-state-fresh)
    :wells (wells/wells-state-fresh nil)
    :water (water/water-state-fresh)
    :phase (phase/set-phase-fresh :chose nil)

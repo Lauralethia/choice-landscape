@@ -1,6 +1,7 @@
 (ns landscape.instruction
   (:require
    [landscape.sprite :as sprite]
+   [landscape.key :as key]
    [landscape.model.phase :as phase]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
@@ -81,10 +82,7 @@
                  ))}
    {:text (fn[state] "the closer wells wont always have water")
     :start (fn[state] state)}
-   {:text (fn[state] "Ready?")
-    :stop (fn[state]
-            (assoc state :phase (phase/set-phase-fresh :chose nil)))
-    }
+   {:text (fn[state] "Ready?")}
    ])
 
 (defn instruction-goto
@@ -125,15 +123,26 @@
         i-next (if dir (instruction-goto i-cur dir) i-cur)
         ]
     (cond
+      ;; if instruction has special plans for keypushes
       (and i-keyfn 1)
       (-> state i-keyfn (assoc-in [:key :have] nil))
+      ;; changing which what we should see
       (not= i-cur i-next)
       (-> state
           (assoc-in [:phase :idx] i-next)
           (assoc-in [:key :have] nil)
           (update-to-from i-cur i-next))
-      (and  (= :right dir) (= i-cur (count INSTRUCTION)))
-      ((get-in state INSTRUCTION [i-cur :stop]) state)
+
+      ;; we want to go past the end (are "ready")
+      (and dir (= i-cur i-next) (= i-cur (dec (count INSTRUCTION))))
+      (-> state
+          ;; NB. maybe bug?
+          ;; we move to "home" at start and dont want to intercept any
+          ;; keys until we are there.
+          (assoc :phase (phase/set-phase-fresh :chose nil))
+          (assoc :key (key/key-state-fresh)))
+
+      ;; otherwise no change
       :else
       state)))
 
