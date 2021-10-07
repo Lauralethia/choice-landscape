@@ -22,7 +22,8 @@
 ;; if key is nil, default to okay to proceed
 (defn avatar-example [{:keys [time-cur sprite-picked] :as state} avatar-name]
   (html [:div
-         {:style {:margin "auto"  :margin-bottom "10px"
+         {:key avatar-name
+          :style {:margin "auto"  :margin-bottom "10px"
                   :background (if (= sprite-picked avatar-name) "blue" "gray")}}
          (sprite/avatar-disp {:time-cur time-cur :sprite-picked avatar-name}
                              {:direction :down :active-at 1})]))
