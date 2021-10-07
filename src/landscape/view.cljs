@@ -4,6 +4,7 @@
    [landscape.utils :as utils]
    [landscape.model :as model]
    [landscape.instruction :as instruction]
+   [landscape.key :as key]
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
@@ -66,12 +67,6 @@
         css (merge css {:background-position-y (* -1 y-offset)})]
     (html [:div.well {:style css}])))
 
-(defn instruction-disp "show instruction text box" [state]
-  (let [inst (:instruction state)]
-    (if inst
-      (position-at (:pos inst)
-                   (html [:div#instruction (:text inst) ])))))
-
 
 (defn well-side
   "side is :left :up :right"
@@ -93,7 +88,12 @@
         instr (get instruction/INSTRUCTION idx)
         pos (or (:pos instr) {:x 100 :y 100})]
     (position-at pos
-                 (html [:div#instruction (:text instr)]))))
+                 (html [:div#instruction (:text instr)
+                          [:div.bottom
+                           [:button {:on-click #(key/sym-key :left)} "< "]
+                           [:button {:on-click #(key/sym-key :right)} "->"]
+                           ]
+                        ]))))
 
 (defn display-state
   "html to render for display. updates for any change in display"

@@ -1,5 +1,6 @@
 (ns landscape.key
-  (:require [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+  (:require [landscape.settings :refer [KEYCODES]]
+            [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 (defn keypress-init [] {:key nil
                         :first nil
                         :up nil
@@ -59,3 +60,24 @@
       :down (keypress-down! key time)
       :key  (keypress-key! key time)
       nil)))
+
+
+;; want to have buttons that simulate keypress
+;; will be useful for wells too
+;; https://stackoverflow.com/questions/596481/is-it-possible-to-simulate-key-press-events-programmatically
+;; document.addEventListener("keydown", x=>console.log(x))
+;; document.dispatchEvent(new KeyboardEvent('keydown', {keyCode: 38}));
+(defn sym-key
+  "simulate keypress using keyCode"
+  [keysym]
+  (let [keycode (keysym KEYCODES)
+        jskey (clj->js {:keyCode keycode})
+        el js/document
+        event-down (new js/KeyboardEvent "keydown" jskey)
+        ;; event-press (new js/KeyboardEvent "keypress" jskey)
+        ;; event-up (new js/KeyboardEvent "keyup" jskey)
+        ]
+    (do (.dispatchEvent el event-down))
+    ;; (.dispatchEvent el event-press)
+    ;; (.dispatchEvent el event-up)
+    ))

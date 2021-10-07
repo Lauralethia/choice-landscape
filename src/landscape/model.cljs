@@ -4,6 +4,7 @@
    [landscape.utils :as utils]
    [landscape.sound :as snd]
    [landscape.settings :refer [BOARD]]
+   [landscape.instruction :as instruction]
    [landscape.model.wells :as wells]
    [landscape.model.avatar :as avatar]
    [landscape.model.water :as water]
@@ -94,16 +95,6 @@
     ;; TODO - push current phase onto stack of events (historical record)
     (assoc state :phase phase-next)))
 
-
-(defn next-step
-  "disbatch to instruction or task
-  run by loop/time-update after updating state:time-cur "
-  [{:keys [phase] :as state} time]
-  (case (:name phase)
-    :instruction (instruction/step state time)
-                                        ;:chose, :waiting, :feedback
-    (step-task state time)))
-
 ;;  state
 (defn step-task
   "does heavy lifting for state changes. update state with next step
@@ -123,6 +114,16 @@
       ;; check-timeout
       ;; keys-set-want -- not needed, get from well :open state
       ))
+
+(defn next-step
+  "disbatch to instruction or task
+  run by loop/time-update after updating state:time-cur "
+  [{:keys [phase] :as state} time]
+  (case (:name phase)
+    :instruction (instruction/step state time)
+    ;:chose, :waiting, :feedback
+    (step-task state time)))
+
 
 (defn add-key-to-state
   "used in core - keypush listener function"
