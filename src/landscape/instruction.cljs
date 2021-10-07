@@ -7,6 +7,8 @@
 
 (defn find-far-well [{:keys [wells] :as state}]
   (apply max-key #(:step (val %)) wells))
+(defn find-close-well [{:keys [wells] :as state}]
+  (apply min-key #(:step (val %)) wells))
 
 ;; Idea is to present sequential instructions using only 3 or 4 keys
 ;; instruction boxes should be positioned close to the thing they explain
@@ -43,31 +45,43 @@
               "Push the right arrow key to get to the next instruction. "
               "You can also click the \">\" button below"
               ]))
-    :pos #({:x 100 :y 100})
     :start identity
     :stop identity
     :key nil}
    {:text (fn[state]
             (html
-             [:div  "But! Before we start, pick a character!"
+             [:div  "Before we start, pick a character!"
               [:br]
-              "Use the up arrow to change your selection."
-              [:br]
-              "right arrow to choose"
+              "In the game, all characters are equal"
+              [:ul
+               [:li "Use the up arrow to change your selection."]
+               [:li "Use the right arrow to continue when done choosing"]]
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
-    :pos #({:x 100 :y 100})
     :start identity
     :stop identity
     :key {:up (fn[state] (update state :sprite-picked next-sprite))}}
+   {:text (fn[_] "You want fill this oasis with water as fast as you can")
+    :pos (fn[_] {:x 50 :y 250})}
+    ;; :start (fn[{:keys [water time-cur] :as state}]
+    ;;          (assoc-in state [:water :active-at] time-cur))
+
    {:text (fn[state] "This well is far away. but it's always good")
-    :pos (fn[state] (-> state find-far-well first val :pos))
-    :start (fn[state] state)}
+    :pos (fn[state] (-> state find-far-well val :pos
+                       (update :x #(+ (:width sprite/well) 5 %))))
+    :start (fn[{:keys [time-cur wells] :as  state}]
+             (let [side (-> state find-far-well key)]
+               (-> state
+                   (assoc-in [:wells side :active-at] time-cur)
+                   (assoc-in [:wells side :score] 1))))
+    :stop (fn[state]
+             (-> state
+                 ;; wells/wells-turn-off
+                 (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
+                 ))}
    {:text (fn[state] "the closer wells wont always have water")
-    :pos #({:x 100 :y 100})
     :start (fn[state] state)}
    {:text (fn[state] "Ready?")
-    :pos #({:x 100 :y 100})
     :stop (fn[state]
             (assoc state :phase (phase/set-phase-fresh :chose nil)))
     }

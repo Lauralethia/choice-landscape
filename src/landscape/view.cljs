@@ -75,21 +75,19 @@
 
 
 (defn instruction-view [{:keys [phase] :as state}]
-  (let [idx (or (:idx phase) 0)
-        instr (get instruction/INSTRUCTION idx)
-        pos (or (:pos instr) {:x 100 :y 100})]
-    (position-at pos
-                 (html [:div#instruction
-                        [:br]
-                        ((:text instr) state)
-                        [:br]
-                        [:div.bottom
-                         [:button {:on-click #(key/sim-key :left)} "< "]
-                         [:button {:on-click #(key/sim-key :right)} " >"]
-                         ]
-                        ]))))
+        (let [idx (or (:idx phase) 0)
+              instr (get instruction/INSTRUCTION idx)
+              pos-fn (or (:pos instr) (fn[_] {:x 0 :y 0}))]
+          (position-at (pos-fn state)
+                       (html [:div#instruction
                               [:div.top (str (inc idx) "/" (count instruction/INSTRUCTION))]
                               [:br]
+                              ((:text instr) state)
+                              [:br]
+                              [:div.bottom
+                               [:button {:on-click #(key/sim-key :left)} "< "]
+                               [:button {:on-click #(key/sim-key :up)} "^"]
+                               [:button {:on-click #(key/sim-key :right)} " >"]]]))))
 
 (defn display-state
   "html to render for display. updates for any change in display"
