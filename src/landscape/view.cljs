@@ -80,7 +80,6 @@
         pos (or (:pos instr) {:x 100 :y 100})]
     (position-at pos
                  (html [:div#instruction
-                        (str (inc idx) "/" (count instruction/INSTRUCTION))
                         [:br]
                         ((:text instr) state)
                         [:br]
@@ -89,6 +88,8 @@
                          [:button {:on-click #(key/sim-key :right)} " >"]
                          ]
                         ]))))
+                              [:div.top (str (inc idx) "/" (count instruction/INSTRUCTION))]
+                              [:br]
 
 (defn display-state
   "html to render for display. updates for any change in display"
