@@ -91,22 +91,27 @@
 
 (defn display-state
   "html to render for display. updates for any change in display"
-  [{:keys [phase avatar] :as state}] (sab/html
-           [:div#background
-            (if DEBUG [:div {:style {:color "white"}} (str phase)])
-            (water state)
-            (well-show-all state)
-            (position-at (get-in state [:avatar :pos])
-                         (sprite/avatar-disp state avatar))
-            ;; TODO?
-            ;; draw arrows
-            ;; draw blocked
-            ;; draw feedback
+  [{:keys [phase avatar] :as state}]
+  (let [avatar-pos (get-in state [:avatar :pos])]
+    (sab/html
+     [:div#background
+      (if DEBUG [:div {:style {:color "white"}} (str phase)])
+      (water state)
+      (well-show-all state)
+      (position-at avatar-pos
+                   ;; NB. this conditional is only for display
+                   ;; we're waiting regardless of whats shown
+                   (if (= :iti (:name phase))
+                     (html [:div.iti "+"])
+                     (sprite/avatar-disp state avatar)))
 
-            ;; instructions on top so covers anything else
-            ;; -- maybe we want them under?
-            (if (= :instruction (:name phase)) (instruction-view state))
-            ]))
+      ;; TODO?
+      ;; draw arrows
+      ;; draw feedback
+
+      ;; instructions on top so covers anything else
+      ;; -- maybe we want them under?
+      (if (= :instruction (:name phase)) (instruction-view state))])))
 
 
 

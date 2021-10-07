@@ -12,3 +12,5 @@
               :up     38
               :right  39
               :down   40})
+
+(def ITIDUR 1000)
