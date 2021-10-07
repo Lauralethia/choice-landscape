@@ -2,7 +2,11 @@
   (:require
    [landscape.sprite :as sprite]
    [landscape.key :as key]
+   [landscape.settings :as settings]
+   [landscape.model.water :as water]
+   [landscape.model.wells :as wells]
    [landscape.model.phase :as phase]
+   [landscape.model.avatar :as avatar]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
@@ -37,13 +41,18 @@
               next-i (mod (dec cur-i) ntot)]
           (nth names next-i)))
 
+(defn position-next-to-well
+  "move position over by "
+  [well]
+  (-> well :pos (update :x #(+ (:width sprite/well) 5 %))))
 (def INSTRUCTION
   [
    {:text (fn[state]
             (html
              [:div [:h1  "Welcome to our game!"]
               [:br]
-              "Push the right arrow key to get to the next instruction. "
+              "Push the keyboard's " [:b "right arrow key"] " to get to the next instruction. "
+              [:br] [:br]
               "You can also click the \">\" button below"
               ]))
     :start identity
@@ -55,21 +64,78 @@
               [:br]
               "In the game, all characters are equal"
               [:ul
-               [:li "Use the up arrow to change your selection."]
-               [:li "Use the right arrow to continue when done choosing"]]
+               [:li "Use the " [:b "up arrow"] " to " [:u "change"] " your selection."]
+               [:li "Use the " [:b "right arrow"] " to continue " [:br]
+                " when done choosing"]]
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
     :stop identity
     :key {:up (fn[state] (update state :sprite-picked next-sprite))}}
-   {:text (fn[_] "You want fill this oasis with water as fast as you can")
-    :pos (fn[_] {:x 50 :y 250})}
-    ;; :start (fn[{:keys [water time-cur] :as state}]
-    ;;          (assoc-in state [:water :active-at] time-cur))
+   {:text (fn[_] "You want to fill this oasis with water as fast as you can")
+    :pos (fn[_] {:x 50 :y 250})
+    :start (fn[{:keys [water time-cur] :as state}]
+             (assoc-in state [:water :active-at] time-cur))
+    :stop (fn [{:keys [water time-cur] :as state}]
+            (assoc-in state [:water] (water/water-state-fresh)))} 
 
-   {:text (fn[state] "This well is far away. but it's always good")
-    :pos (fn[state] (-> state find-far-well val :pos
-                       (update :x #(+ (:width sprite/well) 5 %))))
+   {:text (fn[state]
+            (html [:div "The oasis is fed by the three wells."
+                   [:br]
+                   "You will choose which well to get water from."
+                   [:br]
+                   "Pick a well by walking to it!"
+                   [:br]
+                   "Use the arrow keys on the keyboard: left, up, and right"
+                   ]))}
+   {:text (fn[state]
+            (html [:div "You can only get water from wells"
+                   [:br]
+                   "when they have a bucket"
+                   ]))
+    :pos (fn[state] (-> state find-close-well val position-next-to-well))
+    :start (fn[state]
+             (let [well-side (find-close-well state)]
+               (-> state
+                   (assoc-in [:avatar :destination] (-> well-side val :pos))
+                   wells/wells-close
+                   (assoc-in [:wells (key well-side) :open] true))))
+    :stop (fn[state]
+            (-> state
+                (wells/wells-set-open-or-close [:left :up :right] true)
+                (assoc-in [:avatar :destination] (:avatar-home settings/BOARD))))
+    }
+
+   {:text (fn[state]
+            (html [:div
+                   "Wells will not always have water."
+                   [:br]
+                   "Sometimes the well will be dry."]))
+    :pos (fn[state] (-> state find-close-well val position-next-to-well))
+    :start (fn[{:keys [time-cur wells] :as  state}]
+             (let [side (-> state find-close-well key)]
+               (-> state
+                   (assoc-in [:wells side :active-at] time-cur)
+                   (assoc-in [:wells side :score] false))))
+
+    :stop (fn[state]
+             (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
+   }
+   {:text (fn[state]
+            (html [:div
+                   "Othertimes, the well will be full of water"]))
+    :pos (fn[state] (-> state find-close-well val position-next-to-well))
+    :start (fn[{:keys [time-cur wells] :as  state}]
+             (let [side (-> state find-close-well key)]
+               (-> state
+                   (assoc-in [:wells side :active-at] time-cur)
+                   (assoc-in [:wells side :score] true))))
+
+    :stop (fn[state]
+             (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
+    }
+   {:text (fn[state] (html [:div "This well is far away." [:br] " It'll take longer to get than the other two."]))
+    :pos (fn[state] (-> state find-far-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-far-well key)]
                (-> state
@@ -80,10 +146,10 @@
                  ;; wells/wells-turn-off
                  (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
                  ))}
-   {:text (fn[state] "the closer wells wont always have water")
-    :start (fn[state] state)}
-   {:text (fn[state] "Ready?")}
-   ])
+   {:text (fn[state]
+            (html [:div "Each well is different, and has a different chance of having water"
+                   [:br] "Over time, a well may get better or worse"]))}
+   {:text (fn[state] "Ready? Push the right arrow to start!")}])
 
 (defn instruction-goto
   ^{:test (fn[]
@@ -150,4 +216,6 @@
   "run by model/next-step from loop/time-update"
   [state time]
   (-> state
+      water/water-pulse-forever
+      avatar/move-avatar
       read-keys))
