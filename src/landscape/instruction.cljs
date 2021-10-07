@@ -44,8 +44,8 @@
   [i dir]
   (let [lastidx (dec (count INSTRUCTION))]
     (case dir
-        :left (min 0 (dec i))
-        :right (max lastidx (inc i))
+        :left (max 0 (dec i))
+        :right (min lastidx (inc i))
         ;; :up or :down, no change
         i)))
 

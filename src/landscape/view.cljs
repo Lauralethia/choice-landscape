@@ -89,11 +89,14 @@
         instr (get instruction/INSTRUCTION idx)
         pos (or (:pos instr) {:x 100 :y 100})]
     (position-at pos
-                 (html [:div#instruction (:text instr)
-                          [:div.bottom
-                           [:button {:on-click #(key/sim-key :left)} "< "]
-                           [:button {:on-click #(key/sim-key :right)} " >"]
-                           ]
+                 (html [:div#instruction
+                        (str (inc idx) "/" (count instruction/INSTRUCTION))
+                        [:br]
+                        (:text instr)
+                        [:div.bottom
+                         [:button {:on-click #(key/sim-key :left)} "< "]
+                         [:button {:on-click #(key/sim-key :right)} " >"]
+                         ]
                         ]))))
 
 (defn display-state
