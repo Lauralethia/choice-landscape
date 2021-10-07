@@ -6,7 +6,7 @@
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
 (defn find-far-well [{:keys [wells] :as state}]
-  (apply max-key :steps wells))
+  (apply max-key #(:step (val %)) wells))
 
 ;; Idea is to present sequential instructions using only 3 or 4 keys
 ;; instruction boxes should be positioned close to the thing they explain
