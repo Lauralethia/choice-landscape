@@ -90,3 +90,39 @@
 (defn wells-turn-off [{:keys [wells time-cur] :as state}]
   (assoc state :wells
     (reduce #(update %1 %2 (partial well-off time-cur)) wells (keys wells))))
+
+
+;; but we probably want to express wells as wide instead of nested
+;; and want to be able to easily get at picked and avoided
+;; like
+;;   :pick-prob # :picked-far? ?
+;;   :avoid-prob # :avoid-far? ?
+;;   :left-prob # :up-prob # :right-prob #
+;;   :left-on ? :up-on ? :right-on ?
+;;   :left-far ? :up-far ? :right-far ?
+;; this could be fn as wells/wide-info
+(defn zipmap-fn [keys fnx] (zipmap keys (mapv fnx keys)))
+(defn side-wide [wells side]
+  (let [items [:prob :step :open]
+        keys  (mapv #(keyword (str (name side) "-" (name %))) items)
+        info  (mapv #(get-in wells [side %]) items)]
+    (zipmap keys info)))
+(defn wide-info
+  "'wide' format info for well side x well info. for http post"
+  [wells]
+  (reduce #'merge (mapv #(side-wide wells %) [:left :up :right])))
+
+(defn avoided
+  "find the well we didn't pick that was open.
+  returns list but should only have one output"
+  [wells picked]
+  (filter #(and (not= picked %) (get-in wells [% :open])) (keys wells)))
+(defn wide-info-picked
+  "after picking wide info (avoided and picked). useful for http post"
+  [wells picked]
+  (let [avoided (first (avoided wells picked))]
+    {:avoided avoided
+     :picked-prob (get-in wells [picked :prob])
+     :picked-step (get-in wells [avoided :step])
+     :avoided-prob (get-in wells [avoided :prob])
+     :avoided-step (get-in wells [avoided :step])}))

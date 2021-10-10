@@ -2,6 +2,7 @@
   (:require [landscape.model.avatar :as avatar]
             [landscape.settings :as settings]
             [landscape.http :as http]
+            [landscape.model.wells :as wells]
             [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
@@ -21,17 +22,8 @@
 ;; [{:trial #
 ;;   :chose-time # :waiting-time # :feedback-time #
 ;;   :picked #  :score ?
-;;   :wells {}
+;;   :$side-$info .... # wells/wide-info info for each well
 ;; }]
-;; but we probably want to express wells as wide instead of nested
-;; and want to be able to easily get at picked and avoided
-;; like
-;;   :pick-prob # :picked-far? ?
-;;   :avoid-prob # :avoid-far? ?
-;;   :left-prob # :up-prob # :right-prob #
-;;   :left-on ? :up-on ? :right-on ?
-;;   :left-far ? :up-far ? :right-far ?
-;; this could be fn as wells/wide-info
 (defn on-phase-change
   "update :record for sending state
   send state to server right before feedback"
@@ -40,17 +32,23 @@
   (let [time-key (keyword (str name "-time"))
         trial (max 1 (if (= name :chose) (inc trial) trial))
         trial0 (dec trial)
-        state-time (assoc-in state [:record trial0 time-key]  start-at)]
+        state-time (assoc-in state [:record trial0 time-key]  start-at)
+        ;; NB. about to change to :feedback when :waiting, so use cur not next
+        picked (get phase :picked)]
     (case name
 
       :chose
       (-> state-time
           (assoc :trial trial)
           (assoc-in [:record trial0 :trial] trial)
-          (assoc-in [:record trial0 :wells] wells))
+          ;; wide well info without picked and avoid (added at feedback)
+          (update-in [:record trial0] #(merge % (wells/wide-info wells))))
 
       :waiting
-      (assoc-in state-time [:record trial0 :picked] (get phase :picked))
+      (-> state-time (assoc-in [:record trial0 :picked] picked)
+          ;; add picked and avoided
+          (update-in [:record trial0]
+                     #(merge % (wells/wide-info-picked wells picked))))
 
       :feedback
       (-> (assoc-in state-time [:record trial0 :score] (get phase :scored))
