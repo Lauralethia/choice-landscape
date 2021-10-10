@@ -83,8 +83,8 @@
       wells/wells-check-collide     ; start animation
       wells/wells-turn-off          ; stop animations
       wells-fire-hits               ; update not well stuff on well hit
-      water/water-pulse            ; causes jitter. TODO: debug
-      phase/phase-update                  ; discrete phases
+      water/water-pulse             ; ossilate water size: additional score/win indication
+      phase/phase-update            ; discrete phases
       wells/wells-update-which-open ; set random wells to be used. clear when not using
       ;; wells-update-prob
       ;; check-timeout
@@ -117,6 +117,7 @@
   []
   {
    :running? true
+   :trial 0
    :start-time 0
    :time-cur 0
    :key (key/key-state-fresh)
@@ -124,6 +125,7 @@
    :water (water/water-state-fresh)
    :phase (phase/set-phase-fresh :chose nil)
    :sprite-picked :astro
+   :record [] ; what we'll send to server to record onset times, choice, score
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down
