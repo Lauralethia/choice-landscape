@@ -12,6 +12,11 @@
 (defn set-phase-fresh [name time-cur]
   {:name name :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
 
+;; TODO: actually use (remove nil)
+(defn phase-done-or-next-trial [{:keys [trial time-cur well-list] :as state}]
+  (if nil (set-phase-fresh :survey time-cur)
+      (set-phase-fresh :chose time-cur)))
+
 (defn send-identity
   "POST json of :record but return input state so we can use in pipeline"
   [{:keys [record] :as state}]
@@ -24,24 +29,26 @@
 ;;   :picked #  :score ?
 ;;   :$side-$info .... # wells/wide-info info for each well
 ;; }]
-(defn on-phase-change
+;; TODO: this doesn't need to return state. can just update :record
+(defn phone-home
   "update :record for sending state
   send state to server right before feedback"
   [{:keys [trial wells phase] :as state}
    {:keys [name start-at] :as next-phase}]
   (let [time-key (keyword (str name "-time"))
-        trial (max 1 (if (= name :chose) (inc trial) trial))
         trial0 (dec trial)
         state-time (assoc-in state [:record trial0 time-key]  start-at)
         ;; NB. about to change to :feedback when :waiting, so use cur not next
         picked (get phase :picked)]
     (case name
 
+      ;; iti is start of trial and task (prev will be :instruction)
+      :iti
+      (-> state-time
+          (assoc-in [:record trial0 :trial] trial))
+
       :chose
       (-> state-time
-          (assoc :trial trial)
-          (assoc-in [:record trial0 :trial] trial)
-          ;; wide well info without picked and avoid (added at feedback)
           (update-in [:record trial0] #(merge % (wells/wide-info wells))))
 
       :waiting
@@ -54,15 +61,28 @@
       (-> (assoc-in state-time [:record trial0 :score] (get phase :scored))
           (send-identity))
 
-      :iti
-      state-time
       ;; if no match, default to doing nothing
-      state-time)))
+      state-time
+      )))
+
+;; TODO: well-list update also done by 
+;; wells/wells-update-which-open. not sure which is a better place
+(defn update-next-trial
+  "when iti, update to the next well info and trial"
+  [{:keys [trial well-list] :as state} next-name ]
+  (let [ntrials (count well-list)
+        trial (max 1 (inc trial))       ; if we are updating, its at iti and moving to next trial
+        trial0 (dec (min trial ntrials))]
+    (if (= next-name :iti)
+      (-> state
+          ;; (assoc state :wells (get (dec trial) well-list))
+          (assoc :trial trial))
+      state)))
 
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task).
   looks in phase for :picked & :hit, avatar location in state
-  when updated calls on-phase-change to update :record (and maybe http/send)
+  when updated calls phone-home to update :record (and maybe http/send)
 
   :chose -> :waiting when :picked not nil
   :waiting -> :feedback when :hit not nil
@@ -95,7 +115,7 @@
                      (and (= pname :iti)
                           (>= (- time-cur (:start-at phase))
                               (:iti-dur phase)))
-                     (set-phase-fresh :chose time-cur)
+                     (phase-done-or-next-trial state)
 
                      ;; no change if none needed
                      :else phase)
@@ -104,6 +124,7 @@
     ;; update phase
     (if (not= (:name phase) (:name phase-next))
       (-> state
-          (on-phase-change phase-next)
+          (update-next-trial (:name phase-next))
+          (phone-home phase-next)
           (assoc :phase phase-next))
       state)))

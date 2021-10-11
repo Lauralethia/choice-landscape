@@ -85,6 +85,7 @@
       wells-fire-hits               ; update not well stuff on well hit
       water/water-pulse             ; ossilate water size: additional score/win indication
       phase/phase-update            ; discrete phases
+      ; well update handled by phase update
       wells/wells-update-which-open ; set random wells to be used. clear when not using
       ;; wells-update-prob
       ;; check-timeout
@@ -117,15 +118,16 @@
   []
   {
    :running? true
-   :trial 0
+   :trial 1
    :start-time 0
    :time-cur 0
    :key (key/key-state-fresh)
-   :wells (wells/wells-state-fresh nil)
+   :well-list []
+   :wells (wells/wells-state-fresh nil) ; replaced by phase/update-next-trial
    :water (water/water-state-fresh)
    :phase (phase/set-phase-fresh :chose nil)
    :sprite-picked :astro
-   :record [] ; what we'll send to server to record onset times, choice, score
+   :record [] ; what we'll send to server to record onset times, choice, score. see [phase/phone-home]
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down

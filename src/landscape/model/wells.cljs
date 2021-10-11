@@ -46,16 +46,21 @@
 (defn wells-open-rand [{:keys [wells] :as state}]
   (wells-set-open-or-close state (take 2 (shuffle [:left :up :right])) true))
 
+;; TODO: this should be subsumed by phase-next
+;; update-next-trial also updates well. dont need to do here
+;; but that only updates :phase
 (defn wells-update-which-open
-        "when just came into chose state, set wells
-  TODO: maybe not random but set before"
-        [{:keys [time-cur phase] :as state}]
+        "when just came into chose state, set wells "
+        [{:keys [time-cur phase trial well-list] :as state}]
         (let [phasechange? (= (:start-at phase) time-cur)
               phasename (:name phase)]
           (if (not phasechange?)
             state
             (case phasename
-              :chose (wells-open-rand state)
+              ;; get trial0 well-list
+              ;; previously chose used random pick: (wells-open-rand state)
+              :chose (assoc state :wells  (get well-list (dec trial)))
+              ;; when waiting close all wells
               :waiting (wells-close state)
               ;; :feedback state
               state))))
@@ -83,8 +88,10 @@
                          (keys wells)))))
 
 
-(defn well-off [time well]
-  ;; TODO: 1000 should come from sprite total-size?
+(defn well-off
+  "stop well animation after given time
+  determined by settings/BOARD:wait-time"
+  [time well]
   (update-in well [:active-at] #(if (> (- time %) (:wait-time BOARD)) 0 %)))
 
 (defn wells-turn-off [{:keys [wells time-cur] :as state}]

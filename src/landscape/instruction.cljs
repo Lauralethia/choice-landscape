@@ -205,7 +205,12 @@
           ;; NB. maybe bug?
           ;; we move to "home" at start and dont want to intercept any
           ;; keys until we are there.
-          (assoc :phase (phase/set-phase-fresh :chose nil))
+          ;; START TASK buy moving :phase :name to iti
+          ;; TODO pull iti from somewhere?
+          (assoc :phase (merge {:iti-dur 2000} (phase/set-phase-fresh :iti (:time-cur state))))
+          ;; wells normally turned off on :chose->:waiting flip
+          ;; here we skip right over that into the first :iti so explicitly close
+          (wells/wells-close)
           (assoc :key (key/key-state-fresh)))
 
       ;; otherwise no change
