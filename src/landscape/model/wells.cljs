@@ -114,10 +114,28 @@
         keys  (mapv #(keyword (str (name side) "-" (name %))) items)
         info  (mapv #(get-in wells [side %]) items)]
     (zipmap keys info)))
+
+;; these functions could be better composed
+(defn well-str
+  "is a well close or far? whats the payout probability?
+  only used for encoding. output like Rc80"
+  [prefix {:keys [step prob] :as  well}]
+  (str prefix
+       (if (> step 1) "f" "c")
+       prob))
+(defn block-encode
+ "want block string like Lc10Uf100Rc80"
+  [{:keys [left up right] :as wells}]
+  {:blockstr
+   (str  (well-str "L" left)
+         (well-str "U" up)
+         (well-str "R" right))})
+
 (defn wide-info
   "'wide' format info for well side x well info. for http post"
   [wells]
-  (reduce #'merge (mapv #(side-wide wells %) [:left :up :right])))
+  (merge (block-encode wells)
+         (reduce #'merge (mapv #(side-wide wells %) [:left :up :right]))))
 
 (defn avoided
   "find the well we didn't pick that was open.
