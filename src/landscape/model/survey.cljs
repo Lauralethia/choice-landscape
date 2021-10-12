@@ -1,14 +1,20 @@
 (ns landscape.model.survey
   (:require [landscape.model.phase :as phase]
             [landscape.key :as key]))
+(defrecord survey [q answers])
 (def SURVEYS
-  [{:q "how many switches" :a ["1" "2-4" "5+"]}])
+  [ 
+   (->survey "which was best at first" ["left" "up" "right"])
+   (->survey "which was best at the end" ["left" "up" "right"])
+   (->survey "which was best at the end" ["left" "up" "right"])
+   (->survey "how many switches" ["1 switch" "2-4 switches" "5+ switches"])
+   ])
 
-(defn phase-fresh [time] {:name :survey :start-at time :qi 0 :choice 0})
+(defrecord survey-phase [name start-at qi choice-i])
+(defn phase-fresh [time] (->survey-phase :survey time 0  0))
 
-;;; todo work
-(defn next-choice [{:keys [qi choice] :as phase}]
-  (let [answers (get-in SURVEYS [qi :a]) 
+(defn next-choice [{:keys [qi choice-i] :as phase}]
+  (let [answers (get-in SURVEYS [qi :answers]) 
         ntot  (count answers)
         next-i (mod (dec qi) ntot)]
     (nth answers next-i)))
@@ -20,8 +26,8 @@
             (assert (= 1 (mv-idx-dir 0 :right 2)))
             (assert (= 1 (mv-idx-dir 1 :up 2))))
     :doc "move given index by keypress direction"}
-  [i dir max]
-  (let [lastidx (dec max)]
+  [i dir tot]
+  (let [lastidx (dec tot)]
     (case dir
         :left (max 0 (dec i))
         :right (min lastidx (inc i))
@@ -35,30 +41,23 @@
               39 :right
               40 :down ;; maybe disallow
               nil)
+        nsurvey (count SURVEYS)
         i-cur (:qi phase)
-        i-next (if dir (mv-idx-dir i-cur dir (count SURVEYS)) i-cur)]
+        i-next (if dir (mv-idx-dir i-cur dir nsurvey) i-cur)]
     (cond
       ;; if instruction has special plans for keypushes
       (not= i-cur i-next)
       (-> state
           (assoc-in [:phase :qi] i-next)
-          (assoc-in [:key :have] nil)
-          (mv-idx-dir i-cur i-next))
+          (assoc-in [:key :have] nil))
 
       ;; move choice
       ;; (dir in :up )* (mod (inc ci ) total)
       
-      ;; we want to go past the end (are "ready")
-      (and dir (= i-cur i-next) (= i-cur (dec (count SURVEYS))))
+      ;; we want to go past the end totally done with task
+      (and dir (= i-cur i-next) (= i-cur (dec nsurvey)))
       (-> state
-          ;; NB. maybe bug?
-          ;; we move to "home" at start and dont want to intercept any
-          ;; keys until we are there.
-          ;; START TASK buy moving :phase :name to iti
-          ;; TODO pull iti from somewhere?
-          (assoc :phase (merge {:iti-dur 2000} (phase/set-phase-fresh :iti (:time-cur state))))
-          ;; wells normally turned off on :chose->:waiting flip
-          ;; here we skip right over that into the first :iti so explicitly close
+          (assoc :phase {:name :done})
           (assoc :key (key/key-state-fresh)))
 
       ;; otherwise no change

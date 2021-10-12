@@ -100,8 +100,8 @@
   (case (:name phase)
     :instruction (instruction/step state time)
     :survey (survey/step state time)
+    ;; :done
 
-                                        ;[:done]
     ;:chose, :waiting, :feedback
     (step-task state time)))
 

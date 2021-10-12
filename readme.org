@@ -58,7 +58,7 @@
 **** exponential decrease. make function to be reused by stepping stones
      hard coded sequence ~:step-sizes~ in ~model/BOARD~
 
-*** set and indicate dis/enabled well 
+*** set and indicate dis/enabled well
     currently have a bucket on active wells. could still use animations
 **** TODO [#C] animate bucket
      have start of animation in wells.svg but crashes inkscape. not critical to task
@@ -87,7 +87,7 @@
    water fill and sound
 *** TODO [#C] maybe add text or stars?
 ** TODO ISI/ITI
-   * might not need. depends on modeling 
+   * might not need. depends on modeling
    * shake the well for variable time before showing reward
    * intermediate helper goes to the well instead. (bring bucket, drill, etc).
      can be disgruntled or happy

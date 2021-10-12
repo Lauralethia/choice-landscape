@@ -4,6 +4,7 @@
    [landscape.utils :as utils]
    [landscape.model :as model]
    [landscape.instruction :as instruction]
+   [landscape.model.survey :as survey]
    [landscape.key :as key]
    [cljsjs.react]
    [cljsjs.react.dom]
@@ -73,7 +74,10 @@
          (well-side state :up)
          (well-side state :right)]))
 
-
+(defn button-keys [] (html [:div.bottom
+                               [:button {:on-click #(key/sim-key :left)} "< "]
+                               [:button {:on-click #(key/sim-key :up)} "^"]
+                               [:button {:on-click #(key/sim-key :right)} " >"]]))
 (defn instruction-view [{:keys [phase] :as state}]
         (let [idx (or (:idx phase) 0)
               instr (get instruction/INSTRUCTION idx)
@@ -84,10 +88,25 @@
                               [:br]
                               ((:text instr) state)
                               [:br]
-                              [:div.bottom
-                               [:button {:on-click #(key/sim-key :left)} "< "]
-                               [:button {:on-click #(key/sim-key :up)} "^"]
-                               [:button {:on-click #(key/sim-key :right)} " >"]]]))))
+                              (button-keys)]))))
+(defn survey-view [{:keys [phase] :as state}]
+  (let [qi (or  (:qi phase) 0)
+        ci (or  (:choice-i phase) 0)
+        quest (get-in survey/SURVEYS [qi :q])
+        choices (get-in survey/SURVEYS [qi :answers])
+        cur-choice (or (nth choices ci) "ALL DONE")
+        ]
+    (position-at {:x 100 :y 10}
+                 (html [:div#insturctions 
+                   [:div#instruction
+                    [:div.top (str (inc qi) "/" (count survey/SURVEYS))]
+                    [:h3 quest]
+                    [:ul#pick (mapv
+                               #(html [:li { ;; :id  TODO
+                                            :class
+                                            (if (= cur-choice %) "picked" "ignored")} %])
+                               choices)]
+                    (button-keys)]]))))
 
 (defn display-state
   "html to render for display. updates for any change in display"
@@ -111,7 +130,10 @@
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
-      (if (= :instruction (:name phase)) (instruction-view state))])))
+      (case (:name phase) 
+        :instruction  (instruction-view state)
+        :survey (survey-view state)
+        nil)])))
 
 
 
