@@ -28,11 +28,20 @@
 
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
-  (swap! STATE assoc :well-list
-         (timeline/gen-wells {:prob-low 20
-                      :prob-high 50
-                      :reps-each-side 3
-                      :side-best :left}))
+  (let [best-side (first (shuffle [:left :up ])) ; :right has issue!
+        well-list (vec (concat (timeline/gen-wells
+                                {:prob-low 20
+                                 :prob-high 50
+                                 :reps-each-side 30
+                                 :side-best best-side})
+                               (timeline/gen-wells
+                                {:prob-low 100
+                                 :prob-high 100
+                                 :reps-each-side 15
+                                 :side-best best-side})))]
+    (swap! STATE assoc :well-list well-list)
+    ;; update well so well in insturctions matches
+    (swap! STATE assoc :wells (first well-list)))
   ;; TODO: fixed iti durations
 
   ; start with instructions

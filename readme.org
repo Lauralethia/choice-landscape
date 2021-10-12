@@ -8,6 +8,7 @@
    need to block so keypress is only listening during :chose
    or clear any keypresses when phase changes?
    -- might want some cheat codes (e.g. d enables debug, r for restart, etc)
+** :right as best prob well has collision issue! avatar never finds it!
 ** :record iti-time is overwritten
   something is amiss in phase/phone-home
   :iti is hit but time is not in POST command
