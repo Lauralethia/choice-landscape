@@ -14,7 +14,7 @@
 
 ;; TODO: actually use (remove nil)
 (defn phase-done-or-next-trial [{:keys [trial time-cur well-list] :as state}]
-  (if nil (set-phase-fresh :survey time-cur)
+  (if (>= trial (count well-list)) (set-phase-fresh :survey time-cur)
       (set-phase-fresh :chose time-cur)))
 
 (defn send-identity

@@ -10,6 +10,7 @@
    [landscape.model.avatar :as avatar]
    [landscape.model.water :as water]
    [landscape.model.phase :as phase]
+   [landscape.model.survey :as survey]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
   (:require-macros [devcards.core :refer [defcard]]))
 
@@ -98,6 +99,9 @@
   [{:keys [phase] :as state} time]
   (case (:name phase)
     :instruction (instruction/step state time)
+    :survey (survey/step state time)
+
+                                        ;[:done]
     ;:chose, :waiting, :feedback
     (step-task state time)))
 
