@@ -1,0 +1,1 @@
+web: psiclj-heroku -r out/
