@@ -51,4 +51,9 @@ border-radius: 25px;
 
 .iti {color:white; font-size: 60px;}
 
-/* .avatar { display: inline-block}
+/* .avatar { display: inline-block} */
+
+ul#pick>li { display: block; list-style:none; }
+ul#pick>li.picked { background: lightblue;}
+
+

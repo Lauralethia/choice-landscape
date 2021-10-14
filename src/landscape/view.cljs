@@ -91,10 +91,10 @@
                               (button-keys)]))))
 (defn survey-view [{:keys [phase] :as state}]
   (let [qi (or  (:qi phase) 0)
-        ci (or  (:choice-i phase) 0)
+        ci (or  (:ci phase) 0)
         quest (get-in survey/SURVEYS [qi :q])
         choices (get-in survey/SURVEYS [qi :answers])
-        cur-choice (or (nth choices ci) "ALL DONE")
+        cur-choice (if (count choices) (nth choices ci) "ALL DONE")
         ]
     (position-at {:x 100 :y 10}
                  (html [:div#insturctions 
@@ -104,7 +104,7 @@
                     [:ul#pick (mapv
                                #(html [:li { ;; :id  TODO
                                             :class
-                                            (if (= cur-choice %) "picked" "ignored")} %])
+                                            (if (= cur-choice %) "picked" "ignored")}  %])
                                choices)]
                     (button-keys)]]))))
 

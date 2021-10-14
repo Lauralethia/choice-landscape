@@ -1,8 +1,18 @@
 (ns landscape.model.survey
-  (:require [landscape.model.phase :as phase]
-            [landscape.key :as key]))
+  (:require
+   [landscape.model.phase :as phase]
+   [sablono.core :as sab :include-macros true :refer-macros [html]]
+   [landscape.key :as key]))
 (defrecord survey [q answers])
-(def SURVEYS [  
+(def SURVEYS
+  [
+   (->survey (html [:div
+                    "One last thing!" [:br]
+                    [:span {:style {:font-size "smaller" :font-weight "normal"}}
+                     "Please answer these questions." [:br]
+                     "Use the up arrow to change your answer" [:br]
+                     " and the right arrow to go to the next question"]])
+             ["If I must" "OK!"])
    (->survey "Which was best at first?"
              ["left" "up" "right"])
    (->survey "Which was best at the end?"
@@ -20,6 +30,8 @@
 
 (defrecord survey-phase [name start-at qi choice-i])
 (defn phase-fresh [time] (->survey-phase :survey time 0  0))
+(defn phone-home-init [surveys]
+  (mapv #(hash-map :ci 0 :answer "" :q (:q %) ) surveys))
 
 (defn next-choice [{:keys [qi choice-i] :as phase}]
   (let [answers (get-in SURVEYS [qi :answers]) 
@@ -50,8 +62,9 @@
               40 :down ;; maybe disallow
               nil)
         nsurvey (count SURVEYS)
-        i-cur (:qi phase)
-        i-next (if dir (mv-idx-dir i-cur dir nsurvey) i-cur)]
+        i-cur (or  (:qi phase) 0)
+        i-next (if dir (mv-idx-dir i-cur dir nsurvey) i-cur)
+        this-q (get SURVEYS i-cur)]
     (cond
       ;; if instruction has special plans for keypushes
       (not= i-cur i-next)
@@ -60,7 +73,13 @@
           (assoc-in [:key :have] nil))
 
       ;; move choice
-      ;; (dir in :up )* (mod (inc ci ) total)
+      (contains? #{:up :down} dir)
+      (let [n-ans (count (:answers this-q))
+            mvfnc (if (= dir :down) inc dec)]
+        (-> state
+            (update-in [:phase :ci] #(mod (mvfnc (or % 0))  n-ans))
+            (assoc :key (key/key-state-fresh))))
+      ;; TODO phone-home
       
       ;; we want to go past the end totally done with task
       (and dir (= i-cur i-next) (= i-cur (dec nsurvey)))
