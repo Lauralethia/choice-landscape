@@ -124,7 +124,10 @@
       (position-at avatar-pos
                    ;; NB. this conditional is only for display
                    ;; we're waiting regardless of whats shown
-                   (if (= :iti (:name phase))
+                   ;; dont want to rework the logic to be agnostic to actual phase
+                   ;; :show-cross exists only in instruction phase
+                   (if (or (get phase :show-cross)
+                           (= :iti (:name phase)))
                      (html [:div.iti "+"])
                      (sprite/avatar-disp state avatar)))
 

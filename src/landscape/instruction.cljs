@@ -146,9 +146,19 @@
                  ;; wells/wells-turn-off
                  (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
                  ))}
+  {
+    :pos (fn[state] (-> state (get-in [:avatar :pos])
+                       (update :y #(- % 150))
+                       (update :x #(- % 100))))
+    :start (fn[state] (assoc-in state [:phase :show-cross] true))
+    :stop (fn[state] (assoc-in state [:phase :show-cross] nil))
+    :text (fn[state]
+            (html [:div "In between attempts to gathering water, communication with your avatar will be disrupted."
+                   [:br] "This fixation cross will disappear when you regain control."]))}
    {:text (fn[state]
             (html [:div "Each well is different, and has a different chance of having water"
                    [:br] "Over time, a well may get better or worse"]))}
+   
    {:text (fn[state] "Ready? Push the right arrow to start!")}])
 
 (defn instruction-goto
