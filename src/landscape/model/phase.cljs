@@ -61,6 +61,9 @@
       (-> (assoc-in state-time [:record trial0 :score] (get phase :scored))
           (send-identity))
 
+      ;;  TODO!
+      :survey                 ; finished survey about to be done
+      (-> state-time (println "TODO:  SHOULD PHONE HOME ABOUT DONE. also upload survey results"))
       ;; if no match, default to doing nothing
       state-time
       )))

@@ -108,6 +108,10 @@
                                choices)]
                     (button-keys)]]))))
 
+(defn done-view [state]
+  (position-at {:x 100 :y 10}
+               (html [:div#instruction "You finished! Thank you!"])))
+
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -133,6 +137,7 @@
       (case (:name phase) 
         :instruction  (instruction-view state)
         :survey (survey-view state)
+        :done (done-view state)
         nil)])))
 
 
