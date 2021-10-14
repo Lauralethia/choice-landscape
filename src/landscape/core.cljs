@@ -32,12 +32,12 @@
         well-list (vec (concat (timeline/gen-wells
                                 {:prob-low 20
                                  :prob-high 50
-                                 :reps-each-side 30
+                                 :reps-each-side 8
                                  :side-best best-side})
                                (timeline/gen-wells
                                 {:prob-low 100
                                  :prob-high 100
-                                 :reps-each-side 15
+                                 :reps-each-side 4
                                  :side-best best-side})))]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
