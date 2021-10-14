@@ -31,6 +31,10 @@
                          :frame-size 32 :frames 2
                          :dur-ms 500
                          :url "imgs/robot-blue.png"})
+  :shark (sprite-create {:width 83 :height 80
+                         :frame-size 83 :frames 2
+                         :dur-ms 500
+                         :url "imgs/shark.png"})
 })
 
 (def avatar (:lizard avatars))
