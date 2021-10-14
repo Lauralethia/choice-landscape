@@ -121,15 +121,16 @@
       (if DEBUG [:div {:style {:color "white"}} (str phase)])
       (water state)
       (well-show-all state)
-      (position-at avatar-pos
-                   ;; NB. this conditional is only for display
-                   ;; we're waiting regardless of whats shown
-                   ;; dont want to rework the logic to be agnostic to actual phase
-                   ;; :show-cross exists only in instruction phase
-                   (if (or (get phase :show-cross)
-                           (= :iti (:name phase)))
-                     (html [:div.iti "+"])
-                     (sprite/avatar-disp state avatar)))
+      ;; NB. this conditional is only for display
+      ;; we're waiting regardless of whats shown
+      ;; dont want to rework the logic to be agnostic to actual phase
+      ;; :show-cross exists only in instruction phase
+      (if (or (get phase :show-cross)
+              (= :iti (:name phase)))
+        ;; cross does not get centered well. off by a few pixels
+        (position-at (update avatar-pos :x #(+ % 5))
+                     (html [:div.iti "+"]))
+        (position-at avatar-pos (sprite/avatar-disp state avatar)))
 
       ;; TODO?
       ;; draw arrows
