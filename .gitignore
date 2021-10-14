@@ -1,2 +1,11 @@
 .cpcache
 .nrepl-port
+out/*
+target/
+resources/public/imgs/extra
+!out/*.js
+!out/imgs
+!out/imgs
+!out/*html
+!out/*css
+out/cljs_deps.js
