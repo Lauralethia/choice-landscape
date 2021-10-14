@@ -2,12 +2,20 @@
   (:require [landscape.model.phase :as phase]
             [landscape.key :as key]))
 (defrecord survey [q answers])
-(def SURVEYS
-  [ 
-   (->survey "which was best at first" ["left" "up" "right"])
-   (->survey "which was best at the end" ["left" "up" "right"])
-   (->survey "which was best at the end" ["left" "up" "right"])
-   (->survey "how many switches" ["1 switch" "2-4 switches" "5+ switches"])
+(def SURVEYS [  
+   (->survey "Which was best at first?"
+             ["left" "up" "right"])
+   (->survey "Which was best at the end?"
+             ["left" "up" "right"])
+   (->survey "If all wells were just as likely to give water, which would you pick?"
+             ["left" "up" "right"]) 
+   (->survey "Do you think wells changed how often they gave water?"
+             ["Always the same" "1-2 switch" "3-4 switches" "5+ switches"])
+   (->survey  "The farther well was difficult/annoying to go to:"
+              ["not at all" "a little" "a lot"])
+   (->survey "What would you guess the likelihood of water was for a well at its worst?"
+             ["almost never <10%" "infrequent <30%"
+              "near 50/50 (40-60%)" "good (>60%)"])
    ])
 
 (defrecord survey-phase [name start-at qi choice-i])
