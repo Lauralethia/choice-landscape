@@ -3,6 +3,7 @@
    [landscape.loop :as lp]
    [landscape.key]
    [landscape.view :as view]
+   [landscape.sound :as sound]
    [landscape.model.timeline :as timeline]
    [landscape.model :as model :refer [STATE]]
    [goog.string :refer [unescapeEntities]]
@@ -25,6 +26,9 @@
               (partial swap! STATE model/add-key-to-state))
   (add-watch STATE :renderer (fn [_ _ _ state] (lp/renderer (lp/world state))))
   (reset! STATE  @STATE) ;; why ? maybe originally to force render. but we do other updates
+
+  (println "preloading sounds")
+  (doall (sound/preload-sounds))
 
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file

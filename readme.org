@@ -2,6 +2,8 @@
 
  * see running version: https://labneurocogdevel.github.io/choice-landscape/
  * aesthetic motivated by [[https://elifesciences.org/articles/59907][Dubois et al 2021 elife]] task: [[https://iiif.elifesciences.org/lax/59907%2Felife-59907-fig1-v2.tif/full/1500,/0/default.jpg][landscape with choices]]
+ * task responses recorded at 
+https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 
 * Bugs
 ** uses keypress sent during :waiting/:feedback for next :chose
@@ -14,8 +16,11 @@
   :iti is hit but time is not in POST command
 ** instructions should include note about +
    and maybe we gray out the avatar instead?
-** preload sounds
 ** survey doesn't change with arrow push
+** fixation cross needs to be moved right to center
+** water should be scaled by (count :well-list)
+** :up when far is in the water. is that okay?
+** [#C] add shark
 
 * Hosting 
   
