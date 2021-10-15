@@ -37,6 +37,10 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
     with lower wells, maybe less of a problem
 *** bigger images?
     bad idea for smaller screens?
+*** viewport
+https://gist.github.com/bigfive/4256993
+~document.body.style.MozTransform='scale(1.1)'~ does not scale background
+
 ** TODO [#C] photodiode color block in some corner
    so we can continue to use browser for sEEG
 ** touch well simulates keypress
