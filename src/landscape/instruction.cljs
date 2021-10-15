@@ -150,11 +150,16 @@
     :pos (fn[state] (-> state (get-in [:avatar :pos])
                        (update :y #(- % 150))
                        (update :x #(- % 100))))
-    :start (fn[state] (assoc-in state [:phase :show-cross] true))
-    :stop (fn[state] (assoc-in state [:phase :show-cross] nil))
+   :start (fn[state] (-> state
+                        wells/wells-close
+                        (assoc-in [:phase :show-cross] true)))
+   :stop (fn[state] (-> state
+                       (assoc-in [:phase :show-cross] nil)
+                       (wells/wells-set-open-or-close [:left :up :right] true)))
     :text (fn[state]
-            (html [:div "In between attempts to gathering water, communication with your avatar will be disrupted."
-                   [:br] "This fixation cross will disappear when you regain control."]))}
+            (html [:div "This white cross means you have to wait."
+                   [:br] "When it disappears,"
+                   [:br] "you can chose the next well to visit"]))}
    {:text (fn[state]
             (html [:div "Each well is different, and has a different chance of having water"
                    [:br] "Over time, a well may get better or worse"]))}
