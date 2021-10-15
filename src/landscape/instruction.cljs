@@ -34,11 +34,12 @@
                   :background (if (= sprite-picked avatar-name) "blue" "gray")}}
          (sprite/avatar-disp {:time-cur time-cur :sprite-picked avatar-name}
                              {:direction :down :active-at 1})]))
-(defn next-sprite [cur]
+(defn next-sprite [dir cur]
         (let [names (keys sprite/avatars)
+              fncng (if (= dir :down) inc dec)
               ntot  (count names)
               cur-i (or (.indexOf names cur) -1)
-              next-i (mod (dec cur-i) ntot)]
+              next-i (mod (fncng cur-i) ntot)]
           (nth names next-i)))
 
 (defn position-next-to-well
@@ -71,7 +72,10 @@
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
     :stop identity
-    :key {:up (fn[state] (update state :sprite-picked next-sprite))}}
+    :key {:down (fn[state]
+                  (update state :sprite-picked (partial next-sprite :down)))
+          :up (fn[state]
+                (update state :sprite-picked (partial next-sprite :up)))}}
    {:text (fn[_] "You want to fill this oasis with water as fast as you can")
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
