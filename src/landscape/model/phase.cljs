@@ -10,8 +10,8 @@
 
 ;; 20211007 current phases
 ;; :instruction :chose :waiting :feedback :iti
-(defn set-phase-fresh [name time-cur]
-  {:name name :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
+(defn set-phase-fresh [pname time-cur]
+  {:name pname :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
 
 ;; TODO: actually use (remove nil)
 (defn phase-done-or-next-trial [{:keys [trial time-cur well-list] :as state}]
@@ -35,31 +35,33 @@
   "update :record for sending state
   send state to server right before feedback"
   [{:keys [trial wells phase] :as state}
-   {:keys [name start-at] :as next-phase}]
-  (let [time-key (keyword (str name "-time"))
+  {:keys [start-at] :as next-phase}
+   ;; NB. not pulling in name so we can use name function
+   ]
+  (let [time-key (str (name (:name next-phase)) "-time")     ;chose-time waiting-time feedback-time
         trial0 (dec trial)
-        state-time (assoc-in state [:record trial0 time-key]  start-at)
+        state-time (assoc-in state [:record :events trial0 time-key]  start-at)
         ;; NB. about to change to :feedback when :waiting, so use cur not next
         picked (get phase :picked)]
-    (case name
+    (case (:name next-phase)
 
       ;; iti is start of trial and task (prev will be :instruction)
       :iti
       (-> state-time
-          (assoc-in [:record trial0 :trial] trial))
+          (assoc-in [:record :events trial0 :trial] trial))
 
       :chose
       (-> state-time
-          (update-in [:record trial0] #(merge % (wells/wide-info wells))))
+          (update-in [:record :events trial0] #(merge % (wells/wide-info wells))))
 
       :waiting
-      (-> state-time (assoc-in [:record trial0 :picked] picked)
+      (-> state-time (assoc-in [:record :events trial0 :picked] picked)
           ;; add picked and avoided
-          (update-in [:record trial0]
+          (update-in [:record :events trial0]
                      #(merge % (wells/wide-info-picked wells picked))))
 
       :feedback
-      (-> (assoc-in state-time [:record trial0 :score] (get phase :scored))
+      (-> (assoc-in state-time [:record :events trial0 :score] (get phase :scored))
           (send-identity))
 
       ;;  TODO!

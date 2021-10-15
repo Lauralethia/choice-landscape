@@ -71,7 +71,7 @@
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
-    :stop identity
+    :stop (fn[state] (assoc-in state [:record :avatar] (:sprite-picked state)))
     :key {:down (fn[state]
                   (update state :sprite-picked (partial next-sprite :down)))
           :up (fn[state]
