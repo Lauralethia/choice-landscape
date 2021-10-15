@@ -107,7 +107,8 @@
 
 
 (defn add-key-to-state
-  "used in core - keypush listener function"
+  "updates state with keypush. :key {:have :time}
+  used in core for simulated keypress on button push"
   [state keypress]
   (let [key (landscape.key/keynum keypress)]
     (if keypress

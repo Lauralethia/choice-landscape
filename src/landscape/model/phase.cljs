@@ -1,6 +1,7 @@
 (ns landscape.model.phase
   (:require [landscape.model.avatar :as avatar]
             [landscape.settings :as settings]
+            [landscape.key :as key]
             [landscape.http :as http]
             [landscape.model.wells :as wells]
             [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
@@ -70,7 +71,7 @@
 
 ;; TODO: well-list update also done by 
 ;; wells/wells-update-which-open. not sure which is a better place
-(defn update-next-trial
+(defn update-next-trial-on-iti
   "when iti, update to the next well info and trial"
   [{:keys [trial well-list] :as state} next-name ]
   (let [ntrials (count well-list)
@@ -81,6 +82,14 @@
           ;; (assoc state :wells (get (dec trial) well-list))
           (assoc :trial trial))
       state)))
+
+(defn clear-key-before-chose
+  "key pushes during other states linger into :chose
+  clear all keys when we are leaving iti/entering chose"
+  [{:keys [phase] :as state} next]
+  (if (= next :chose) ;; (= (:name phase) :iti)
+     (assoc state :key (key/key-state-fresh))
+    state))
 
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task).
@@ -127,7 +136,9 @@
     ;; update phase
     (if (not= (:name phase) (:name phase-next))
       (-> state
-          (update-next-trial (:name phase-next))
+          (update-next-trial-on-iti (:name phase-next))
+          (clear-key-before-chose (:name phase-next))
           (phone-home phase-next)
           (assoc :phase phase-next))
       state)))
+

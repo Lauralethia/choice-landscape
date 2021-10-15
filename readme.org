@@ -6,21 +6,13 @@
 https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 
 * Bugs
-** uses keypress sent during :waiting/:feedback for next :chose
-   need to block so keypress is only listening during :chose
-   or clear any keypresses when phase changes?
-   -- might want some cheat codes (e.g. d enables debug, r for restart, etc)
 ** :right as best prob well has collision issue! avatar never finds it!
 ** :record iti-time is overwritten
   something is amiss in phase/phone-home
   :iti is hit but time is not in POST command
-** instructions should include note about +
-   and maybe we gray out the avatar instead?
-** survey doesn't change with arrow push
-** fixation cross needs to be moved right to center
 ** water should be scaled by (count :well-list)
-** :up when far is in the water. is that okay?
-** [#C] add shark
+** :up when far is in the water. move everything down
+** include avatar and starttime in :record
 
 * Hosting 
   
@@ -112,7 +104,6 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
    still haven't figured out. but animating for the instruction choice screen helped debug bad frames
 ** TODO [#A] :done state
    * POST to /finished, show finish indicator
-** TODO [#B] survey
+** TODO [#C] survey
     * add results to :record, might need to reorganize top level
-    * allow textbox for non-MR (why pick well all at 100%, other thoughts)
-    * stylize
+    * allow text box entry for non-MR (why pick well all at 100%, other thoughts)
