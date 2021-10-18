@@ -32,4 +32,4 @@
          :params state
          :format :json
          }))
-(defn send-finished [] (POST (get-url "finished")))
+(defn send-finished [] (POST (get-url "finish")))
