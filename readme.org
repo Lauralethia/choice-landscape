@@ -2,7 +2,7 @@
 
  * see running version: https://labneurocogdevel.github.io/choice-landscape/
  * aesthetic motivated by [[https://elifesciences.org/articles/59907][Dubois et al 2021 elife]] task: [[https://iiif.elifesciences.org/lax/59907%2Felife-59907-fig1-v2.tif/full/1500,/0/default.jpg][landscape with choices]]
- * task responses recorded at 
+ * task responses recorded at
 https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 
 * Bugs
@@ -10,12 +10,11 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 ** :record iti-time is overwritten
   something is amiss in phase/phone-home
   :iti is hit but time is not in POST command
-** water should be scaled by (count :well-list)
-** :up when far is in the water. move everything down
 ** include avatar and starttime in :record
+   avatar is included. starttime is not
 
-* Hosting 
-  
+* Hosting
+
 ** Heroku
  Using [[./Procfile][~Procfile~]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
 
@@ -90,7 +89,7 @@ https://gist.github.com/bigfive/4256993
    keypress injected directly into state
 *** restrict keypress, don't hard code positions
     instead of restricting, keypress is cleared before we are in ~:chose:~ and waiting for a keypress
-    
+
 ** github pages
  useful to share. need ~.nojekyll~ file to use index.html and friends.
 
@@ -102,15 +101,22 @@ https://gist.github.com/bigfive/4256993
 **  ISI/ITI
 *** ITI with fixation cross
     may want to change to grayed avatar
+**** TODO fixation cross position is different in firefox and chrome
+ * maybe prefer chrome instead of firefox.
+ * maybe an image will be positioned better?
+
 *** ISI
     * might not need. depends on modeling
     * shake the well for variable time before showing reward
     * intermediate helper goes to the well instead. (bring bucket, drill, etc).
       can be disgruntled or happy
-** TODO add animation to devcards
-   still haven't figured out. but animating for the instruction choice screen helped debug bad frames
-** TODO [#A] :done state
+** :done state
    * POST to /finished, show finish indicator
+*** TODO [#B] redirect to amazon turk finish page?
+
 ** TODO [#C] survey
     * add results to :record, might need to reorganize top level
     * allow text box entry for non-MR (why pick well all at 100%, other thoughts)
+** TODO add animation to devcards
+   still haven't figured out. but animating for the instruction choice screen helped debug bad frames
+** TODO record start and end volume (did anyone turn it down?)

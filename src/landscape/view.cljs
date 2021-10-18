@@ -110,7 +110,11 @@
 
 (defn done-view [state]
   (position-at {:x 100 :y 10}
-               (html [:div#instruction "You finished! Thank you!"])))
+               (html [:div#instruction
+                      [:h1 "You finished!"]
+                      [:br]
+                      "Thank you for contributing to our research!"
+                      [:br]])))
 
 (defn display-state
   "html to render for display. updates for any change in display"

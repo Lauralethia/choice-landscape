@@ -11,6 +11,7 @@
    [landscape.model.water :as water]
    [landscape.model.phase :as phase]
    [landscape.model.survey :as survey]
+   [landscape.http :as http]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
   (:require-macros [devcards.core :refer [defcard]]))
 
@@ -101,14 +102,22 @@
       ;; keys-set-want -- not needed, get from well :open state
       ))
 
+(defn done-step [state]
+  ;TODO: maybe send-finished tells us where to go
+  ; redirect to close out the amazon turk
+  (http/send-finished)
+  ;TODO: un-fullscreen
+  (assoc state :running? false)
+)
+
 (defn next-step
-  "disbatch to instruction or task
+  "dispatch to instruction or task
   run by loop/time-update after updating state:time-cur "
   [{:keys [phase] :as state} time]
   (case (:name phase)
     :instruction (instruction/step state time)
     :survey (survey/step state time)
-    ;; :done
+    :done (done-step state)
 
     ;:chose, :waiting, :feedback
     (step-task state time)))
