@@ -57,7 +57,12 @@
               "You can also click the \">\" button below"
               ]))
     :start identity
-    :stop identity
+    ;; NB. fullscreen in firefox removes background and centering
+    ;;  on either .-body "main-container"
+    :stop (fn[state] ;; (try (-> js/document
+                    ;;          (.getElementById "main-container")
+                    ;;          .requestFullscreen))
+            state)
     :key nil}
    {:text (fn[state]
             (html
