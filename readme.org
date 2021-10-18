@@ -5,13 +5,6 @@
  * task responses recorded at
 https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 
-* Bugs
-** :right as best prob well has collision issue! avatar never finds it!
-* Debugging
-  #+begin_src 
-  (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
-  #+end_src
-
 * Hosting
 
 ** Heroku
@@ -110,7 +103,7 @@ https://gist.github.com/bigfive/4256993
     * intermediate helper goes to the well instead. (bring bucket, drill, etc).
       can be disgruntled or happy
 ** :done state
-   * POST to /finished, show finish indicator
+   * POST to /finish. Display thank you/finished text
 *** TODO [#B] redirect to amazon turk finish page?
 
 ** TODO [#C] survey
@@ -119,3 +112,9 @@ https://gist.github.com/bigfive/4256993
 ** TODO add animation to devcards
    still haven't figured out. but animating for the instruction choice screen helped debug bad frames
 ** TODO record start and end volume (did anyone turn it down?)
+
+* Debugging
+  #+begin_src clojure
+  (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
+  #+end_src
+

@@ -32,7 +32,7 @@
 
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
-  (let [best-side (first (shuffle [:left :up ])) ; :right has issue!
+  (let [best-side (first (shuffle [:left :up :right]))
         well-list (vec (concat (timeline/gen-wells
                                 {:prob-low 20
                                  :prob-high 50

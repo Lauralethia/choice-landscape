@@ -49,9 +49,9 @@
         (let[cx (-> avatar :pos :x)
              cy (-> avatar :pos :y)]
           (case dir
-            :left  {:x 0   :y cy}
-            :right {:x 400 :y cy}
-            :up {:x cx :y 100}
+            :left  (-> wells :left :pos) ;{:x 0   :y cy}
+            :right (-> wells :right :pos) ;{:x 400 :y cy}
+            :up    (-> wells :up :pos) ;{:x cx :y 100}
             :down (:avatar-home BOARD)
             (-> avatar :pos))))
 
