@@ -47,15 +47,16 @@ https://gist.github.com/bigfive/4256993
    works on wells and instruction button. BUT there is no indication that's what happened.
 *** TODO [#C] include :touch true in keypress
     this looks like it'd be hard to integrate
-** TODO [#C] set scale of water relative to total points needed
-   would make task usable on a phone
-** TODO [#C] visually collect status of wells
+** TODO [#B] set scale of water relative to total points needed
+   partially implemented. could still use math to make sure we don't get to 100% until last trial (exp decay?)
+** TODO [#C] visual to indicate/collect status history of wells
    not necissary. maybe problematic. would be useful for debugging though
    debugging with probability text over well would be useful too
 
    bar at bottom with color for success?
    X or O next to the well?
 ** TODO [#C] arrows
+   probably not needed. the buckets are enough of an indication
 *** sprites.
    maybe css instead? colored?
 *** placement logic
@@ -87,7 +88,9 @@ https://gist.github.com/bigfive/4256993
    CLOCK: [2021-09-22 Wed 11:57]--[2021-09-22 Wed 12:54] =>  0:57
    :END:
    keypress injected directly into state
-*** TODO restrict keypress, don't hard code positions
+*** restrict keypress, don't hard code positions
+    instead of restricting, keypress is cleared before we are in ~:chose:~ and waiting for a keypress
+    
 ** github pages
  useful to share. need ~.nojekyll~ file to use index.html and friends.
 

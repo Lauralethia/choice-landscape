@@ -37,10 +37,18 @@
                (assoc-in [:avatar :move-count] 0))
           state)]
     ;; update score
+    ;; TODO: .75 success-rate is a guess.
+    ;; should have some exponential or sigmoid decay if progress is close to 100?
     (if score
-      (-> score-state
-          (update-in [:water] #(water/water-inc % time-cur))
-          )
+      (let
+          [success-rate .75
+           total-trials (-> state :well-list count)
+           ;trials-left  (- total-trials (:trial state))
+           ;level (-> state :water :level)
+           max-success (* total-trials success-rate)
+           step-size (/ max-success 90)] ; 100% max but start at 10%
+        (-> score-state
+            (update-in [:water] #(water/water-inc % time-cur max-success))))
       score-state)))
 
 
