@@ -27,11 +27,9 @@
 (defn send-resp
   "send cummulative object to API to store in DB."
   [state]
-  (println "sending state!")
   (POST (get-url "response")
         {               ;:params (.stringify js/JSON (clj->js @STATE))
          :params state
          :format :json
-         })
-  (println "state sent!"))
+         }))
 (defn send-finished [] (POST (get-url "finished")))

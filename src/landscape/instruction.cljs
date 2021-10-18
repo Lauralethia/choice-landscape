@@ -2,11 +2,13 @@
   (:require
    [landscape.sprite :as sprite]
    [landscape.key :as key]
+   [landscape.utils :as utils]
    [landscape.settings :as settings]
    [landscape.model.water :as water]
    [landscape.model.wells :as wells]
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
+   [landscape.model.phase :as phase]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
@@ -207,7 +209,7 @@
         (fn-or-idnt stop)
         (fn-or-idnt start))))
 
-(defn read-keys [{:keys [key phase] :as state}]
+(defn read-keys [{:keys [key phase time-cur] :as state}]
   (let [dir (case (:have key)
               37 :left
               38 :up
@@ -237,7 +239,15 @@
           ;; keys until we are there.
           ;; START TASK buy moving :phase :name to iti
           ;; TODO pull iti from somewhere?
-          (assoc :phase (merge {:iti-dur 2000} (phase/set-phase-fresh :iti (:time-cur state))))
+          (phase/phase-update)
+          ;; (assoc :phase (merge {:iti-dur 2000}
+          ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
+          ;; save both the time since animation (relative to other onsets)
+          ;; and the actual time (according to the browser) to the struct
+          ;; that will be sent away by phases/phone-home
+          (assoc-in [:record :start-time]
+                    {:animation time-cur
+                     :browser (utils/now)})
           ;; wells normally turned off on :chose->:waiting flip
           ;; here we skip right over that into the first :iti so explicitly close
           (wells/wells-close)

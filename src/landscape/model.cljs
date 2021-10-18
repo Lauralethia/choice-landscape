@@ -132,7 +132,7 @@
   []
   {
    :running? true
-   :trial 1
+   :trial 0
    :start-time 0
    :time-cur 0
    :key (key/key-state-fresh)

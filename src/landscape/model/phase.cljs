@@ -13,10 +13,13 @@
 (defn set-phase-fresh [pname time-cur]
   {:name pname :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
 
-;; TODO: actually use (remove nil)
-(defn phase-done-or-next-trial [{:keys [trial time-cur well-list] :as state}]
-  (if (>= trial (count well-list)) (set-phase-fresh :survey time-cur)
-      (set-phase-fresh :chose time-cur)))
+(defn phase-done-or-next-trial
+  "reset to next trial (chose) or to done (survey or finished)"
+  [{:keys [trial time-cur well-list] :as state}]
+  (if (>= trial (count well-list))
+    ;; TODO change to survey ... if we want to collect feedback
+    (set-phase-fresh :done time-cur)
+    (set-phase-fresh :chose time-cur)))
 
 (defn send-identity
   "POST json of :record but return input state so we can use in pipeline"
@@ -94,7 +97,8 @@
     state))
 
 (defn phase-update
-  "update :phase of STATE when phase critera meet (called by model/step-task).
+  "update :phase of STATE when phase critera meet (called by model/step-task
+  and by instruction on last instruction).
   looks in phase for :picked & :hit, avatar location in state
   when updated calls phone-home to update :record (and maybe http/send)
 
@@ -116,8 +120,9 @@
                      (and (= pname :waiting) (some? hit))
                      (assoc phase :name :feedback :sound-at nil :start-at time-cur)
 
-                     ;; move onto iti
-                     (and (= pname :feedback) (avatar/avatar-home? state))
+                     ;; move onto iti (or start the task: instruction -> iti)
+                     (or (and (= pname :feedback) (avatar/avatar-home? state))
+                         (= pname :instruction))
                      (assoc phase
                             :name :iti
                             :start-at time-cur

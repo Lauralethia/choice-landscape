@@ -7,11 +7,10 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 
 * Bugs
 ** :right as best prob well has collision issue! avatar never finds it!
-** :record iti-time is overwritten
-  something is amiss in phase/phone-home
-  :iti is hit but time is not in POST command
-** include avatar and starttime in :record
-   avatar is included. starttime is not
+* Debugging
+  #+begin_src 
+  (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
+  #+end_src
 
 * Hosting
 

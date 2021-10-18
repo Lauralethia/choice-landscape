@@ -1,1 +1,1 @@
-web: psiclj-heroku -r out/
+web: psiclj-heroku -r out/ -v 20211018v1-init
