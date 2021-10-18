@@ -14,7 +14,7 @@ img#water {
    bottom: 30px;
    left: 50px;
    position: absolute;
-   scale: 5%;
+   transform: scale(.05);
 }
 
 #debug{

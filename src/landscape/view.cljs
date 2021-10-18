@@ -36,7 +36,7 @@
 
 ;; scene components
 (defn water-fill [fill]
-  (html [:img#water {:src "imgs/water.png" :style {:scale (str fill "%")}}]))
+  (html [:img#water {:src "imgs/water.png" :style {:transform (str "scale(" (/ fill 100) ")")}}]))
 
 (defn water [state]
   (let [fill (get-in state [:water :scale])]
