@@ -33,16 +33,27 @@
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
   (let [best-side (first (shuffle [:left :up :right]))
-        well-list (vec (concat (timeline/gen-wells
-                                {:prob-low 20
-                                 :prob-high 50
-                                 :reps-each-side 8
-                                 :side-best best-side})
-                               (timeline/gen-wells
-                                {:prob-low 100
-                                 :prob-high 100
-                                 :reps-each-side 4
-                                 :side-best best-side})))]
+        well-list (vec (concat
+                        ;; first set of 8*6: two close are meh on rewards
+                        (timeline/gen-wells
+                         {:prob-low 20
+                          :prob-high 65
+                          :reps-each-side 8
+                          :side-best best-side})
+                        ;; add 4 forced trials where we cant get to the good
+                        ;; far away well. encourage exploring
+                        (filter #(not (-> % best-side :open))
+                                (timeline/gen-wells
+                                 {:prob-low 100
+                                  :prob-high 100
+                                  :reps-each-side 2
+                                  :side-best best-side}))
+                        ;; all wells are good:  4 reps of 6 combos
+                        (timeline/gen-wells
+                         {:prob-low 100
+                          :prob-high 100
+                          :reps-each-side 4
+                          :side-best best-side})))]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
