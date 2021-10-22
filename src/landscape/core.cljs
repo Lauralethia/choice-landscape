@@ -37,7 +37,7 @@
                         ;; first set of 8*6: two close are meh on rewards
                         (timeline/gen-wells
                          {:prob-low 20
-                          :prob-high 65
+                          :prob-high 50
                           :reps-each-side 8
                           :side-best best-side})
                         ;; add 4 forced trials where we cant get to the good
