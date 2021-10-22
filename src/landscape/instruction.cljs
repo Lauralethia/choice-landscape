@@ -3,7 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.key :as key]
    [landscape.utils :as utils]
-   [landscape.settings :as settings]
+   [landscape.settings :as settings :refer [BOARD]]
    [landscape.model.water :as water]
    [landscape.model.wells :as wells]
    [landscape.model.phase :as phase]
@@ -177,6 +177,21 @@
             (html [:div "This white cross means you have to wait. Watch the cross until it disappears"
                    [:br] "When it disappears,"
                    [:br] "you can chose the next well to visit"]))}
+   {
+    :pos (fn[state] (-> BOARD :bar-pos
+                       (update :y #(- % 200))))
+    :start (fn[state] (-> state
+                        (assoc-in [:water :score] 10)
+                        (assoc-in [:trial] 20)))
+    :stop (fn[state] (-> state
+                        (assoc-in [:water :score] 0)
+                        (assoc-in [:trial] 0)))
+    :text (fn[state]
+            (html [:div "You can track your progress with this bar"
+                   [:br] "Blue shows how much water you've collected"
+                   [:br] "Green shows how many times you have gone to a well"
+                   [:br] "You're done when the green bar reaches the end!"
+                   ]))}
    {:text (fn[state]
             (html [:div "Each well is different, and has a different chance of having water"
                    [:br] "Over time, a well may get better or worse"]))}
