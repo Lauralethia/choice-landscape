@@ -5,7 +5,7 @@
 
 ;; TODO: .75 success-rate is a guess.
 ;; should have some exponential or sigmoid decay if progress is close to 100?
-(defn step-size
+(defn step-size-fixed
   "water step size from state
   TODO should exp. decay as level approaches 100 w.r.t. total trials"
   [{:keys [water well-list trial] :as state}]
@@ -17,6 +17,22 @@
        max-success (* total-trials success-rate)
        step-size (/ max-success 90)]    ; 100% max but start at 10%
       step-size))
+(defn step-size
+  "water step size from state
+  go quick at first, and then linear.
+  but increase is greater when have lost a lot in a row"
+  [{:keys [water well-list trial] :as state}]
+  (let
+      [
+       total-trials (count well-list)
+       trials-left  (- total-trials trial)
+       level-cur (:scale water)
+       ;; half full after ~15 trials. then slowly increassing from there
+       level-want (* 100 (+ (/ trial (* 2 (+ 1 trial)))
+                            (/ trial (* 2 total-trials))))
+       step-size (- level-want level-cur)]
+      step-size))
+
 (defn water-inc
   "increase water level. should probably only happen when well is hit"
   [water time-cur inc-step]
