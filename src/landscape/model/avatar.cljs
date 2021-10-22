@@ -18,8 +18,10 @@
     :none  cur
     :left  (merge cur {:x (max (- (:x cur) step) (:x dest))})
     :right (merge cur {:x (min (+ (:x cur) step) (:x dest))})
-    :up    (merge cur {:y (max (- (:y cur) step) (:y dest))})
-    :down  (merge cur {:y (min (+ (:y cur) step) (:y dest))})))
+    :up    (merge cur {:y (max (- (:y cur)
+                                  (* step (:top-scale BOARD))) (:y dest))})
+    :down  (merge cur {:y (min (+ (:y cur)
+                                  (* step (:top-scale BOARD))) (:y dest))})))
 
 (defn move-active-time [a b now time]
         (cond

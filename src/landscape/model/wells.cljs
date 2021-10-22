@@ -12,7 +12,8 @@
         move-by (reduce + (take step (:step-sizes BOARD)))]
     (case side
       :left  {:x (- center-x move-by) :y bottom-y}
-      :up    {:x center-x             :y (- bottom-y move-by)}
+      :up    {:x center-x             :y (- bottom-y
+                                            (* move-by (:top-scale BOARD)))}
       :right {:x (+ center-x move-by) :y bottom-y}
       {:x 0 :y 0})))
 
