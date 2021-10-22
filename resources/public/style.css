@@ -57,3 +57,8 @@ ul#pick>li { display: block; list-style:none; }
 ul#pick>li.picked { background: lightblue;}
 
 
+/* bar positioned at left:50 and want centered
+ so take 100 off total width. see settings.cljs */
+#fullbar { width: 458px; background: #e28c39; border: 1px solid black; height: 10px;}
+#progressbar_score {  background: blue}
+#progressbar_trials { background: green}

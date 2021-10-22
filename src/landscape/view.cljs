@@ -3,6 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.utils :as utils]
    [landscape.model :as model]
+   [landscape.settings :refer [BOARD]]
    [landscape.instruction :as instruction]
    [landscape.model.survey :as survey]
    [landscape.key :as key]
@@ -42,6 +43,16 @@
   (let [fill (get-in state [:water :scale])]
     (water-fill fill)))
 
+(defn progress-bar
+  "show how far along we are in the task."
+  [{:keys [trial well-list water] :as  state}]
+  (let [ntrials (count well-list)
+        score (/ (:score water) ntrials)
+        progress (/ trial ntrials)]
+    (position-at (:bar-pos BOARD)
+                 (html [:div#fullbar
+                        [:div#progressbar_trials {:style {:height "49%" :width (str (* progress 100) "%")}}]
+                        [:div#progressbar_score  {:style {:height "49%" :width (str (* score 100) "%")}}]]))))
 
 (def bucket (html [:img {:src "imgs/bucket.png" :style {:transform "translate(20px, 30px)"}}]))
 
@@ -136,6 +147,7 @@
                      (html [:div.iti "+"]))
         (position-at avatar-pos (sprite/avatar-disp state avatar)))
 
+      (progress-bar state)
       ;; TODO?
       ;; draw arrows
       ;; draw feedback
