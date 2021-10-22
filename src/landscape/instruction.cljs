@@ -174,7 +174,7 @@
                        (assoc-in [:phase :show-cross] nil)
                        (wells/wells-set-open-or-close [:left :up :right] true)))
     :text (fn[state]
-            (html [:div "This white cross means you have to wait."
+            (html [:div "This white cross means you have to wait. Watch the cross until it disappears"
                    [:br] "When it disappears,"
                    [:br] "you can chose the next well to visit"]))}
    {:text (fn[state]
