@@ -1,7 +1,9 @@
 (ns landscape.model.water)
 
 
-(defn water-state-fresh [] {:level 10 :scale 10 :active-at 0})
+(defn water-state-fresh
+  "state of water/lake display. KLUDGE: also records total score"
+  [] {:level 10 :scale 10 :active-at 0 :score 0})
 
 ;; TODO: .75 success-rate is a guess.
 ;; should have some exponential or sigmoid decay if progress is close to 100?
@@ -38,6 +40,7 @@
   [water time-cur inc-step]
   (-> water
       (update-in [:level] #(+ inc-step %))
+      (update-in [:score] inc)
       (assoc-in [:active-at] time-cur)))
 
 (defn water-pulse-water
