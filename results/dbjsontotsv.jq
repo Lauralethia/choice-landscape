@@ -1,6 +1,7 @@
 #!/usr/bin/env -S jq -Mfr
 ["id","task","ver","avatar",
  "trial","block","score",
+ "rt",
  "picked","picked_prob","picked_step",
  "avoided","avoided_prob","avoided_step",
  "iti_onset","chose_onset","waiting_onset","feedback_onset"],
