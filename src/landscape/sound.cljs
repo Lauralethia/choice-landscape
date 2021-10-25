@@ -10,7 +10,7 @@
              :empty  [{:url "audio/buzzer.mp3"  :dur .5}
                       ;{:url "audio/alarm.mp3"   :dur .5}
                      ]
-             :timeout [{:url "audio/buzzer.mp3"  :dur .5}
+             :timeout [{:url "audio/alarm.mp3"  :dur .5}
                       ]})
 
 ; NB. could use e.g. (syn/square 440) for beeeeep
