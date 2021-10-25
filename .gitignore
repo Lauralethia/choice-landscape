@@ -1,3 +1,5 @@
+results/*json
+results/*tsv
 .cpcache
 .nrepl-port
 out/*
