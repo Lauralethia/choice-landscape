@@ -151,6 +151,14 @@
     :stop (fn[state]
              (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
     }
+   {:text (fn[state]
+            (html [:div "Don't wait too long to choose."
+                   [:br]
+                   "If you're too slow, all the wells will be empty!"]))
+    :pos (fn[state] {:x 0 :y 100})
+    :start wells/all-empty
+    :stop wells/wells-turn-off
+    }
    {:text (fn[state] (html [:div "This well is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]

@@ -9,6 +9,8 @@
                      ]
              :empty  [{:url "audio/buzzer.mp3"  :dur .5}
                       ;{:url "audio/alarm.mp3"   :dur .5}
+                     ]
+             :timeout [{:url "audio/buzzer.mp3"  :dur .5}
                       ]})
 
 ; NB. could use e.g. (syn/square 440) for beeeeep
@@ -33,7 +35,7 @@
 
 (defn play-sound
   [rew-key]
-  "play sound for a given rew-key (:reward or :empty)"
+  "play sound for a given rew-key (:reward, :empty, or :timeout)"
   (let [snd (first (shuffle (rew-key SOUNDS)))]
   (play-audio snd 1)))
 
@@ -43,3 +45,9 @@
   (let [snd (if win? :reward :empty)]
     (when (not time-prev) (doall (play-sound snd)))
     (if time-prev time-prev time-cur)))
+
+(defn timeout-snd
+  "play timeout sound if not played before (time-prev) and return play time (time-cur if new, time-prev if not)"
+  [time-cur time-prev]
+  (when (not time-prev) (doall (play-sound :timeout)))
+  (if time-prev time-prev time-cur))

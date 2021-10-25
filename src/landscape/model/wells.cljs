@@ -47,6 +47,21 @@
 (defn wells-open-rand [{:keys [wells] :as state}]
   (wells-set-open-or-close state (take 2 (shuffle [:left :up :right])) true))
 
+(defn fire-empty [well time-cur]
+  (-> well
+      (assoc :active-at time-cur)
+      (assoc :score nil)))
+
+(defn all-empty
+  "all wells animated as empty. used for timeout"
+  [{:keys [wells time-cur] :as state}]
+  (let [wells-empty (-> wells
+                        (update :left  #(fire-empty %1 time-cur))
+                        (update :up    #(fire-empty %1 time-cur))
+                        (update :right #(fire-empty %1 time-cur)))]
+    (-> state
+        (assoc :wells wells-empty)
+        (wells-close))))
 ;; TODO: this should be subsumed by phase-next
 ;; update-next-trial also updates well. dont need to do here
 ;; but that only updates :phase
@@ -63,6 +78,7 @@
               :chose (assoc state :wells  (get well-list (dec trial)))
               ;; when waiting close all wells
               :waiting (wells-close state)
+              :timeout (all-empty state)
               ;; :feedback state
               state))))
 

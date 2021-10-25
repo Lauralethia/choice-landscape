@@ -18,3 +18,9 @@
               :down   40})
 
 (def ITIDUR 1000)
+
+(def TIMES "settings for time constraints"
+  {
+   :choice-timeout 2000 ; ms allowed to make a choice
+   :timeout-dur    1000 ; ms how long to show timeout
+})

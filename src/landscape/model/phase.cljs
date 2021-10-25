@@ -3,6 +3,7 @@
             [landscape.settings :as settings]
             [landscape.key :as key]
             [landscape.http :as http]
+            [landscape.sound :as sound]
             [landscape.model.wells :as wells]
             [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
@@ -111,18 +112,28 @@
   (let [pname (get phase :name)
         hit (get phase :hit)
         picked (get phase :picked)
+        time-since (- time-cur (:start-at phase))
         phase-next (cond
                      ;; as soon as we pick, switch to waiting
                      (and (= pname :chose) (some? picked))
                      (assoc phase :name :waiting :start-at time-cur)
 
+                     ;; or a choice was not made quick enough
+                     (and (= pname :chose)
+                          (>= time-since (:choice-timeout settings/TIMES)))
+                     (assoc phase :name :timeout
+                            :start-at time-cur
+                            :sound-at (sound/timeout-snd time-cur nil))
+
                      ;; as soon as we hit, switch to feedback (sound)
                      (and (= pname :waiting) (some? hit))
                      (assoc phase :name :feedback :sound-at nil :start-at time-cur)
 
-                     ;; move onto iti (or start the task: instruction -> iti)
+                     ;; move onto iti or start the task: instruction -> iti
+                     ;; might be comming from feedback, timeout, or instructions
                      (or (and (= pname :feedback) (avatar/avatar-home? state))
-                         (= pname :instruction))
+                         (= pname :instruction)
+                         (and (= pname :timeout) (>= time-since (:timeout-dur settings/TIMES))))
                      (assoc phase
                             :name :iti
                             :start-at time-cur
@@ -132,8 +143,7 @@
                      
                      ;; restart at chose when iti is over
                      (and (= pname :iti)
-                          (>= (- time-cur (:start-at phase))
-                              (:iti-dur phase)))
+                          (>= time-since (:iti-dur phase)))
                      (phase-done-or-next-trial state)
 
                      ;; no change if none needed

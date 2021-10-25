@@ -90,7 +90,7 @@
       ; well update handled by phase update
       wells/wells-update-which-open ; set random wells to be used. clear when not using
       ;; wells-update-prob
-      ;; check-timeout
+      ;; check-timeout -- done in phase-update
       ;; keys-set-want -- not needed, get from well :open state
       ))
 
