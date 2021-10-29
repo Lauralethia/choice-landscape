@@ -1,1 +1,1 @@
-web: psiclj-heroku -r out/ -v 20211025v2-pbar+timeout
+web: psiclj-heroku -t habit -r out/ -v 20211025v3-longertrials

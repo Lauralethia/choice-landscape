@@ -32,13 +32,14 @@
 
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
-  (let [best-side (first (shuffle [:left :up :right]))
+  (let [best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
         well-list (vec (concat
-                        ;; first set of 8*6: two close are meh on rewards
+                        ;; first set of 16*(3 lowhigh + 3 highlow):
+                        ;; two close are meh on rewards
                         (timeline/gen-wells
                          {:prob-low 20
                           :prob-high 50
-                          :reps-each-side 8
+                          :reps-each-side 16  ; 20211029 - increase from 8 to 16
                           :side-best best-side})
                         ;; add 4 forced trials where we cant get to the good
                         ;; far away well. encourage exploring

@@ -1,5 +1,65 @@
-<html><head><title>Not Found</title></head>
-<body><h1> Invalid url! </h1><br>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>psiClj</title>
+<script>
+   function qs(name) {
+     var val;
+     if(name=="task"){
+       let task =  document.querySelector("#task");
+       val = task.selectedOptions[task.selectedIndex].value;
+     } else { // id, timepoint, run
+       let query = 'input[name=' + name + ']';
+       val = document.querySelector(query).value;
+     }
+     // todo: validate? timepoint and run should be ints < 100
+     return(val);
+   }
+   function make_url(){
+     let comps = ["id", "task", "timepoint", "run"].map(x=>qs(x)).join("/");
+     return("/" + comps + "/"); // important trailing slash
+   }
+   function go_url(){
+         window.location.replace(make_url());
+   }
 
-try <a href="/exampleid/exampletask/y1/r1/">/:id/:task/:timepoint/:run</a> (note the trailing slash)
-</body></html>
+   /*
+     update list using results for /tasks => {tasks: ["mytask"]}
+     could generate this on server. but want to allow user to build their own
+     not-found.html
+   */
+   async function get_tasks() {
+     const resp = await fetch("/tasks");
+     const ret = await resp.json()
+     return ret;
+   }
+   function append_new_tasks(task_list){
+      let task_box =  document.querySelector("#task");
+      task_box.innerHTML = '';
+      task_list.forEach(x =>
+            task_box.innerHTML += ('<option value="'+ x +'">'+ x +'</option>'))
+   }
+   function update_tasks() {
+      get_tasks().then(retlist => append_new_tasks(retlist.tasks))
+   }
+</script>
+   </head>
+   <body onload="update_tasks()">
+     <h1> Task specifications </h1>
+      <form onsubmit="go_url(); return false"> <!-- return false supresses form action -->
+      <label for="id">id:</label> <input name=id type="text" size=5> <br>
+      <label for="task">task:</label>
+      <select id="task">
+         <option name=task>task-unset</option>
+      </select>  <br>
+      <label for="timepoint">timepoint:</label> <input name=timepoint type="text" value=1 size=1> <br>
+      <label for="run">run:</label> <input name=run type="text" value=1 size=1> <br>
+      <input type="submit" value="open">
+
+      <!-- <label for="cb">counterbalence:</label> <input name=cb type="text" value="" size=1> <br> -->
+   </form>
+
+   <small style="position:absolute; bottom:0px"> bad url. want //id/task/timepoint/run/ </small>
+   </body>
+</html>
