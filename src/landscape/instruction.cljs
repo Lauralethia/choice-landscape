@@ -89,7 +89,7 @@
              (assoc-in state [:water :active-at] time-cur))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))} 
-   {:text (fn[_] "You're goal is to fill it all the way up")
+   {:text (fn[_] "Your goal is to fill it all the way up")
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :level] 100))
@@ -184,7 +184,7 @@
     :text (fn[state]
             (html [:div "This white cross means you have to wait. Watch the cross until it disappears"
                    [:br] "When it disappears,"
-                   [:br] "you can chose the next well to visit"]))}
+                   [:br] "you can choose the next well to visit"]))}
    {
     :pos (fn[state] (-> BOARD :bar-pos
                        (update :y #(- % 200))))
