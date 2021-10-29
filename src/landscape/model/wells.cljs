@@ -165,6 +165,6 @@
   (let [avoided (first (avoided wells picked))]
     {:avoided avoided
      :picked-prob (get-in wells [picked :prob])
-     :picked-step (get-in wells [avoided :step])
+     :picked-step (get-in wells [picked :step])
      :avoided-prob (get-in wells [avoided :prob])
      :avoided-step (get-in wells [avoided :step])}))
