@@ -11,3 +11,4 @@ resources/public/imgs/extra
 !out/*html
 !out/*css
 out/cljs_deps.js
+results/.heroku-dburl
