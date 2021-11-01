@@ -55,7 +55,7 @@ labpilot_id_age_sex <- function(d) d %>%
              remove=F)
 
 # might not want to share that data online
-obscure_id <- function(d) d %>% mutate(id=sapply(id,digest::digest)) 
+obscure_id <- function(d) d %>% mutate(id=sapply(id,digest::digest))  %>% select(-initials)
 
 # 50 up for some is 20 up for others
 # want to have the same for each subject
