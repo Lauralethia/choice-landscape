@@ -68,7 +68,8 @@ unify_picked <- function(d){
      gather(side, prob, matches('prob')) %>%
      mutate(side=gsub('_prob','',side), prob=paste0('first',prob))
  
- d %>% left_join(rename(first_info, picked=side, picked_unified=prob))
+ d %>% left_join(rename(first_info, picked=side, picked_unified=prob)) %>%
+       left_join(rename(first_info, avoided=side, avoid_unified=prob))
 } 
 
 label_distance <- function(d)
