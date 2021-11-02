@@ -72,16 +72,38 @@ unify_picked <- function(d){
        left_join(rename(first_info, avoided=side, avoid_unified=prob))
 } 
 
+# nice to have close are far explicit
+# but same info is in picked_step
 label_distance <- function(d)
    d %>% mutate(pick_dist = cut(picked_step,
                                 breaks=c(0,1,Inf),
                                 labels=c("close","far")))
+
+# ideally would pick highest prob well
+# and when all are equal, pick the closest
+add_optimal <- function(d)
+  d %>% mutate(optimal_choice =
+                   picked_prob > avoided_prob |
+                   (picked_prob == avoided_prob & picked_step <= avoided_step))
+
+# 20211102: 3 blocks. init, switch, devalue
+# add_blocktype(d) %>% group_by(id,ver,timepoint,run,blocktype) %>% summarise(min(trial), max(trial), n=n())
+add_blocktype <- function(d) 
+    d %>%
+     group_by(id, ver, timepoint, run) %>%
+        mutate(blocktype = case_when(
+                     grepl("100.*100.*100", block) ~ 'devalue',
+                     block == first(block) ~ 'init',
+                     block != first(block) ~ 'switch',
+                     TRUE ~ 'unknown'))
 
 read_taskdata <- function(fpath='data.tsv'){
     d <- read.csv(fpath, header=T, sep="\t") %>%
         fix_prob_picked %>%
         fix_url_order %>%
         label_distance %>%
+        add_optimal %>%
+        add_blocktype %>%
         unify_picked
 }
 
