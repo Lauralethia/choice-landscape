@@ -57,7 +57,7 @@
                         (timeline/gen-wells
                          {:prob-low prob-high
                           :prob-high prob-high
-                          :reps-each-side 4
+                          :reps-each-side 8 ; 20211104 increased from 4 to 8
                           :side-best best-side})))]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
