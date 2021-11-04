@@ -51,8 +51,9 @@
         progress (/ trial ntrials)]
     (position-at (:bar-pos BOARD)
                  (html [:div#fullbar
-                        [:div#progressbar_trials {:style {:height "49%" :width (str (* progress 100) "%")}}]
-                        [:div#progressbar_score  {:style {:height "49%" :width (str (* score 100) "%")}}]]))))
+                        [:div#progressbar_trials {:style {:height "100%" :width (str (* progress 100) "%")}}]
+                        ;[:div#progressbar_score  {:style {:height "49%" :width (str (* score 100) "%")}}]
+]))))
 
 (def bucket (html [:img {:src "imgs/bucket.png" :style {:transform "translate(20px, 30px)"}}]))
 

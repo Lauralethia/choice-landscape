@@ -195,9 +195,9 @@
                         (assoc-in [:water :score] 0)
                         (assoc-in [:trial] 0)))
     :text (fn[state]
-            (html [:div "You can track your progress with this bar"
-                   [:br] "Blue shows how much water you've collected"
-                   [:br] "Green shows how many times you have gone to a well"
+            (html [:div "This bar lets you know how far along you are."
+                   ;; [:br] "Blue shows how much water you've collected"
+                   ;; [:br] "Green shows how many times you have gone to a well"
                    [:br] "You're done when the green bar reaches the end!"
                    ]))}
    {:text (fn[state]
