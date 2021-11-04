@@ -1,5 +1,5 @@
 #!/usr/bin/env -S jq -Mfr
-["id","task","timepoint", "run", "ver","avatar",
+["id","task","vdate","timepoint", "run", "ver","avatar",
  "trial","block","score",
  "rt",
  "picked","picked_prob","picked_step",
@@ -11,9 +11,10 @@
    .run_number as $rn |
    .task as $task|
    .ver as $ver|
+   .created_at as $vdate|
    .json.avatar as $av|
    .json.events[] |
-   [$id, $task, $tp, $rn, $ver, $av,
+   [$id, $task, $vdate, $tp, $rn, $ver, $av,
     .trial, .blockstr, .score,
     if(."waiting-time") then (."waiting-time" - ."chose-time")|round else null end,
     ."picked", ."picked-prob", ."picked-step", ."avoided", ."avoided-prob", ."avoided-step",
