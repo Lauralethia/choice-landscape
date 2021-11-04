@@ -107,8 +107,10 @@
                    ]))}
    {:text (fn[state]
             (html [:div "You can only get water from wells"
+                   [:br] "when they have a bucket."
                    [:br]
-                   "when they have a bucket"
+                   [:br] "All three buckets carry"
+                   [:br] "the same amount of water."
                    ]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[state]
