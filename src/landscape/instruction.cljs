@@ -89,7 +89,7 @@
              (assoc-in state [:water :active-at] time-cur))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))} 
-   {:text (fn[_] "And get the water as high as possible!")
+   {:text (fn[_] "And get the water as full as possible!")
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :level] 100))
