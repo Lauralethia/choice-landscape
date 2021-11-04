@@ -123,9 +123,9 @@
 (defn done-view [state]
   (position-at {:x 100 :y 10}
                (html [:div#instruction
-                      [:h1 "You finished!"]
-                      [:br]
-                      "Thank you for contributing to our research!"
+                      [:h1 "Great Job! You finished!"]
+                      [:br] "Thank you for contributing to our research!"
+                      [:br] "Your respones have been recorded. You can close this page."
                       [:br]])))
 
 (defn display-state
