@@ -1,1 +1,1 @@
-web: psiclj-heroku -t habit -r out/ -v 20211025v3-longertrials
+web: psiclj-heroku -t habit -r out/ -v 20211104v4-90max_pbar_moredeval
