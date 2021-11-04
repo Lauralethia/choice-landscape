@@ -1,6 +1,7 @@
 (ns landscape.model.timeline
   (:require
    [landscape.model.wells :as wells]
+   [landscape.settings :as settings :refer [BOARD]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
 (defrecord well [step open prob active-at pos])
@@ -27,14 +28,15 @@
 ;; 1. want to gen set w/flip which not-side-best gets high/low prob
 (defn side-probs
   "create array of different side-probabilty pairings. like
-    [{:left 50 :right 20 :up 100}
-     {:left 20 :right 50 :up 100}]"
+    [{:left 50 :right 20 :up 90}
+     {:left 20 :right 50 :up 90}]"
   [high low side-best]
   (let [others (filter #(not= side-best %) [:left :up :right])
         fst (first others)
-        snd (second others)]
-    [{fst high snd low side-best 100}
-     {fst low snd high side-best 100}]))
+        snd (second others)
+        prob-high (get-in BOARD [:prob :high])]
+    [{fst high snd low side-best prob-high}
+     {fst low snd high side-best prob-high}]))
 ;; 2. then shuffle which is disabled for all sides
 (defn rep-block [prob-map ntrials]
   (let [disabled-map (mapv #(merge prob-map {:side-disabled %}) [:left :up :right])
@@ -49,7 +51,7 @@
 
 
 (defn gen-example []
-  (gen-wells {:prob-low 20
-              :prob-high 50
+  (gen-wells {:prob-low (-> BOARD :prob :low)
+              :prob-high (-> BOARD :prob :mid)
               :reps-each-side 1 ;; # trials before switch high and low
               :side-best :left}))

@@ -8,6 +8,7 @@
    :top-scale .66 ; perspective makes up seem farther away. scale move and disntace by this much
    :bar-pos {:x 50 :y 500} ; where to position the progress bar
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
+   :prob {:low 20 :mid 50 :high 90}
    })
 
 ; not used everywhere!

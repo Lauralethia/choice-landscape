@@ -6,6 +6,7 @@
    [landscape.sound :as sound]
    [landscape.model.timeline :as timeline]
    [landscape.model :as model :refer [STATE]]
+   [landscape.settings :as settings :refer [BOARD]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
    [cljsjs.react]
@@ -33,26 +34,29 @@
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
   (let [best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
+        prob-low (get-in BOARD [:prob :low] ) ; initially 20
+        prob-mid (get-in BOARD [:prob :mid] ) ; initially 50
+        prob-high (get-in BOARD [:prob :high] ) ; originally 100, then 90 (20211104)
         well-list (vec (concat
                         ;; first set of 16*(3 lowhigh + 3 highlow):
                         ;; two close are meh on rewards
                         (timeline/gen-wells
-                         {:prob-low 20
-                          :prob-high 50
+                         {:prob-low prob-low
+                          :prob-high prob-mid
                           :reps-each-side 16  ; 20211029 - increase from 8 to 16
                           :side-best best-side})
                         ;; add 4 forced trials where we cant get to the good
                         ;; far away well. encourage exploring
                         (filter #(not (-> % best-side :open))
                                 (timeline/gen-wells
-                                 {:prob-low 100
-                                  :prob-high 100
+                                 {:prob-low prob-high
+                                  :prob-high prob-high
                                   :reps-each-side 2
                                   :side-best best-side}))
                         ;; all wells are good:  4 reps of 6 combos
                         (timeline/gen-wells
-                         {:prob-low 100
-                          :prob-high 100
+                         {:prob-low prob-high
+                          :prob-high prob-high
                           :reps-each-side 4
                           :side-best best-side})))]
     (swap! STATE assoc :well-list well-list)
