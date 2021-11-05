@@ -88,14 +88,16 @@ add_optimal <- function(d)
 
 # 20211102: 3 blocks. init, switch, devalue
 # add_blocktype(d) %>% group_by(id,ver,timepoint,run,blocktype) %>% summarise(min(trial), max(trial), n=n())
-add_blocktype <- function(d) 
+add_blocktype <- function(d)  {
+    maxprob <- "90" # prev 100
+    deval_str_patt <-  glue::glue("{maxprob}.*{maxprob}.*{maxprob}")
     d %>%
      group_by(id, ver, timepoint, run) %>%
         mutate(blocktype = case_when(
-                     grepl("100.*100.*100", block) ~ 'devalue',
+                     grepl(deval_str_patt, block) ~ 'devalue',
                      block == first(block) ~ 'init',
                      block != first(block) ~ 'switch',
-                     TRUE ~ 'unknown'))
+                     TRUE ~ 'unknown')) }
 
 read_taskdata <- function(fpath='data.tsv'){
     d <- read.csv(fpath, header=T, sep="\t") %>%
