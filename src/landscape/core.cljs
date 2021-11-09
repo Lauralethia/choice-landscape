@@ -9,6 +9,7 @@
    [landscape.settings :as settings :refer [BOARD]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
+   [cemerick.url :as url]
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true]
@@ -69,6 +70,10 @@
   ; instruction/step (and when phase name changes, will redirect to model/step-task)
   ; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
+
+  ; grab any url parameters and store with what's submited to the server
+  (swap! STATE assoc-in [:record :url]
+         (:query (url/url (-> js/window .-location .-href))))
   ; start
   (lp/run-start STATE))
 
