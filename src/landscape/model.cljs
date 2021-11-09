@@ -6,6 +6,7 @@
    [landscape.key :as key]
    [landscape.settings :refer [BOARD]]
    [landscape.instruction :as instruction]
+   [landscape.model.records :as records]
    [landscape.model.wells :as wells]
    [landscape.model.avatar :as avatar]
    [landscape.model.water :as water]
@@ -127,6 +128,7 @@
           (assoc-in [:key :time] (utils/now)))
       state)))
 
+
 (defn state-fresh
   "initial state. empty timing"
   []
@@ -141,7 +143,7 @@
    :water (water/water-state-fresh)
    :phase (phase/set-phase-fresh :chose nil)
    :sprite-picked :astro
-   :record {:events [] :avatar nil :survey []} ; what we'll send to server to record onset times, choice, score. see [phase/phone-home]
+   :record (records/record-init)
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down

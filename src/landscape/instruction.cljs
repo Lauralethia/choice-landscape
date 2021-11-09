@@ -4,6 +4,7 @@
    [landscape.key :as key]
    [landscape.utils :as utils]
    [landscape.settings :as settings :refer [BOARD]]
+   [landscape.model.records :as records]
    [landscape.model.water :as water]
    [landscape.model.wells :as wells]
    [landscape.model.phase :as phase]
@@ -270,9 +271,7 @@
           ;; save both the time since animation (relative to other onsets)
           ;; and the actual time (according to the browser) to the struct
           ;; that will be sent away by phases/phone-home
-          (assoc-in [:record :start-time]
-                    {:animation time-cur
-                     :browser (utils/now)})
+          (assoc-in [:record :start-time] (records/make-start-time time-cur))
           ;; wells normally turned off on :chose->:waiting flip
           ;; here we skip right over that into the first :iti so explicitly close
           (wells/wells-close)
