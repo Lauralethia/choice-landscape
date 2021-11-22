@@ -98,10 +98,10 @@
 (defn done-step [state]
   ;TODO: maybe send-finished tells us where to go
   ; redirect to close out the amazon turk
+  (http/send-resp (:record state))
   (http/send-finished)
   ;TODO: un-fullscreen
-  (assoc state :running? false)
-)
+  (assoc state :running? false))
 
 (defn next-step
   "dispatch to instruction or task
