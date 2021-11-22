@@ -124,7 +124,7 @@
   (html [:div#instruction
           [:h1 "Great Job!"] [:h3 "You filled the oasis!"]
           [:br] "Thank you for contributing to our research!"
-          [:br] "Your respones have been recorded. You can close this page."
+          [:br] "Your responses have been recorded. You can close this page."
           [:br]]))
 
 (defn display-state
