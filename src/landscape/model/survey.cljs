@@ -1,9 +1,10 @@
 (ns landscape.model.survey
   (:require
    [landscape.model.phase :as phase]
+   [landscape.key :as key]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
-   [landscape.key :as key]))
-(defrecord survey [q answers])
+   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
+  (:require-macros [devcards.core :refer [defcard]]))
 (defrecord survey [q answers shortname])
 (def SURVEYS
   [
@@ -102,3 +103,56 @@
 (defn step [state time]
   (read-keys state))
 
+;;;;;;;;
+;; forum for when keyboard is avaliable
+; disable read-keys so we get the keycodes we want
+
+(defrecord forum-data [age feedback fun done])
+;; UGLY -- use forum-atom as global!
+(def forum-atom (atom (->forum-data nil nil nil nil)))
+(defn add-forum-watcher [main-atom forum-atom]
+  (add-watch :forum-watcher forum-atom
+             (fn [_key _atom old new]
+               (swap! main-atom assoc-in [:record :survey] new))))
+(defn evtval [evt] (.. evt -target -value))
+(defn update-forum-atom [key evt] (swap! forum-atom assoc key (evtval evt)))
+(defn view-questions []
+  (html [:div  {:id "instruction"}
+         [:h3 "Almost Done!"]
+         [:br] "Tell us about yourself and how you feel about the game!"
+         [:br] [:br]
+         [:div {:style {:text-align :left}}
+          [:forum
+           [:label {:for "age"} "Your age in years:"]
+           [:br] [:input {:name "age" :type "text" :size 2
+                          :value (:age @forum-atom)
+                          :on-change #(update-forum-atom :age %)}]
+
+           [:br] [:br][:label {:for "fun"}
+                       "How fun was this (from 1 to 5: not fun to very fun)"]
+           [:br][:input {:name "fun" :size 1 :type "text"
+                         :on-change #(update-forum-atom :fun %)
+                         :value (:fun @forum-atom)}]
+
+           [:br] [:br][:label {:for "feedback"}
+                       "Any feedback will be very helpful!"
+                       [:br]"What were some things you didn't like? "
+                       "Things you did like? Anything that was confusing? "
+                       "Did you have a strategy?"]
+           [:br][:textarea {:style {:width "80%"}
+                            :name "feedback"
+                            :on-change #(update-forum-atom :feedback %)
+                            :value (:feedback @forum-atom)}]
+           [:br] [:br] [:input {
+                                :value "Finished!"
+                                :type :submit
+                                :on-click #(swap! forum-atom assoc :done true)}]]]]))
+(defn step-forum [state time]
+  (let [done-at (if (:done @forum-atom) time nil)]
+    (-> state
+        (assoc-in [:record :survey] @forum-atom)
+        (assoc-in [:phase :name] (if done-at :done :forum)))))
+
+(defcard survey-forum
+  "what does the survey look like"
+  (view-questions))

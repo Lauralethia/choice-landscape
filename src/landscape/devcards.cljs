@@ -3,6 +3,7 @@
    [devcards.core]
    [landscape.utils :as utils]
    [landscape.view :as view]
+   [landscape.model.survey :as survey]
    [landscape.model :as model]
    [landscape.model.avatar :as avatar]
    [sablono.core :as sab :include-macros true :refer-macros [html]])

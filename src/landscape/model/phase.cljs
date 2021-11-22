@@ -19,7 +19,9 @@
   [{:keys [trial time-cur well-list] :as state}]
   (if (>= trial (count well-list))
     ;; TODO change to survey ... if we want to collect feedback
-    (set-phase-fresh :done time-cur)
+    ;(set-phase-fresh :done time-cur) ; use for no questions
+    ;(set-phase-fresh :survey time-cur) ; questions with buttonbox only
+    (set-phase-fresh :forum time-cur) ; use for textarea w/keyboard
     (set-phase-fresh :chose time-cur)))
 
 (defn send-identity

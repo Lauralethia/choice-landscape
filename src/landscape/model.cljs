@@ -109,7 +109,8 @@
   [{:keys [phase] :as state} time]
   (case (:name phase)
     :instruction (instruction/step state time)
-    :survey (survey/step state time)
+    :survey (survey/step state time) ; when no keyboard
+    :forum  (survey/step-forum state time) ; with keyboard
     :done (done-step state)
 
     ;:chose, :waiting, :feedback

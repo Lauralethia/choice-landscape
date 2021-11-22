@@ -157,6 +157,7 @@
       (case (:name phase) 
         :instruction  (instruction-view state)
         :survey (survey-view state)
+        :forum (survey/view-questions)
         :done (done-view state)
         nil)])))
 
