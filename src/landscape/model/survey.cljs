@@ -4,6 +4,7 @@
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [landscape.key :as key]))
 (defrecord survey [q answers])
+(defrecord survey [q answers shortname])
 (def SURVEYS
   [
    (->survey (html [:div
@@ -12,20 +13,27 @@
                      "Please answer these questions." [:br]
                      "Use the up arrow to change your answer" [:br]
                      " and the right arrow to go to the next question"]])
-             ["If I must" "OK!"])
+             ["If I must" "OK!"]
+             "start")
    (->survey "Which was best at first?"
-             ["left" "up" "right"])
+             ["left" "up" "right"]
+             "best_1st")
    (->survey "Which was best at the end?"
-             ["left" "up" "right"])
+             ["left" "up" "right"]
+             "best_end")
    (->survey "If all wells were just as likely to give water, which would you pick?"
-             ["left" "up" "right"]) 
+             ["left" "up" "right"]
+             "overall_side_pref")
    (->survey "Do you think wells changed how often they gave water?"
-             ["Always the same" "1-2 switch" "3-4 switches" "5+ switches"])
+             ["Always the same" "1-2 switch" "3-4 switches" "5+ switches"]
+             "num_changes")
    (->survey  "The farther well was difficult/annoying to go to:"
-              ["not at all" "a little" "a lot"])
+              ["not at all" "a little" "a lot"]
+              "far_annoying")
    (->survey "What would you guess the likelihood of water was for a well at its worst?"
              ["almost never <10%" "infrequent <30%"
-              "near 50/50 (40-60%)" "good (>60%)"])
+              "near 50/50 (40-60%)" "good (>60%)"]
+             "worst_prob")
    ])
 
 (defrecord survey-phase [name start-at qi choice-i])
