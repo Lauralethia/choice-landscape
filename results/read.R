@@ -7,8 +7,8 @@
 #
 # 20211101WF - init
 # ----
-library(dplyr)
-library(tidyr)
+suppressPackageStartupMessages({library(dplyr)
+library(tidyr)})
 
 # fix bug on+before 20211029 where step_picked is erroneously step_avoid
 # prob for each side is same within a block, and step is the same throughout
@@ -51,8 +51,10 @@ fix_url_order <- function(d){
 labpilot_id_age_sex <- function(d) d %>%
      extract(id,
              into=c('initials', 'age', 'sex'),
-             '^([A-Za-z]+)(\\d{2})([MmFf])',
-             remove=F)
+             '^([A-Za-z]+)(\\d{2})([MmFf_])',
+             remove=F) %>%
+    # trust survey age if it exists over age that maybe wasn't extracted from id
+    mutate(age=as.numeric(ifelse(is.na(age), survey_age, age)))
 
 # might not want to share that data online
 obscure_id <- function(d) d %>% mutate(id=sapply(id,digest::digest))  %>% select(-initials)
@@ -71,6 +73,8 @@ unify_picked <- function(d){
  d %>% left_join(rename(first_info, picked=side, picked_unified=prob)) %>%
        left_join(rename(first_info, avoided=side, avoid_unified=prob))
 } 
+
+remove_will <- function(d) d %>% filter(!grepl('^WWF3|^will|^WFTEST',id))
 
 # nice to have close are far explicit
 # but same info is in picked_step
@@ -97,14 +101,16 @@ add_blocktype <- function(d)
                      block != first(block) ~ 'switch',
                      TRUE ~ 'unknown'))
 
-read_taskdata <- function(fpath='data.tsv'){
+read_taskdata <- function(fpath='raw.tsv'){
     d <- read.csv(fpath, header=T, sep="\t") %>%
         fix_prob_picked %>%
         fix_url_order %>%
         label_distance %>%
         add_optimal %>%
         add_blocktype %>%
-        unify_picked
+        labpilot_id_age_sex %>%
+        unify_picked %>%
+        remove_will
 }
 
 # tie it all together. could all this "main"
@@ -116,7 +122,6 @@ fix_and_save <- function(fname="raw.tsv") {
                     sep="\t", row.names=F, quote=F)
 
     read_taskdata(fname) %>%
-        labpilot_id_age_sex %>%
         obscure_id %>%
         write.table(file="data_id-hidden.tsv",
                     sep="\t", row.names=F, quote=F)
