@@ -21,6 +21,49 @@
 (enable-console-print!)
 (set! *warn-on-infer* false) ; maybe want to be true
 
+(defn gen-well-list []
+
+  ;; TODO: might want to get fixed timing
+  ;;       look into javascript extern (and supply run or CB) to pull from edn/file
+  (let [best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
+        prob-low (get-in BOARD [:prob :low] ) ; initially 20
+        prob-mid (get-in BOARD [:prob :mid] ) ; initially 50
+        prob-high (get-in BOARD [:prob :high] ) ; originally 100, then 90 (20211104)
+       ]
+    (vec (concat
+       ;; first set of 16*(3 lowhigh + 3 highlow + 3 lowhigh):
+       ;; two close are meh on rewards
+       (->
+        ; ({:left 100 :right 30 :up 20}, {... :up 30 :right 20})
+        (timeline/side-probs prob-low prob-mid best-side)
+
+        ; ({:resp-each-side 16 :left 100...}, {:reps-each-side ...}
+        (timeline/add-reps-key 16)
+
+        ; ({..:up 20}, {.. :up 30}, {.. :up 20})
+        timeline/add-head-to-tail
+
+        ; more trial for first block (9 more)
+        vec
+        (assoc-in [0 :reps-per-side] 19)
+        ;; make it look like what well drawing funcs want
+        ((partial mapcat #'timeline/gen-prob-maps))
+        ((partial mapv #'timeline/well-trial)))
+
+       ;; add 4 forced trials where we cant get to the good
+       ;; far away well. encourage exploring
+       (filter #(not (-> % best-side :open))
+               (timeline/gen-wells
+                {:prob-low prob-high
+                 :prob-high prob-high
+                 :reps-each-side 2
+                 :side-best best-side}))
+       ;; all wells are good:  4 reps of 6 combos
+       (timeline/gen-wells
+        {:prob-low prob-high
+         :prob-high prob-high
+         :reps-each-side 8 ; 20211104 increased from 4 to 8
+         :side-best best-side})))))
 
 (defn -main []
   (gev/listen (KeyHandler. js/document)
@@ -32,37 +75,11 @@
   (println "preloading sounds")
   (doall (sound/preload-sounds))
 
-  ;; TODO: might want to get fixed timing
-  ;;       look into javascript extern (and supply run or CB) to pull from edn/file
-  (let [best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
-        prob-low (get-in BOARD [:prob :low] ) ; initially 20
-        prob-mid (get-in BOARD [:prob :mid] ) ; initially 50
-        prob-high (get-in BOARD [:prob :high] ) ; originally 100, then 90 (20211104)
-        well-list (vec (concat
-                        ;; first set of 16*(3 lowhigh + 3 highlow):
-                        ;; two close are meh on rewards
-                        (timeline/gen-wells
-                         {:prob-low prob-low
-                          :prob-high prob-mid
-                          :reps-each-side 16  ; 20211029 - increase from 8 to 16
-                          :side-best best-side})
-                        ;; add 4 forced trials where we cant get to the good
-                        ;; far away well. encourage exploring
-                        (filter #(not (-> % best-side :open))
-                                (timeline/gen-wells
-                                 {:prob-low prob-high
-                                  :prob-high prob-high
-                                  :reps-each-side 2
-                                  :side-best best-side}))
-                        ;; all wells are good:  4 reps of 6 combos
-                        (timeline/gen-wells
-                         {:prob-low prob-high
-                          :prob-high prob-high
-                          :reps-each-side 8 ; 20211104 increased from 4 to 8
-                          :side-best best-side})))]
+  (let [well-list (gen-well-list)]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
+
   ;; TODO: fixed iti durations
 
   ; start with instructions
