@@ -154,6 +154,10 @@
   (merge (block-encode wells)
          (reduce #'merge (mapv #(side-wide wells %) [:left :up :right]))))
 
+(defn which-open [wells]
+  (let [sides (keys wells)
+        open-wells (filter (fn [side] (get-in wells [side :open])) sides)]
+    (clojure.string/join "-" (mapv #'name open-wells))))
 (defn avoided
   "find the well we didn't pick that was open.
   returns list but should only have one output"
@@ -163,7 +167,9 @@
   "after picking wide info (avoided and picked). useful for http post"
   [wells picked]
   (let [avoided (first (avoided wells picked))]
-    {:avoided avoided
+    {
+     :trial-choices (which-open wells)
+     :avoided avoided
      :picked-prob (get-in wells [picked :prob])
      :picked-step (get-in wells [picked :step])
      :avoided-prob (get-in wells [avoided :prob])
