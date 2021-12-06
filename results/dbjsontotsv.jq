@@ -4,7 +4,7 @@
  "rt",
  "picked","picked_prob","picked_step",
  "avoided","avoided_prob","avoided_step",
- "iti_onset","chose_onset","waiting_onset","feedback_onset", "survey_age"],
+ "iti_onset","chose_onset","waiting_onset","feedback_onset","trial_choices", "survey_age"],
 (.[]|
    .id as $id|
    .timepoint as $tp|
@@ -20,5 +20,6 @@
     if(."waiting-time") then (."waiting-time" - ."chose-time")|round else null end,
     ."picked", ."picked-prob", ."picked-step", ."avoided", ."avoided-prob", ."avoided-step",
     ."iti-time", ."chose-time", ."waiting-time", ."feedback-time", 
+    ."trial-choices",
     if($survey|type=="array") then "NA" else $survey.age end] )|
    @tsv

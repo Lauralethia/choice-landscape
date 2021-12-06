@@ -95,11 +95,15 @@ add_optimal <- function(d)
 add_blocktype <- function(d)
     d %>%
      group_by(id, ver, timepoint, run) %>%
-        mutate(blocktype = case_when(
+        mutate(blocknum = cumsum(lag(block,default=first(block))!=block)+1,
+               blocktype = case_when(
                      left_prob==right_prob & up_prob==right_prob ~ 'devalue',
-                     block == first(block) ~ 'init',
-                     block != first(block) ~ 'switch',
-                     TRUE ~ 'unknown'))
+                     block == first(block) & blocknum<=1 ~ 'init',
+                     block == first(block) ~ paste0('rev',blocknum -1),
+                     block != first(block) ~ paste0('switch',blocknum -1),
+                     TRUE ~ 'unknown')) %>%
+    # survey has own iti? not an actual trial
+    filter(block!="")
 
 read_taskdata <- function(fpath='raw.tsv'){
     d <- read.csv(fpath, header=T, sep="\t") %>%
@@ -111,6 +115,17 @@ read_taskdata <- function(fpath='raw.tsv'){
         labpilot_id_age_sex %>%
         unify_picked %>%
         remove_will
+}
+inspect_one <- function(){
+    d <- read.csv('raw.tsv', header=T, sep="\t") %>%
+        fix_prob_picked %>%
+        fix_url_order %>%
+        label_distance %>%
+        add_optimal %>%
+        add_blocktype %>%
+        labpilot_id_age_sex %>%
+        unify_picked %>%
+        filter(grepl('WWF',id),grepl('v6',ver))
 }
 
 # tie it all together. could all this "main"
