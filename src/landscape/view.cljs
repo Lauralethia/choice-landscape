@@ -87,9 +87,9 @@
          (well-side state :right)]))
 
 (defn button-keys [] (html [:div.bottom
-                               [:button {:on-click #(key/sim-key :left)} "< "]
-                               [:button {:on-click #(key/sim-key :up)} "^"]
-                               [:button {:on-click #(key/sim-key :right)} " >"]]))
+                               [:button {:on-click #(key/sim-key :left)  :class "arrow"} "< "]
+                               [:button {:on-click #(key/sim-key :up)    :class "arrow"} "^"]
+                               [:button {:on-click #(key/sim-key :right) :class "arrow"} " >"]]))
 (defn instruction-view [{:keys [phase] :as state}]
         (let [idx (or (:idx phase) 0)
               instr (get instruction/INSTRUCTION idx)

@@ -36,13 +36,6 @@ border: 2px solid black;
 opacity: .75;
 border-radius: 25px;
 }
-#instruction > .bottom {
-    position:absolute;
-    text-align: center;
-    bottom: 2px;
-    left:10px;
-    padding:10px;
-}
 #instruction > .top {
     position:absolute;
     font-size: 10px;
@@ -50,6 +43,24 @@ border-radius: 25px;
     width: 90%;
     top: 2px;
     padding-top:10px;
+}
+
+#instruction > .bottom {
+    position:absolute;
+    text-align: center;
+    bottom: 2px;
+    left:10px;
+    padding:10px;
+    width: 90%;
+    height: 25px;
+    padding-top: 15px;
+}
+
+.bottom > .arrow {
+    width: 30%;
+    margin-left: 3%;
+    padding-top: 10px;
+    height: 30px;
 }
 
 .iti {color:white; font-size: 60px;}
