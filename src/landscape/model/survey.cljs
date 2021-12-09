@@ -106,16 +106,19 @@
 ;;;;;;;;
 ;; forum for when keyboard is avaliable
 ; disable read-keys so we get the keycodes we want
-
-(defrecord forum-data [age feedback fun done])
+;; !debugging note! to see section, run
+;;   (swap! landscape.model/STATE assoc-in [:phase :name] :forum)
+;;   (get-in @landscape.model/STATE [:record :survey])
+(defrecord forum-data [age feedback fun device done])
 ;; UGLY -- use forum-atom as global!
-(def forum-atom (atom (->forum-data nil nil nil nil)))
+(def forum-atom (atom (->forum-data nil nil nil nil nil)))
 (defn add-forum-watcher [main-atom forum-atom]
   (add-watch :forum-watcher forum-atom
              (fn [_key _atom old new]
                (swap! main-atom assoc-in [:record :survey] new))))
 (defn evtval [evt] (.. evt -target -value))
 (defn update-forum-atom [key evt] (swap! forum-atom assoc key (evtval evt)))
+(defn update-forum-atom-select [key evt] (swap! forum-atom assoc key (.. evt -target -value)))
 (defn view-questions []
   (html [:div  {:id "instruction"}
          [:h3 "Almost Done!"]
@@ -133,6 +136,16 @@
            [:br][:input {:name "fun" :size 1 :type "text"
                          :on-change #(update-forum-atom :fun %)
                          :value (:fun @forum-atom)}]
+
+           [:br] [:br][:label {:for "device"}
+                       "What kind of device are you using"]
+           [:br][:select {:name "device" :id "device"
+                          :on-change #(update-forum-atom-select :device %)
+                          :value (:device @forum-atom)}
+                 [:option {:value "computer"} "computer"]
+                 [:option {:value "phone"} "phone"]
+                 [:option {:value "tablet"} "tablet"]
+                 [:option {:value "other"} "other"]]
 
            [:br] [:br][:label {:for "feedback"}
                        "Any feedback will be very helpful!"
