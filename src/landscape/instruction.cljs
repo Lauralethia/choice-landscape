@@ -48,7 +48,10 @@
 (defn position-next-to-well
   "move position over by "
   [well]
-  (-> well :pos (update :x #(+ (:width sprite/well) 5 %))))
+  (if (> (-> well :pos :x) 300)
+    (-> well :pos (update :y #(+ (:height sprite/well) 5 %))
+        (update :x #(- % 200)))
+    (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
 (def INSTRUCTION
   [
    {:text (fn[state]
