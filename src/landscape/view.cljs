@@ -123,7 +123,7 @@
 
 (defn done-view [state]
   (html [:div#instruction
-          [:h1 "Great Job!"] [:h3 "You filled the oasis!"]
+          [:h1 "Great Job!"] [:h3 "You filled the pond!"]
           [:br] "Thank you for contributing to our research!"
           [:br] "Your responses have been recorded. You can close this page."
           [:br]]))
