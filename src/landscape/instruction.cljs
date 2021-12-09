@@ -60,7 +60,7 @@
               [:br]
               "Push the keyboard's " [:b "right arrow key"] " to get to the next instruction. "
               [:br] [:br]
-              "You can also click the \">\" button below"
+              "You can also click the \"->\" button below"
               ]))
     :start identity
     ;; NB. fullscreen in firefox removes background and centering

@@ -64,6 +64,9 @@ font-size: larger;
     /*height: 30px;*/
     font-size: larger;
 }
+.rot_up { transform: rotate(90deg);}
+.rot_down { transform: rotate(-90deg);}
+.rot_lr { transform: rotate(180deg);}
 
 .iti {color:white; font-size: 60px;}
 
