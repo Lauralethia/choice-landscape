@@ -4,6 +4,9 @@ body{
    margin: auto;
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
+.orange {
+   background: url("imgs/orange1x1.png");
+}
 #background {
    background: url("imgs/desert_nowater.jpg");
    width:  558px;
