@@ -64,7 +64,7 @@
        (timeline/gen-wells
         {:prob-low prob-high
          :prob-high prob-high
-         :reps-each-side 8 ; 20211104 increased from 4 to 8
+         :reps-each-side 8 ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
          :side-best best-side})))))
 
 (defn -main []
