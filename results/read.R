@@ -74,7 +74,7 @@ unify_picked <- function(d){
        left_join(rename(first_info, avoided=side, avoid_unified=prob))
 } 
 
-remove_will <- function(d) d %>% filter(!grepl('^WWF3|^will|^WFTEST',id))
+remove_will <- function(d) d %>% filter(!grepl('^WWF|^will|^WFTEST',id))
 
 # nice to have close are far explicit
 # but same info is in picked_step
