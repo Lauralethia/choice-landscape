@@ -9,7 +9,7 @@
 (defn all-eq [s] (every? #(= % (first s)) s))
 
 ; 3*(19 + 16*2 + 8*2)
-(def TOTAL-TRIALS 201)
+(def TOTAL-TRIALS 204)
 ;; will break if probs are not all distinct
 ;; 20 50 100
 (def PROBS (-> BOARD :prob vals sort)) 
@@ -25,7 +25,7 @@
 (def wl (gen-well-list))
 
 (deftest generate-well-list
-    (is (= (count wl) 201))
+    (is (= (count wl) TOTAL-TRIALS))
     (is (-> wl count (mod 3) (= 0))))
 
 ;; 2d array 1/0 for if open. hardcoded key for same order on every row
@@ -48,6 +48,7 @@
 ;; (deval-type [100 50 0]) :learn
 
 (def f (frequencies mat2d-prob))
+;; pre 20211216 -- 2x reversal since removed. now 20 deval, or 24 (instead of 16 or 35)
 ;; {(0 20 50) 35,
 ;;  (0 100 100) 16,
 ;;  (100 100 0) 16,
@@ -58,12 +59,14 @@
 ;;  (100 50 0) 16,
 ;;  (100 0 20) 16}
 
-;;  16 for all deval
+;;  deval each side equally (20 each)
 (deftest same-number-trial-sides-deval
   (is (all-eq (map #(f %) (filter #(= (deval-type %) :deval) (keys f))))))
 
-;; 16 for each side-prob combination seen for one block (reversal 1)
-;; 35 for init (additional trials) and reversal 2
-;; should maybe check freq of the :learn counts (3 16s and 3 35s)
+(deftest same-number-trial-sides-learn-20
+  (is (every? #{20} (map #(f %) (filter #(= (deval-type %) :deval) (keys f))))))
+
+;; if we had additional reversals or uneven block trial counts we could check here
+;; but all are equal (24 trials per prob permutation)
 (deftest same-number-trial-sides-learn
-  (is (every? #{16 35} (map #(f %) (filter #(= (deval-type %) :learn) (keys f))))))
+  (is (every? #{24} (map #(f %) (filter #(= (deval-type %) :learn) (keys f))))))
