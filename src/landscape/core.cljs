@@ -37,15 +37,19 @@
         ; ({:left 100 :right 30 :up 20}, {... :up 30 :right 20})
         (timeline/side-probs prob-low prob-mid best-side)
 
-        ; ({:resp-each-side 16 :left 100...}, {:reps-each-side ...}
-        (timeline/add-reps-key 16)
+        ; ({:resp-each-side 24 :left 100...}, {:reps-each-side ...}
+        (timeline/add-reps-key 24) ; 24*3 trials per block
 
+        ; 20211216 - remove. now only 2 blocks before deval
         ; ({..:up 20}, {.. :up 30}, {.. :up 20})
-        timeline/add-head-to-tail
+        ; timeline/add-head-to-tail
 
-        ; more trial for first block (9 more)
         vec
-        (assoc-in [0 :reps-per-side] 19)
+
+        ; 20211216 - remove. all equal
+        ; prev more trial for first block (19-16 *3 = 9 more)
+        ;(assoc-in [0 :reps-per-side] 19)
+        
         ;; make it look like what well drawing funcs want
         ((partial mapcat #'timeline/gen-prob-maps))
         ((partial mapv #'timeline/well-trial)))
@@ -60,11 +64,22 @@
         ;           :reps-each-side 2
         ;           :side-best best-side}))
 
+       ;; 20211216 - one set to ensure everything is seen equally at the start
+       ;; 3 trials total: lr, lu, ru ... but random
+       (timeline/gen-wells
+        {:prob-low prob-high
+         :prob-high prob-high
+         :reps-each-side 1
+         :side-best best-side})
+
+
        ;; all wells are good:  4 reps of 6 combos
        (timeline/gen-wells
         {:prob-low prob-high
          :prob-high prob-high
-         :reps-each-side 8 ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
+         :reps-each-side 9
+         ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
+         ;; 20211216 inc to 9 (+1 above)
          :side-best best-side})))))
 
 (defn -main []
