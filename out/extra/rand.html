@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>pilot testing</title>
+<script>
+  function random_id(){
+      let id = "ABCDEFHIJKLMNOPQRSTUVQXYZ".split('').
+                 sort(x=>.5-Math.random()).slice(0,3).join('');
+      return(id);
+  }
+   function make_url(){
+     let id = random_id()
+     let dt  = Math.round(Date.now()/1000).toString(16);
+     return("/rnd" + id + "_" + dt + "/habit/1/1/"); // important trailing slash
+   }
+   function go_url(){
+         window.location.replace(make_url());
+   }
+
+</script>
+   </head>
+   <body onload="go_url();">
+     <h1> Prepilot random id assignment </h1>
+     Thank you for testing our game. Your feedback at the end will be extremely helpful!
+     <br> If you are not redirected automatically, click <button onclick="go_url();">here</button>
+
+   <small style="position:absolute; bottom:0px"> see also <a href="/prepilot.html">prepilot</a><br>
+    fully specified as /id/task/timepoint/run/ </small>
+   </body>
+</html>
