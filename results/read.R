@@ -29,7 +29,8 @@ fix_prob_picked <- function(d){
    picked_step <- (sapply(nonaidx,
                          function(i) d[i,picked_col_pos[i]]) == "c") %>%
        ifelse(1, 2)
-   d$prob_picked[nonaidx] <- as.numeric(picked_probs)
+   picked_prob_num <- as.numeric(picked_probs)
+   d$picked_prob[nonaidx] <- picked_prob_num
    d$picked_step[nonaidx]    <- picked_step
    return(d)
 }
