@@ -4,6 +4,9 @@ body{
    margin: auto;
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
+.orange {
+   background: url("imgs/orange1x1.png");
+}
 #background {
    background: url("imgs/desert_nowater.jpg");
    width:  558px;
@@ -28,17 +31,12 @@ min-height: 60px;
 *min-width: 100px;*/
 margin: auto;
 padding: 20px;
+padding-bottom: 50px;
 text-align: center;
 border: 2px solid black;
-opacity: .75;
+opacity: .85;
 border-radius: 25px;
-}
-#instruction > .bottom {
-    position:absolute;
-    text-align: center;
-    bottom: 2px;
-    left:10px;
-    padding:10px;
+font-size: larger;
 }
 #instruction > .top {
     position:absolute;
@@ -48,6 +46,27 @@ border-radius: 25px;
     top: 2px;
     padding-top:10px;
 }
+
+#instruction > .bottom {
+    position:absolute;
+    text-align: center;
+    bottom: 2px;
+    left:10px;
+    padding:10px;
+    width: 90%;
+    height: 35px;
+}
+
+.bottom > .arrow {
+    width: 20%;
+    margin-left: 3%;
+    padding-top: 10px;
+    /*height: 30px;*/
+    font-size: larger;
+}
+.rot_up { transform: rotate(90deg);}
+.rot_down { transform: rotate(-90deg);}
+.rot_lr { transform: rotate(180deg);}
 
 .iti {color:white; font-size: 60px;}
 

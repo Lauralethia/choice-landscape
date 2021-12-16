@@ -87,9 +87,21 @@
          (well-side state :right)]))
 
 (defn button-keys [] (html [:div.bottom
-                               [:button {:on-click #(key/sim-key :left)} "< "]
-                               [:button {:on-click #(key/sim-key :up)} "^"]
-                               [:button {:on-click #(key/sim-key :right)} " >"]]))
+                               [:button {:on-click #(key/sim-key :left)
+                                         :class "arrow"}
+                                [:img {:src "imgs/arrow_l.png"}]]
+                               [:button {:on-click #(key/sim-key :up)
+                                         :class "arrow"}
+                                [:img {:src "imgs/arrow_l.png"
+                                       :class "rot_up"}]]
+                               [:button {:on-click #(key/sim-key :down)
+                                         :class "arrow"}
+                                [:img {:src "imgs/arrow_l.png"
+                                       :class "rot_down"}]]
+                               [:button {:on-click #(key/sim-key :right)
+                                         :class "arrow"}
+                                [:img {:src "imgs/arrow_l.png"
+                                       :class "rot_lr"}]]]))
 (defn instruction-view [{:keys [phase] :as state}]
         (let [idx (or (:idx phase) 0)
               instr (get instruction/INSTRUCTION idx)
@@ -109,7 +121,7 @@
         cur-choice (if (count choices) (nth choices ci) "ALL DONE")
         ]
     (position-at {:x 100 :y 10}
-                 (html [:div#insturctions 
+                 (html [:div#insturctions
                    [:div#instruction
                     [:div.top (str (inc qi) "/" (count survey/SURVEYS))]
                     [:h3 quest]
@@ -122,7 +134,7 @@
 
 (defn done-view [state]
   (html [:div#instruction
-          [:h1 "Great Job!"] [:h3 "You filled the oasis!"]
+          [:h1 "Great Job!"] [:h3 "You filled the pond!"]
           [:br] "Thank you for contributing to our research!"
           [:br] "Your responses have been recorded. You can close this page."
           [:br]]))
@@ -154,7 +166,7 @@
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
-      (case (:name phase) 
+      (case (:name phase)
         :instruction  (instruction-view state)
         :survey (survey-view state)
         :forum (survey/view-questions)

@@ -50,19 +50,21 @@
         ((partial mapcat #'timeline/gen-prob-maps))
         ((partial mapv #'timeline/well-trial)))
 
-       ;; add 4 forced trials where we cant get to the good
-       ;; far away well. encourage exploring
-       (filter #(not (-> % best-side :open))
-               (timeline/gen-wells
-                {:prob-low prob-high
-                 :prob-high prob-high
-                 :reps-each-side 2
-                 :side-best best-side}))
+        ;; removed 2021-12-09
+        ; ;; add 4 forced trials where we cant get to the good
+        ; ;; far away well. encourage exploring
+        ; (filter #(not (-> % best-side :open))
+        ;         (timeline/gen-wells
+        ;          {:prob-low prob-high
+        ;           :prob-high prob-high
+        ;           :reps-each-side 2
+        ;           :side-best best-side}))
+
        ;; all wells are good:  4 reps of 6 combos
        (timeline/gen-wells
         {:prob-low prob-high
          :prob-high prob-high
-         :reps-each-side 8 ; 20211104 increased from 4 to 8
+         :reps-each-side 8 ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
          :side-best best-side})))))
 
 (defn -main []

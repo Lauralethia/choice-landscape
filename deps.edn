@@ -16,6 +16,7 @@
                   com.bhauman/cljs-test-display {:mvn/version "0.1.1"}
                   philoskim/debux {:mvn/version "0.8.1"}                 ;; dbg dbgn 
                   clj-commons/pomegranate {:mvn/version "1.2.1"}         ;; load depends in repl
+                  net.mikera/core.matrix {:mvn/version "0.62.0"}         ;; tests use matrix
                   }
                  :extra-paths ["target" "test"]}
            ;:cardbuild {

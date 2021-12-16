@@ -48,7 +48,10 @@
 (defn position-next-to-well
   "move position over by "
   [well]
-  (-> well :pos (update :x #(+ (:width sprite/well) 5 %))))
+  (if (> (-> well :pos :x) 300)
+    (-> well :pos (update :y #(+ (:height sprite/well) 5 %))
+        (update :x #(- % 200)))
+    (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
 (def INSTRUCTION
   [
    {:text (fn[state]
@@ -57,7 +60,7 @@
               [:br]
               "Push the keyboard's " [:b "right arrow key"] " to get to the next instruction. "
               [:br] [:br]
-              "You can also click the \">\" button below"
+              "You can also click the \"->\" button below"
               ]))
     :start identity
     ;; NB. fullscreen in firefox removes background and centering
@@ -84,7 +87,7 @@
                   (update state :sprite-picked (partial next-sprite :down)))
           :up (fn[state]
                 (update state :sprite-picked (partial next-sprite :up)))}}
-   {:text (fn[_] "You want to fill this oasis with water as fast as you can")
+   {:text (fn[_] "You want to fill this pond with water as fast as you can")
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :active-at] time-cur))
@@ -98,7 +101,7 @@
             (assoc-in state [:water] (water/water-state-fresh)))}
 
    {:text (fn[state]
-            (html [:div "The oasis is fed by the three wells."
+            (html [:div "The pond is fed by the three wells."
                    [:br]
                    "You will choose which well to get water from."
                    [:br]
@@ -207,7 +210,7 @@
             (html [:div "Each well is different, and has a different chance of having water"
                    [:br] "Over time, a well may get better or worse"]))}
    
-   {:text (fn[state] "Ready? Push the right arrow to start!")}])
+   {:text (fn[state] [:div  "Ready? Push the right arrow to start!"])}])
 
 (defn instruction-goto
   ^{:test (fn[]
