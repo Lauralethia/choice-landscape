@@ -6,7 +6,7 @@
    [landscape.sound :as sound]
    [landscape.model.timeline :as timeline]
    [landscape.model :as model :refer [STATE]]
-   [landscape.settings :as settings :refer [BOARD]]
+   [landscape.settings :as settings :refer [BOARD current-settings]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
    [cemerick.url :as url]
@@ -82,6 +82,10 @@
          ;; 20211216 inc to 9 (+1 above)
          :side-best best-side})))))
 
+(defn vis-class-to-body []
+  (let [vis-class (-> @current-settings :vis-type name)]
+    (.. js/document -body (setAttribute "class" vis-class))))
+
 (defn -main []
   (gev/listen (KeyHandler. js/document)
               (-> KeyHandler .-EventType .-KEY) ; "key", not same across browsers?
@@ -108,6 +112,8 @@
   ; grab any url parameters and store with what's submited to the server
   (swap! STATE assoc-in [:record :url]
          (:query (url/url (-> js/window .-location .-href))))
+  
+  (vis-class-to-body) 
   ; start
   (lp/run-start STATE))
 

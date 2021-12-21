@@ -2,25 +2,26 @@ body{
    text-align: center;
    width:  558px;
    margin: auto;
+}
+body.desert{
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
 body.mountain{
-   background: #0d5419 url("imgs/moutain_border.jpg") repeat-x;
+   background: #0d5419 url("imgs/mountain_border.jpg") repeat-x;
 }
 .orange {
    background: url("imgs/orange1x1.png");
 }
 #background {
-   background: url("imgs/desert_nowater.jpg");
    width:  558px;
    height:  299px;
    position: absolute;
 }
+#background.desert {
+   background: url("imgs/desert_nowater.jpg");
+}
 #background.mountain {
-   background: url("imgs/green_mountain.jpg");
-   width:  558px;
-   height:  299px;
-   position: absolute;
+   background: url("imgs/green_mountain.png");
 }
 img#water {
    bottom: 30px;

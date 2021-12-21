@@ -9,9 +9,9 @@
    :bar-pos {:x 50 :y 500} ; where to position the progress bar
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    :prob {:low 20 :mid 50 :high 100}
-   :vis-type :desert ; alternative is :mountain
    })
 
+(def current-settings (atom {:vis-type :mountain})) ; :desert or :mountain
 ; not used everywhere!
 ; TODO: replace all hard coded numbers
 (def KEYCODES {:left  37

@@ -3,7 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.utils :as utils]
    [landscape.model :as model]
-   [landscape.settings :refer [BOARD]]
+   [landscape.settings :refer [BOARD current-settings]]
    [landscape.instruction :as instruction]
    [landscape.model.survey :as survey]
    [landscape.key :as key]
@@ -36,8 +36,14 @@
 
 
 ;; scene components
-(defn water-fill [fill]
-  (html [:img#water {:src "imgs/water.png" :style {:transform (str "scale(" (/ fill 100) ")")}}]))
+(defn water-fill
+  "show progress with growing image. scale by FILL"
+  [fill]
+  (let [img (case (:vis-type @current-settings)
+              :mountain "imgs/money_pool.png"
+              "imgs/water.png"
+              )]
+    (html [:img#water {:src img :style {:transform (str "scale(" (/ fill 100) ")")}}])))
 
 (defn water [state]
   (let [fill (get-in state [:water :scale])]
@@ -48,18 +54,23 @@
   [{:keys [trial well-list water] :as  state}]
   (let [ntrials (count well-list)
         score (/ (:score water) ntrials)
-        progress (/ trial ntrials)]
+        progress (/ trial ntrials)
+        vis-class (-> @current-settings :vis-type name)]
     (position-at (:bar-pos BOARD)
-                 (html [:div#fullbar
-                        [:div#progressbar_trials {:style {:height "100%" :width (str (* progress 100) "%")}}]
+                 (html [:div#fullbar {:class vis-class}
+                        [:div#progressbar_trials {:class vis-class
+                                                  :style {:height "100%" :width (str (* progress 100) "%")}}]
                         ;[:div#progressbar_score  {:style {:height "49%" :width (str (* score 100) "%")}}]
 ]))))
 
-(def bucket (html [:img {:src "imgs/bucket.png" :style {:transform "translate(20px, 30px)"}}]))
+(def bucket (let [imgsrc (case (:vis-type @current-settings)
+                           :mountain "imgs/axe.png"
+                           "imgs/bucket.png")]
+              (html [:img {:src imgsrc :style {:transform "translate(20px, 30px)"}}])))
 
 (defn well-or-mine
   "what sprite to use based on the board setting. default to well"
-  [] (case (get BOARD :vis-type)
+  [] (case (get @current-settings :vis-type)
        :mountain sprite/mine
        sprite/well))
 
@@ -148,9 +159,10 @@
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
-  (let [avatar-pos (get-in state [:avatar :pos])]
+  (let [avatar-pos (get-in state [:avatar :pos])
+        vis-class (-> @current-settings :vis-type name)]
     (sab/html
-     [:div#background
+     [:div#background {:class vis-class}
       (if DEBUG [:div {:style {:color "white"}} (str phase)])
       (water state)
       (well-show-all state)
@@ -193,7 +205,7 @@
 (defcard mine-sprite
   "mine animation by steps"
   (fn [state owner]
-    (with-redefs [BOARD (assoc BOARD :vis-type :mountain)]
+    (with-redefs [current-settings (atom (assoc @current-settings :vis-type :mountain))]
       (utils/wrap-state state [:div
                                  (well-show @state (assoc  @state :score nil))
                                 (well-show @state (assoc  @state :score 1))])
