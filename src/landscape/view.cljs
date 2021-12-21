@@ -63,7 +63,8 @@
                         ;[:div#progressbar_score  {:style {:height "49%" :width (str (* score 100) "%")}}]
 ]))))
 
-(def bucket (let [imgsrc (case (:vis-type @current-settings)
+(defn bucket []
+  (let [imgsrc (case (get @current-settings :vis-type)
                            :mountain "imgs/axe.png"
                            "imgs/bucket.png")]
               (html [:img {:src imgsrc :style {:transform "translate(20px, 30px)"}}])))
@@ -85,7 +86,7 @@
                             (str "-" (:height sprite/well) "px")}
                            )]
           (html [:div.well {:style (merge css v-offset)}
-                 (if open bucket)])))
+                 (if open (bucket))])))
 
 
 (defn well-side
@@ -200,7 +201,7 @@
     (utils/wrap-state state [:div
                              (well-show @state (assoc @state :score nil))
                              (well-show @state (assoc @state :score 1))]))
-  {:time-cur 100 :active-at 100 })
+  {:time-cur 100 :active-at 100 :open true})
 
 (defcard mine-sprite
   "mine animation by steps"
@@ -210,7 +211,7 @@
                                  (well-show @state (assoc  @state :score nil))
                                 (well-show @state (assoc  @state :score 1))])
         ))
-  {:time-cur 100 :active-at 100 })
+  {:time-cur 100 :active-at 100 :open true})
 
 (defcard avatar
   "step through avatar"
