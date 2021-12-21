@@ -57,11 +57,17 @@
 
 (def bucket (html [:img {:src "imgs/bucket.png" :style {:transform "translate(20px, 30px)"}}]))
 
+(defn well-or-mine
+  "what sprite to use based on the board setting. default to well"
+  [] (case (get BOARD :vis-type)
+       :mountain sprite/mine
+       sprite/well))
+
 (defn well-show "draw single well. maybe animate sprite"
         [{:keys [time-cur] :as state}
          {:keys [active-at score open] :as well}]
         (let [tstep (sprite/get-step time-cur active-at (:dur-ms sprite/well))
-              css (sprite/css sprite/well tstep)
+              css (sprite/css (well-or-mine) tstep)
               ;; if not score, move bg down to get the failed well offset
               v-offset (if score {}
                            {:background-position-y
@@ -176,16 +182,23 @@
 
 
 ;; debug/devcards
-(defcard well-score-nil
+(defcard well-no-and-score
   "well animation by steps. should animate with js/animate"
   (fn [state owner]
-    (utils/wrap-state state (well-show @state @state)))
-  {:time-cur 100 :active-at 100})
-(defcard well-score1
-  "well animation by steps. should animate with js/animate"
+    (utils/wrap-state state [:div
+                             (well-show @state (assoc @state :score nil))
+                             (well-show @state (assoc @state :score 1))]))
+  {:time-cur 100 :active-at 100 })
+
+(defcard mine-sprite
+  "mine animation by steps"
   (fn [state owner]
-    (utils/wrap-state state (well-show @state @state)))
-  {:time-cur 100 :active-at 100 :score 1})
+    (with-redefs [BOARD (assoc BOARD :vis-type :mountain)]
+      (utils/wrap-state state [:div
+                                 (well-show @state (assoc  @state :score nil))
+                                (well-show @state (assoc  @state :score 1))])
+        ))
+  {:time-cur 100 :active-at 100 })
 
 (defcard avatar
   "step through avatar"
@@ -202,4 +215,4 @@
            [:br]
            (str @state)
            ]))
-  {:time-cur 100 :active-at 100 :direction :left})
+  {:time-cur 100 :active-at 100 :direction :left :sprite-picked :astro})

@@ -9,6 +9,7 @@
    :bar-pos {:x 50 :y 500} ; where to position the progress bar
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    :prob {:low 20 :mid 50 :high 100}
+   :vis-type :desert ; alternative is :mountain
    })
 
 ; not used everywhere!

@@ -4,11 +4,20 @@ body{
    margin: auto;
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
+body.mountain{
+   background: #0d5419 url("imgs/moutain_border.jpg") repeat-x;
+}
 .orange {
    background: url("imgs/orange1x1.png");
 }
 #background {
    background: url("imgs/desert_nowater.jpg");
+   width:  558px;
+   height:  299px;
+   position: absolute;
+}
+#background.mountain {
+   background: url("imgs/green_mountain.jpg");
    width:  558px;
    height:  299px;
    position: absolute;
@@ -81,3 +90,5 @@ ul#pick>li.picked { background: lightblue;}
 #fullbar { width: 458px; background: #e28c39; border: 1px solid black; height: 10px;}
 #progressbar_score {  background: blue}
 #progressbar_trials { background: green}
+#fullbar.mountain { width: 458px; background: #0d5419;}
+#progressbar_trials.mountain {  background: #efc75e;}

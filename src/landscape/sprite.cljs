@@ -13,6 +13,10 @@
                           :frame-size 53 :frames 7
                           :dur-ms 500
                           :url "imgs/well_sprites.png"}))
+(def mine (sprite-create {:width 53 :height 47
+                          :frame-size 53 :frames 7
+                          :dur-ms 500
+                          :url "imgs/mine_sprites.png"}))
 
 (def avatars
   {:lizard (sprite-create {:width 68 :height 70
