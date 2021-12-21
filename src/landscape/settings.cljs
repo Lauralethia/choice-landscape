@@ -11,7 +11,11 @@
    :prob {:low 20 :mid 50 :high 100}
    })
 
-(def current-settings (atom {:vis-type :mountain})) ; :desert or :mountain
+; desert or mountain
+; set by anchor of url eg http://localhost:9500/#mountain
+; see core.cljs
+(def current-settings (atom {:vis-type :desert}))
+
 ; not used everywhere!
 ; TODO: replace all hard coded numbers
 (def KEYCODES {:left  37

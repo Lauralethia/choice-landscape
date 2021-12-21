@@ -110,9 +110,11 @@
   (swap! STATE assoc-in [:phase :name] :instruction)
 
   ; grab any url parameters and store with what's submited to the server
-  (swap! STATE assoc-in [:record :url]
-         (:query (url/url (-> js/window .-location .-href))))
-  
+  (let [u (url/url (-> js/window .-location .-href))
+        vis (if (re-find #"mountain" (:anchor u)) :mountain :desert)]
+    (swap! STATE assoc-in [:record :url] u)
+    (swap! settings/current-settings assoc :vis-type vis))
+
   (vis-class-to-body) 
   ; start
   (lp/run-start STATE))
