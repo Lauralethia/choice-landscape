@@ -88,7 +88,7 @@
 (defn vis-type-from-url [u]
   "desert or mountain from url :anchor. default to desert"
   (let [anchor (get u :anchor "desert")]
-    (if (re-find #"mountain" anchor) :mountain :desert)))
+    (if (re-find #"mountain" (or anchor "desert")) :mountain :desert)))
 
 (defn -main []
   (gev/listen (KeyHandler. js/document)
@@ -114,7 +114,7 @@
   (swap! STATE assoc-in [:phase :name] :instruction)
 
   ; grab any url parameters and store with what's submited to the server
-  (let [u (url/url (-> js/window .-location .-href))
+  (let [u (-> js/window .-location .-href url/url)
         vis (vis-type-from-url u)]
     (swap! STATE assoc-in [:record :url] u)
     (swap! settings/current-settings assoc :vis-type vis))

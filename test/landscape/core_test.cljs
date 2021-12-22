@@ -1,6 +1,7 @@
 (ns landscape.core-test
   (:require
    [landscape.core :refer [gen-well-list vis-type-from-url]]
+   [cemerick.url :as url]
    [landscape.settings :refer [BOARD]]
    ;[thinktopic.aljabr.core :as nd]
    [clojure.core.matrix :as m]
@@ -74,4 +75,7 @@
 (deftest vis-type 
   (is (= :mountain (vis-type-from-url {:anchor "mountain-anything" }) ))
   (is (= :desert (vis-type-from-url {:anchor "anything" }) ))
-  (is (= :desert (vis-type-from-url {:noanchor :na}) )))
+  (is (= :desert (vis-type-from-url {})))
+  (is (= :desert (vis-type-from-url {:anchor nil})))
+  ;; test page unlikely to have anchor and less likey to have 
+  (is (= :desert (vis-type-from-url (-> js/window .-location .-href url/url)))))
