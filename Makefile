@@ -1,6 +1,8 @@
-.PHONY: .ALWAYS figwheel
+.PHONY: .ALWAYS figwheel all
 
 .ALWAYS:
+
+all: out/landscape.js
 
 # get dependencies for figwheel. maybe this is an issue with .dir-locals.el not loading correctly?
 # should only be needed once. also see (hack-dir-local-variables-non-file-buffer)

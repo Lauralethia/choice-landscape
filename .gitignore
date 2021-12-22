@@ -1,3 +1,4 @@
+.psiturkconfig
 results/*json
 results/*tsv
 .cpcache

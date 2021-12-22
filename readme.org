@@ -114,7 +114,12 @@ https://gist.github.com/bigfive/4256993
 ** TODO record start and end volume (did anyone turn it down?)
 
 * Debugging
-  #+begin_src clojure
-  (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
-  #+end_src
+  
+** figwheel urls
+ * http://localhost:9500/ cards.html
+ * http://localhost:9500/figwheel-extra-main/auto-testing
+** with repl
+   #+begin_src clojure
+   (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
+   #+end_src
 
