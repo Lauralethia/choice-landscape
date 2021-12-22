@@ -1,6 +1,6 @@
 (ns landscape.core-test
   (:require
-   [landscape.core :refer [gen-well-list]]
+   [landscape.core :refer [gen-well-list vis-type-from-url]]
    [landscape.settings :refer [BOARD]]
    ;[thinktopic.aljabr.core :as nd]
    [clojure.core.matrix :as m]
@@ -70,3 +70,8 @@
 ;; but all are equal (24 trials per prob permutation)
 (deftest same-number-trial-sides-learn
   (is (every? #{24} (map #(f %) (filter #(= (deval-type %) :learn) (keys f))))))
+
+(deftest vis-type 
+  (is (= :mountain (vis-type-from-url {:anchor "mountain-anything" }) ))
+  (is (= :desert (vis-type-from-url {:anchor "anything" }) ))
+  (is (= :desert (vis-type-from-url {:noanchor :na}) )))
