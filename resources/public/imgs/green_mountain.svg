@@ -27,14 +27,14 @@
      inkscape:pagecheckerboard="0"
      showgrid="false"
      inkscape:zoom="1"
-     inkscape:cx="324.5"
-     inkscape:cy="282"
+     inkscape:cx="422.5"
+     inkscape:cy="370"
      inkscape:window-width="1676"
      inkscape:window-height="1011"
      inkscape:window-x="1080"
      inkscape:window-y="18"
      inkscape:window-maximized="1"
-     inkscape:current-layer="Layer_1"
+     inkscape:current-layer="g79714"
      width="180px" />
   <defs
      id="defs1060">
@@ -2058,7 +2058,8 @@
          id="use79175"
          transform="translate(22.103554,9.9968684)"
          width="100%"
-         height="100%" />
+         height="100%"
+         style="fill:#efc75e;fill-opacity:1" />
       <use
          x="0"
          y="0"
