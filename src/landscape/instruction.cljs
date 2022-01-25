@@ -10,6 +10,7 @@
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
    [landscape.model.phase :as phase]
+   [clojure.string]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
@@ -52,6 +53,15 @@
     (-> well :pos (update :y #(+ (:height sprite/well) 5 %))
         (update :x #(- % 200)))
     (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
+
+(def items {
+            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket"}
+            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe"}})
+(defn item-name [item]
+  "use current-settings state to determine what words to use"
+  (let [vis (or (get @settings/current-settings :vis-type) "desert")]
+    (get-in items [(keyword vis) (keyword item)])))
+
 (def INSTRUCTION
   [
    {:text (fn[state]
@@ -87,13 +97,13 @@
                   (update state :sprite-picked (partial next-sprite :down)))
           :up (fn[state]
                 (update state :sprite-picked (partial next-sprite :up)))}}
-   {:text (fn[_] "You want to fill this pond with water as fast as you can")
+   {:text (fn[_] (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can"))
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :active-at] time-cur))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))} 
-   {:text (fn[_] "And get the water as full as possible!")
+   {:text (fn[_] (str "And get as much " (item-name :water) " as possible!"))
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :level] 100))
@@ -101,20 +111,20 @@
             (assoc-in state [:water] (water/water-state-fresh)))}
 
    {:text (fn[state]
-            (html [:div "The pond is fed by the three wells."
+            (html [:div "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s."
                    [:br]
-                   "You will choose which well to get water from."
+                   "You will choose which " (item-name :well) " to get " (item-name :water) " from."
                    [:br]
-                   "Pick a well by walking to it!"
+                   "Pick a " (item-name :well) " by walking to it!"
                    [:br]
                    "Use the arrow keys on the keyboard: left, up, and right"
                    ]))}
    {:text (fn[state]
-            (html [:div "You can only get water from wells"
-                   [:br] "when they have a bucket."
+            (html [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
+                   [:br] "when they have a " (item-name :bucket) "."
                    [:br]
-                   [:br] "All three buckets carry"
-                   [:br] "the same amount of water."
+                   [:br] "All three " (item-name :bucket) "s carry"
+                   [:br] "the same amount of " (item-name :water) "."
                    ]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[state]
@@ -131,9 +141,9 @@
 
    {:text (fn[state]
             (html [:div
-                   "Wells will not always have water."
+                   (clojure.string/capitalize (item-name :well)) "s will not always have " (item-name :water) "."
                    [:br]
-                   "Sometimes the well will be dry."]))
+                   "Sometimes the " (item-name :well) " will be dry."]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-close-well key)]
@@ -146,7 +156,7 @@
    }
    {:text (fn[state]
             (html [:div
-                   "Othertimes, the well will be full of water"]))
+                   "Othertimes, the "(item-name :well)" will be full of " (item-name :water)]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-close-well key)]
@@ -160,12 +170,12 @@
    {:text (fn[state]
             (html [:div "Don't wait too long to choose."
                    [:br]
-                   "If you're too slow, all the wells will be empty!"]))
+                   "If you're too slow, all the " (item-name :well)"s  will be empty!"]))
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
     :stop wells/wells-turn-off
     }
-   {:text (fn[state] (html [:div "This well is far away." [:br] " It'll take longer to get than the other two."]))
+   {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-far-well key)]
@@ -190,7 +200,7 @@
     :text (fn[state]
             (html [:div "This white cross means you have to wait. Watch the cross until it disappears"
                    [:br] "When it disappears,"
-                   [:br] "you can choose the next well to visit"]))}
+                   [:br] "you can choose the next " (item-name :well)" to visit"]))}
    {
     :pos (fn[state] (-> BOARD :bar-pos
                        (update :y #(- % 200))))
@@ -207,8 +217,8 @@
                    [:br] "You're done when the green bar reaches the end!"
                    ]))}
    {:text (fn[state]
-            (html [:div "Each well is different, and has a different chance of having water"
-                   [:br] "Over time, a well may get better or worse"]))}
+            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water) 
+                   [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
    
    {:text (fn[state] [:div  "Ready? Push the right arrow to start!"])}])
 
