@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 [ -v DATABASE_URL ] && echo "$DATABASE_URL" && exit 0
-command -v heroku >/dev/null && heroku config |sed -n s/DATABASE_URL:.//p && exit 0
 test -r $(dirname $0)/.heroku-dburl && cat $_ && exit 0
+command -v heroku >/dev/null && heroku config |sed -n s/DATABASE_URL:.//p && exit 0
 exit 1
