@@ -49,6 +49,29 @@
   (let [fill (get-in state [:water :scale])]
     (water-fill fill)))
 
+;; TODO: should this be in phase.cljs?
+(defn photodiode-color
+  "define colors for each phase.
+  Paging between instructions can be used to test hardware (color based on instruction idx)"
+  [{:keys [name] :as phase}]
+  (cond 
+     (= name :waiting)     "white"
+     (= name :chose)       "#333"
+     (= name :iti)         "#666"
+     (= name :feedback)    "black"
+     ;; switch every other instruction
+     (= name :instruction) (if (even? (or 0 (:idx phase))) "#ccc" "#333")
+     (= name :survey)      "#999"
+     :else                 "black"))
+
+(defn photodiode
+  "display block to position photodiode over. for percision timing"
+  ([state]
+   (photodiode state [0 0]))
+  ([{:keys [phase] :as state} pos]
+     (when (:use-photodiode? state)
+       (position-at pos (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}])))))
+
 (defn progress-bar
   "show how far along we are in the task."
   [{:keys [trial well-list water] :as  state}]
@@ -179,9 +202,6 @@
         (position-at avatar-pos (sprite/avatar-disp state avatar)))
 
       (progress-bar state)
-      ;; TODO?
-      ;; draw arrows
-      ;; draw feedback
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
@@ -190,7 +210,10 @@
         :survey (survey-view state)
         :forum (survey/view-questions)
         :done (done-view state)
-        nil)])))
+        nil)
+
+      ;; and very top add photodiode square (when anchor portion of url calls for it)
+      (photodiode state)])))
 
 
 
@@ -229,3 +252,13 @@
            (str @state)
            ]))
   {:time-cur 100 :active-at 100 :direction :left :sprite-picked :astro})
+
+(defcard photodiode-card
+  (fn [state owner] (html
+           [:div
+            [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :chose))} "chose"]
+            [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :waiting))} "waiting"]
+            [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :feedback))} "feedback"]
+            [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :iti))} "iti"]
+            (photodiode @state)]))
+  {:phase {:name :chose} :use-photodiode? true})

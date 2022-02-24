@@ -4,6 +4,9 @@
 <meta charset="utf-8"/>
 <title>psiClj</title>
 <script>
+   // get value from input element
+   // task is selection dropdown and handled explicilty
+   // id, timepoint, and run are all input boxes
    function qs(name) {
      var val;
      if(name=="task"){
@@ -16,13 +19,27 @@
      // todo: validate? timepoint and run should be ints < 100
      return(val);
    }
+
+   // settings to append to anchor of url
+   function get_anchor(){
+       let landscape =  document.querySelector("#landscape")
+       let ltype = landscape.selectedOptions[landscape.selectedIndex].value;
+       let PD =  document.querySelector("input[name=photodiode]").checked;
+       return("#" + ltype + "&" + (PD?"photodiode":""))
+   }
+
    function make_url(){
      let comps = ["id", "task", "timepoint", "run"].map(x=>qs(x)).join("/");
-     return("/" + comps + "/"); // important trailing slash
+     return("/" + comps + "/" + get_anchor()); // important trailing slash
    }
+
+
+   // TODO: could launch in fullscreen here a la psiturk
+   // NB. would require actual button push to work in modern browsers. we have that here
    function go_url(){
          window.location.replace(make_url());
    }
+  
 
    /*
      update list using results for /tasks => {tasks: ["mytask"]}
@@ -55,9 +72,16 @@
       </select>  <br>
       <label for="timepoint">timepoint:</label> <input name=timepoint type="text" value=1 size=1> <br>
       <label for="run">run:</label> <input name=run type="text" value=1 size=1> <br>
-      <input type="submit" value="open">
 
-      <!-- <label for="cb">counterbalence:</label> <input name=cb type="text" value="" size=1> <br> -->
+      <label for="">landscape type:</label>
+      <select id="landscape">
+         <option name=landscape selected>desert</option>
+         <option name=landscape>mountains</option>
+      </select>  <br>
+
+      <label for="photodiode">photodiode?</label> <input name=photodiode type="checkbox" value=photodiode> <br>
+
+      <input type="submit" value="open">
    </form>
 
    <small style="position:absolute; bottom:0px"> bad url. want //id/task/timepoint/run/ </small>

@@ -32,8 +32,11 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 https://gist.github.com/bigfive/4256993
 ~document.body.style.MozTransform='scale(1.1)'~ does not scale background
 
-** TODO [#C] photodiode color block in some corner
-   so we can continue to use browser for sEEG
+** DONE [#C] photodiode color block
+   tiny block div that changes color at each phase. 
+   * Block could be moved to a better location.
+   * color range should be imperially checked. have 4 phase alternating between ligth and dark. sensitivity might vary. might need to be bigger
+
 ** touch well simulates keypress
    works on wells and instruction button. BUT there is no indication that's what happened.
 *** TODO [#C] include :touch true in keypress

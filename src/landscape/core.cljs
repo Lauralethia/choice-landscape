@@ -90,6 +90,10 @@
   (let [anchor (get u :anchor "desert")]
     (if (re-find #"mountain" (or anchor "desert")) :mountain :desert)))
 
+(defn photodiode-from-url [u]
+  "true if url contains 'photodiode'"
+  (let [anchor (get u :anchor "")] (re-find #"photodiode" (or anchor ""))))
+
 (defn -main []
   (gev/listen (KeyHandler. js/document)
               (-> KeyHandler .-EventType .-KEY) ; "key", not same across browsers?
@@ -116,6 +120,7 @@
   ; grab any url parameters and store with what's submited to the server
   (let [u (-> js/window .-location .-href url/url)
         vis (vis-type-from-url u)]
+    (swap! STATE assoc-in [:use-photodiode?] (photodiode-from-url u))
     (swap! STATE assoc-in [:record :url] u)
     (swap! settings/current-settings assoc :vis-type vis))
 

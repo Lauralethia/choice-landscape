@@ -93,3 +93,6 @@ ul#pick>li.picked { background: lightblue;}
 #progressbar_trials { background: green}
 #fullbar.mountain { width: 458px; background: #0d5419;}
 #progressbar_trials.mountain {  background: #efc75e;}
+
+/* for precision timing (iEEG/EEG). background color will change */
+#photodiode {height: 20px; width: 20px; display: block}

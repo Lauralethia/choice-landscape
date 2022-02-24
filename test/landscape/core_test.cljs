@@ -1,6 +1,6 @@
 (ns landscape.core-test
   (:require
-   [landscape.core :refer [gen-well-list vis-type-from-url]]
+   [landscape.core :refer [gen-well-list vis-type-from-url photodiode-from-url]]
    [cemerick.url :as url]
    [landscape.settings :refer [BOARD]]
    ;[thinktopic.aljabr.core :as nd]
@@ -79,3 +79,8 @@
   (is (= :desert (vis-type-from-url {:anchor nil})))
   ;; test page unlikely to have anchor and less likey to have 
   (is (= :desert (vis-type-from-url (-> js/window .-location .-href url/url)))))
+
+(deftest photodiode
+  (is (photodiode-from-url {:anchor "mountain&photodiode"}))
+  (is (not (photodiode-from-url {:anchor "desert"})))
+  (is (not (photodiode-from-url {}))))
