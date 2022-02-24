@@ -1,7 +1,7 @@
 (ns landscape.model.avatar
   (:require [landscape.model.wells :as wells]
             [landscape.utils :as utils]
-            [landscape.settings :refer [BOARD]]))
+            [landscape.settings :refer [current-settings]]))
 
 ;;avatar
 (defn which-dir [cur dest]
@@ -19,9 +19,9 @@
     :left  (merge cur {:x (max (- (:x cur) step) (:x dest))})
     :right (merge cur {:x (min (+ (:x cur) step) (:x dest))})
     :up    (merge cur {:y (max (- (:y cur)
-                                  (* step (:top-scale BOARD))) (:y dest))})
+                                  (* step (:top-scale @current-settings))) (:y dest))})
     :down  (merge cur {:y (min (+ (:y cur)
-                                  (* step (:top-scale BOARD))) (:y dest))})))
+                                  (* step (:top-scale @current-settings))) (:y dest))})))
 
 (defn move-active-time [a b now time]
         (cond
@@ -54,8 +54,8 @@
             :left  (-> wells :left :pos) ;{:x 0   :y cy}
             :right (-> wells :right :pos) ;{:x 400 :y cy}
             :up    (-> wells :up :pos) ;{:x cx :y 100}
-            :down (:avatar-home BOARD)
+            :down (:avatar-home @current-settings)
             (-> avatar :pos))))
 
 (defn avatar-home? [state]
-  (utils/collide? (get-in state [:avatar :pos]) (:avatar-home BOARD)))
+  (utils/collide? (get-in state [:avatar :pos]) (:avatar-home @current-settings)))

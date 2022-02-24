@@ -6,7 +6,7 @@
    [landscape.sound :as sound]
    [landscape.model.timeline :as timeline]
    [landscape.model :as model :refer [STATE]]
-   [landscape.settings :as settings :refer [BOARD current-settings]]
+   [landscape.settings :as settings :refer [current-settings]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
    [cemerick.url :as url]
@@ -26,9 +26,9 @@
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
   (let [best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
-        prob-low (get-in BOARD [:prob :low] ) ; initially 20
-        prob-mid (get-in BOARD [:prob :mid] ) ; initially 50
-        prob-high (get-in BOARD [:prob :high] ) ; originally 100, then 90 (20211104)
+        prob-low (get-in  @current-settings [:prob :low] ) ; initially 20
+        prob-mid (get-in  @current-settings [:prob :mid] ) ; initially 50
+        prob-high (get-in @current-settings [:prob :high] ) ; originally 100, then 90 (20211104)
        ]
     (vec (concat
        ;; first set of 16*(3 lowhigh + 3 highlow + 3 lowhigh):

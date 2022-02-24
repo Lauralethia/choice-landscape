@@ -1,5 +1,5 @@
 (ns landscape.model.wells
-(:require [landscape.settings :refer [BOARD]]
+(:require [landscape.settings :refer [current-settings]]
           [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
           [landscape.utils :as utils]
           [landscape.sound :as snd]))
@@ -7,13 +7,13 @@
 (defn well-pos
   "{:x # :y #} for a number of steps/count to a well"
   [side step]
-  (let [center-x (:center-x BOARD)
-        bottom-y (- (:bottom-y BOARD) 5)
-        move-by (reduce + (take step (:step-sizes BOARD)))]
+  (let [center-x (:center-x @current-settings)
+        bottom-y (- (:bottom-y @current-settings) 5)
+        move-by (reduce + (take step (:step-sizes @current-settings)))]
     (case side
       :left  {:x (- center-x move-by) :y bottom-y}
       :up    {:x center-x             :y (- bottom-y
-                                            (* move-by (:top-scale BOARD)))}
+                                            (* move-by (:top-scale @current-settings)))}
       :right {:x (+ center-x move-by) :y bottom-y}
       {:x 0 :y 0})))
 
@@ -107,9 +107,9 @@
 
 (defn well-off
   "stop well animation after given time
-  determined by settings/BOARD:wait-time"
+  determined by settings/@current-settings:wait-time"
   [time well]
-  (update-in well [:active-at] #(if (> (- time %) (:wait-time BOARD)) 0 %)))
+  (update-in well [:active-at] #(if (> (- time %) (:wait-time @current-settings)) 0 %)))
 
 (defn wells-turn-off [{:keys [wells time-cur] :as state}]
   (assoc state :wells

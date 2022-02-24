@@ -1,6 +1,5 @@
 (ns landscape.phase-test
 (:require
- [landscape.settings :refer [BOARD]]
  [landscape.model.phase :as phase]
  [landscape.model.timeline :refer [gen-wells]]
  [clojure.test :refer [is deftest]]))

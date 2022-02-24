@@ -14,7 +14,7 @@
 ; desert or mountain
 ; set by anchor of url eg http://localhost:9500/#mountain
 ; see core.cljs
-(def current-settings (atom {:vis-type :desert}))
+(def current-settings (atom (merge BOARD {:vis-type :desert})))
 
 ; not used everywhere!
 ; TODO: replace all hard coded numbers

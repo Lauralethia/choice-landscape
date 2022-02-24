@@ -11,6 +11,12 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
  Using [[./Procfile][~Procfile~]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
 
 * implementation
+  
+** TODO audio captcha
+** TODO parameterize some task settings
+    * high prob well is far (yes/no).
+    * distribution of sides (high prob more freq?)
+    * probabilities
 ** instructions/state advance
    instructions step through individual actions (sprites, buckets, etc)
 ** TODO [#A] allow for fixed timing
@@ -61,7 +67,7 @@ https://gist.github.com/bigfive/4256993
     :END:
     also fixed a loop bug and stopped animation if active-at is 0
 **** exponential decrease. make function to be reused by stepping stones
-     hard coded sequence ~:step-sizes~ in ~model/BOARD~
+     hard coded sequence ~:step-sizes~ in atom ~settings/current-settings~ (previously defvar ~BOARD~)
 
 *** set and indicate dis/enabled well
     currently have a bucket on active wells. could still use animations
@@ -109,7 +115,7 @@ https://gist.github.com/bigfive/4256993
    * POST to /finish. Display thank you/finished text
 *** TODO [#B] redirect to amazon turk finish page?
 
-** TODO [#C] survey
+** DONE [#C] survey
     * add results to :record, might need to reorganize top level
     * allow text box entry for non-MR (why pick well all at 100%, other thoughts)
 ** TODO add animation to devcards

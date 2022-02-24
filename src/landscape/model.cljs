@@ -4,7 +4,7 @@
    [landscape.utils :as utils]
    [landscape.sound :as snd]
    [landscape.key :as key]
-   [landscape.settings :refer [BOARD]]
+   [landscape.settings :refer [current-settings]]
    [landscape.instruction :as instruction]
    [landscape.model.records :as records]
    [landscape.model.wells :as wells]
@@ -150,6 +150,6 @@
             :direction :down
             :last-move 0
             :move-count 0
-            :destination (:avatar-home BOARD)}})
+            :destination (:avatar-home @current-settings)}})
 
 (def STATE (atom (state-fresh)))

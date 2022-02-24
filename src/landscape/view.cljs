@@ -3,7 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.utils :as utils]
    [landscape.model :as model]
-   [landscape.settings :refer [BOARD current-settings]]
+   [landscape.settings :refer [current-settings]]
    [landscape.instruction :as instruction]
    [landscape.model.survey :as survey]
    [landscape.key :as key]
@@ -79,7 +79,7 @@
         score (/ (:score water) ntrials)
         progress (/ trial ntrials)
         vis-class (-> @current-settings :vis-type name)]
-    (position-at (:bar-pos BOARD)
+    (position-at (:bar-pos @current-settings)
                  (html [:div#fullbar {:class vis-class}
                         [:div#progressbar_trials {:class vis-class
                                                   :style {:height "100%" :width (str (* progress 100) "%")}}]

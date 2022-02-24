@@ -1,14 +1,14 @@
 (ns landscape.model.timeline
   (:require
    [landscape.model.wells :as wells]
-   [landscape.settings :as settings :refer [BOARD]]
+   [landscape.settings :as settings :refer [current-settings]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 
 (defrecord well [step open prob active-at pos])
 
 (defn well-steps
   "best side is more steps away than others
-  step size defined in settings/BOARD"
+  step size defined in settings/@current-settings"
   [side side-best] (if (= side side-best) 2 1))
 (defn well-side
   "use defrecord to creat a well"
@@ -34,7 +34,7 @@
   (let [others (filter #(not= side-best %) [:left :up :right])
         fst (first others)
         snd (second others)
-        prob-high (get-in BOARD [:prob :high])]
+        prob-high (get-in @current-settings [:prob :high])]
     [{fst high snd low side-best prob-high :side-best side-best}
      {fst low snd high side-best prob-high :side-best side-best}]))
 ;; 2. then shuffle which is disabled for all sides
@@ -70,8 +70,8 @@
   (mapv #(merge {:reps-per-side reps-per-side} %) prob-map))
 
 (defn gen-example []
-  (gen-wells {:prob-low (-> BOARD :prob :low)
-              :prob-high (-> BOARD :prob :mid)
+  (gen-wells {:prob-low (-> @current-settings :prob :low)
+              :prob-high (-> @current-settings :prob :mid)
               :reps-each-side 1 ;; # trials before switch high and low
               :side-best :left}))
 

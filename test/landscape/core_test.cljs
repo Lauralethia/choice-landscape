@@ -2,7 +2,7 @@
   (:require
    [landscape.core :refer [gen-well-list vis-type-from-url photodiode-from-url]]
    [cemerick.url :as url]
-   [landscape.settings :refer [BOARD]]
+   [landscape.settings :refer [current-settings]]
    ;[thinktopic.aljabr.core :as nd]
    [clojure.core.matrix :as m]
    [clojure.test :refer [is deftest]]))
@@ -13,7 +13,7 @@
 (def TOTAL-TRIALS 204)
 ;; will break if probs are not all distinct
 ;; 20 50 100
-(def PROBS (-> BOARD :prob vals sort)) 
+(def PROBS (-> @current-settings :prob vals sort)) 
 
 ;; (defmacro get-in-trial
 ;;   "using trial and side within body. doesn't work in cljs? probably wrong anway

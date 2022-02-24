@@ -3,7 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.key :as key]
    [landscape.utils :as utils]
-   [landscape.settings :as settings :refer [BOARD]]
+   [landscape.settings :as settings :refer [current-settings]]
    [landscape.model.records :as records]
    [landscape.model.water :as water]
    [landscape.model.wells :as wells]
@@ -136,7 +136,7 @@
     :stop (fn[state]
             (-> state
                 (wells/wells-set-open-or-close [:left :up :right] true)
-                (assoc-in [:avatar :destination] (:avatar-home settings/BOARD))))
+                (assoc-in [:avatar :destination] (:avatar-home @current-settings))))
     }
 
    {:text (fn[state]
@@ -202,7 +202,7 @@
                    [:br] "When it disappears,"
                    [:br] "you can choose the next " (item-name :well)" to visit"]))}
    {
-    :pos (fn[state] (-> BOARD :bar-pos
+    :pos (fn[state] (-> @current-settings :bar-pos
                        (update :y #(- % 200))))
     :start (fn[state] (-> state
                         (assoc-in [:water :score] 10)
