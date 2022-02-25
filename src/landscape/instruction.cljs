@@ -10,6 +10,7 @@
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
    [landscape.model.phase :as phase]
+   [landscape.sound :refer [play-sound]]
    [clojure.string]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
@@ -64,6 +65,16 @@
 
 (def INSTRUCTION
   [
+   {:text (fn [state]
+            (html
+             [:div "This game requires audio!"
+              [:br] "Type the word you hear to continue."
+              [:br] [:input {:id "captcha" :type :input :size 5}]
+              [:br] [:br] [:input {:type :button :value "play again" :on-click (fn [e] (play-sound :word))}]
+]))
+    :start (fn[state] (play-sound :word) state)
+    :stop identity ; TODO: no advance unless word is cat
+   }
    {:text (fn[state]
             (html
              [:div [:h1  "Welcome to our game!"]
