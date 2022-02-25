@@ -62,6 +62,23 @@
   (let [vis (or (get @settings/current-settings :vis-type) "desert")]
     (get-in items [(keyword vis) (keyword item)])))
 
+
+(declare INSTRUCTION)
+(defn instruction-goto
+  ^{:test (fn[]
+            (assert (= 0 (instruction-goto 0 :left)))
+            (assert (= 0 (instruction-goto 1 :left)))
+            (assert (= 1 (instruction-goto 0 :right)))
+            (assert (= 1 (instruction-goto 1 :up))))
+    :doc "move given index by keypress direction"}
+  [i dir]
+  (let [lastidx (dec (count INSTRUCTION))]
+    (case dir
+        :left (max 0 (dec i))
+        :right (min lastidx (inc i))
+        ;; :up or :down, no change
+        i)))
+
 (def INSTRUCTION
   [
    {:text (fn[state]
@@ -178,10 +195,18 @@
    {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
-             (let [side (-> state find-far-well key)]
-               (-> state
-                   (assoc-in [:wells side :active-at] time-cur)
-                   (assoc-in [:wells side :score] 1))))
+             (let [side (-> state find-far-well key)
+                   farstep (get-in [:step-sizes 1] @settings/current-settings)]
+               (if (= 0 farstep)
+                 ;; skip instruction if far is same as close.
+                 ;; safe to inc. we know there's instructions after this
+                 (update-in state [:phase :idx] inc)
+
+                 ;; otheriwse show this note about far taking longer
+                 (-> state
+                     (assoc-in [:wells side :active-at] time-cur)
+                     (assoc-in [:wells side :score] 1))))
+             )
     :stop (fn[state]
              (-> state
                  ;; wells/wells-turn-off
@@ -222,20 +247,6 @@
    
    {:text (fn[state] [:div  "Ready? Push the right arrow to start!"])}])
 
-(defn instruction-goto
-  ^{:test (fn[]
-            (assert (= 0 (instruction-goto 0 :left)))
-            (assert (= 0 (instruction-goto 1 :left)))
-            (assert (= 1 (instruction-goto 0 :right)))
-            (assert (= 1 (instruction-goto 1 :up))))
-    :doc "move given index by keypress direction"}
-  [i dir]
-  (let [lastidx (dec (count INSTRUCTION))]
-    (case dir
-        :left (max 0 (dec i))
-        :right (min lastidx (inc i))
-        ;; :up or :down, no change
-        i)))
 
 (defn fn-or-idnt [var fnc] (if fnc (fnc var) var))
 (defn update-to-from

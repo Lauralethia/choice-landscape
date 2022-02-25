@@ -85,6 +85,7 @@
 (defn vis-class-to-body []
   (let [vis-class (-> @current-settings :vis-type name)]
     (.. js/document -body (setAttribute "class" vis-class))))
+
 (defn vis-type-from-url [u]
   "desert or mountain from url :anchor. default to desert"
   (let [anchor (get u :anchor "desert")]
@@ -93,6 +94,18 @@
 (defn photodiode-from-url [u]
   "true if url contains 'photodiode'"
   (let [anchor (get u :anchor "")] (re-find #"photodiode" (or anchor ""))))
+
+(defn get-url-map [] (-> js/window .-location .-href url/url))
+(defn pattern-in-url
+  "do either url map's path or anchor contain a pattern.
+  useful for checking parameter permutations set by server (path) or static (anchor)"
+  [umap patt] (any? (map #(re-find patt (str %)) (-> (umap) (select-keys [:path :anchor]) vals))))
+
+(defn task-parameters-url
+  "setup parameterization of task settings based on text in the url"
+  [settings u]
+  (if (pattern-in-url u #"mx95") (assoc-in settings [:prob :high] 95))
+  (if (pattern-in-url u #"nofar") (assoc-in settings [:step-sizes 1] 0)))
 
 (defn -main []
   (gev/listen (KeyHandler. js/document)
@@ -104,6 +117,15 @@
   (println "preloading sounds")
   (doall (sound/preload-sounds))
 
+  ;; update settings based on url
+  (let [u (get-url-map) 
+        vis (vis-type-from-url u)]
+    (swap! STATE assoc-in [:use-photodiode?] (photodiode-from-url u))
+    (swap! STATE assoc-in [:record :url] u)
+    (swap! settings/current-settings assoc :vis-type vis)
+    (reset! settings/current-settings (task-parameters-url @settings/current-settings u))
+    (swap! STATE assoc-in [:record :settings] @settings/current-settings))
+
   (let [well-list (gen-well-list)]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
@@ -111,21 +133,16 @@
 
   ;; TODO: fixed iti durations
 
-  ; start with instructions
-  ; where lp/time-update will call into model/next-step and disbatch to
-  ; instruction/step (and when phase name changes, will redirect to model/step-task)
-  ; phase name change handled by phase/set-phase-fresh
+                                        ; start with instructions
+                                        ; where lp/time-update will call into model/next-step and disbatch to
+                                        ; instruction/step (and when phase name changes, will redirect to model/step-task)
+                                        ; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
 
-  ; grab any url parameters and store with what's submited to the server
-  (let [u (-> js/window .-location .-href url/url)
-        vis (vis-type-from-url u)]
-    (swap! STATE assoc-in [:use-photodiode?] (photodiode-from-url u))
-    (swap! STATE assoc-in [:record :url] u)
-    (swap! settings/current-settings assoc :vis-type vis))
+                                        ; grab any url parameters and store with what's submited to the server
 
   (vis-class-to-body) 
-  ; start
+                                        ; start
   (lp/run-start STATE))
 
 (-main)
