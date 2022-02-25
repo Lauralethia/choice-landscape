@@ -123,7 +123,7 @@
                      ;; or a choice was not made quick enough
                      (and (= pname :chose)
                           (>= time-since (:choice-timeout settings/TIMES))
-                          (:enforce-timeout settings/current-settings))
+                          (:enforce-timeout @settings/current-settings))
                      (assoc phase :name :timeout
                             :start-at time-cur
                             :sound-at (sound/timeout-snd time-cur nil))
@@ -136,7 +136,8 @@
                      ;; might be comming from feedback, timeout, or instructions
                      (or (and (= pname :feedback) (avatar/avatar-home? state))
                          (= pname :instruction)
-                         (and (= pname :timeout) (>= time-since (:timeout-dur settings/TIMES))))
+                         (and (= pname :timeout)
+                              (>= time-since (:timeout-dur settings/TIMES))))
                      (assoc phase
                             :name :iti
                             :start-at time-cur

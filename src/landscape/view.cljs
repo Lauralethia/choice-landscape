@@ -69,7 +69,7 @@
   ([state]
    (photodiode state [0 0]))
   ([{:keys [phase] :as state} pos]
-     (when (:use-photodiode? state)
+     (when (-> state :record :settings :use-photodiode?)
        (position-at pos (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}])))))
 
 (defn progress-bar
@@ -262,4 +262,4 @@
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :feedback))} "feedback"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :iti))} "iti"]
             (photodiode @state)]))
-  {:phase {:name :chose} :use-photodiode? true})
+  {:phase {:name :chose} :record {:settings {:use-photodiode? true}}})

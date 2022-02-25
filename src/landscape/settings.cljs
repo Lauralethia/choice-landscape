@@ -13,9 +13,11 @@
 (def tweaks ""
    {:skip-captcha false
     :vis-type :desert
-    :enforce-timeout true
     :show-instructions true
-    :debug false})
+    :use-photodiode? false
+    :enforce-timeout true
+    :debug false
+})
 
 ; desert or mountain
 ; set by anchor of url eg http://localhost:9500/#mountain

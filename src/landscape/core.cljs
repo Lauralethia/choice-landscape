@@ -8,9 +8,9 @@
    [landscape.model :as model :refer [STATE]]
    [landscape.settings :as settings :refer [current-settings]]
    [landscape.instruction :refer [INSTRUCTION instruction-finished]]
+   [landscape.url-tweak :refer [get-url-map task-parameters-url vis-type-from-url]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
-   [cemerick.url :as url]
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true]
@@ -87,37 +87,6 @@
   (let [vis-class (-> @current-settings :vis-type name)]
     (.. js/document -body (setAttribute "class" vis-class))))
 
-(defn vis-type-from-url [u]
-  "desert or mountain from url :anchor. default to desert"
-  (let [anchor (get u :anchor "desert")]
-    (if (re-find #"mountain" (or anchor "desert")) :mountain :desert)))
-
-(defn photodiode-from-url [u]
-  "true if url contains 'photodiode'"
-  (let [anchor (get u :anchor "")] (re-find #"photodiode" (or anchor ""))))
-
-(defn get-url-map [] (-> js/window .-location .-href url/url))
-(defn pattern-in-url
-  "do either url map's path or anchor contain a pattern.
-  useful for checking parameter permutations set by server (path) or static (anchor)"
-  ([patt] (pattern-in-url (get-url-map) patt))
-  ([umap patt] (some some? (map #(re-find patt (str %))
-                            (-> umap (select-keys [:path :anchor]) vals)))))
-
-(defn update-settings [settings u pattern where value]
-  (if (pattern-in-url u pattern) (assoc-in settings where value) settings))
-(defn task-parameters-url
-  "setup parameterization of task settings based on text in the url"
-  [settings u]
-  (-> settings 
-      (update-settings u #"mx95"  [:prob :high] 95)
-      (update-settings u #"nofar"  [:step-sizes 1] 0)
-      (update-settings u #"VERBOSEDEBUG"  [:debug] true)
-      (update-settings u #"NO_TIMEOUT"  [:enforce-timeout] false)
-      ;; currently broken. need to get TIME?
-      ;; (update-settings u #"noinstruction" [:show-instructions] false)
-      (update-settings u #"nocaptcha"  [:skip-captcha] true)))
-
 (defn -main []
   (gev/listen (KeyHandler. js/document)
               (-> KeyHandler .-EventType .-KEY) ; "key", not same across browsers?
@@ -131,7 +100,6 @@
   ;; update settings based on url
   (let [u (get-url-map) 
         vis (vis-type-from-url u)]
-    (swap! STATE assoc-in [:use-photodiode?] (photodiode-from-url u))
     (swap! STATE assoc-in [:record :url] u)
     (swap! settings/current-settings assoc :vis-type vis)
     (reset! settings/current-settings (task-parameters-url @settings/current-settings u))
