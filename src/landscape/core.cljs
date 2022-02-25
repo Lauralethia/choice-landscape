@@ -83,7 +83,9 @@
          ;; 20211216 inc to 9 (+1 above)
          :side-best best-side})))))
 
-(defn vis-class-to-body []
+(defn vis-class-to-body
+  "style body based on visual type (desert/mountain)"
+  []
   (let [vis-class (-> @current-settings :vis-type name)]
     (.. js/document -body (setAttribute "class" vis-class))))
 
@@ -98,6 +100,8 @@
   (doall (sound/preload-sounds))
 
   ;; update settings based on url
+  ;; grab any url parameters and store with what's submited to the server
+  ;; :record:url and :record:settings
   (let [u (get-url-map) 
         vis (vis-type-from-url u)]
     (swap! STATE assoc-in [:record :url] u)
@@ -117,10 +121,10 @@
 
   ;; TODO: fixed iti durations
 
-                                        ; start with instructions
-                                        ; where lp/time-update will call into model/next-step and disbatch to
-                                        ; instruction/step (and when phase name changes, will redirect to model/step-task)
-                                        ; phase name change handled by phase/set-phase-fresh
+  ; start with instructions
+  ; where lp/time-update will call into model/next-step and disbatch to
+  ; instruction/step (and when phase name changes, will redirect to model/step-task)
+  ; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
 
   ;; broken
@@ -130,14 +134,13 @@
   ;;   (swap! STATE assoc-in [:phase :name] :instruction)
   ;;   (swap! STATE (instruction-finished TIME)))
   
-                                        ; run the first instructions start function
-                                        ; BUG - this doesn't play any sound!
+  ; run the first instructions start function
+  ; BUG - this doesn't play any sound! but we moved sound captcha to second slide
   (reset! STATE ((-> INSTRUCTION first :start) @STATE))
-
-                                        ; grab any url parameters and store with what's submited to the server
-
+  
+  ; update background for mountain or desert 
   (vis-class-to-body) 
-                                        ; start
+  ; start
   (lp/run-start STATE))
 
 (-main)
