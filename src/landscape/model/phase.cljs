@@ -122,7 +122,8 @@
 
                      ;; or a choice was not made quick enough
                      (and (= pname :chose)
-                          (>= time-since (:choice-timeout settings/TIMES)))
+                          (>= time-since (:choice-timeout settings/TIMES))
+                          (:enforce-timeout settings/current-settings))
                      (assoc phase :name :timeout
                             :start-at time-cur
                             :sound-at (sound/timeout-snd time-cur nil))

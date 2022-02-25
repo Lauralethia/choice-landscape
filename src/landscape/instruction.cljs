@@ -4,6 +4,7 @@
    [landscape.key :as key]
    [landscape.utils :as utils]
    [landscape.settings :as settings :refer [current-settings]]
+   [landscape.key :refer [sim-key]]
    [landscape.model.records :as records]
    [landscape.model.water :as water]
    [landscape.model.wells :as wells]
@@ -79,19 +80,39 @@
         :right (min lastidx (inc i))
         ;; :up or :down, no change
         i)))
+(defn fn-or-idnt [var fnc] (if fnc (fnc var) var))
+(defn update-to-from
+  "run INSTRUCTION's stop and start functions on state
+  if either is nil, pass along state unchanged"
+  [state i-cur i-next]
+  (let [stop  (get-in INSTRUCTION [i-cur :stop])
+        ;; if we should skip move one more in the current direction
+        ;; before getting i-next's stat function
+        skip (if-let [skipfn (get-in INSTRUCTION [i-next :skip])]
+                     (skipfn state)
+                     false)
+        dir (if (> 0 (- i-cur i-next)) 1 -1)
+        i-next (if skip (+ i-next dir) i-next)
+        start (get-in INSTRUCTION [i-next :start])
+        ]
+    (-> state
+        (fn-or-idnt stop)
+        (fn-or-idnt start)
+        (assoc-in [:phase :idx] i-next))))
+
+(defn pass-captcha
+ ([state]
+  (pass-captcha state
+                (if-let [target (. js/document (querySelector "#captcha"))]
+                  (.-value target)
+                  "FAIL")))
+  ([state pass]
+  (or (-> state :record :settings :skip-captcha)
+      (= "cat" pass))))
+
 
 (def INSTRUCTION
   [
-   {:text (fn [state]
-            (html
-             [:div "This game requires audio!"
-              [:br] "Type the word you hear to continue."
-              [:br] [:input {:id "captcha" :type :input :size 5}]
-              [:br] [:br] [:input {:type :button :value "play again" :on-click (fn [e] (play-sound :word))}]
-]))
-    :start (fn[state] (play-sound :word) state)
-    :stop identity ; TODO: no advance unless word is cat
-   }
    {:text (fn[state]
             (html
              [:div [:h1  "Welcome to our game!"]
@@ -108,6 +129,40 @@
                     ;;          .requestFullscreen))
             state)
     :key nil}
+   {:text (fn [state]
+            (html
+             [:div [:h2 "This game uses sound!"]
+              [:br] "Type the word you hear in the box below."
+              [:br]
+              [:input
+               {:id "captcha" :type :input :size 10
+                :on-change (fn[e]
+                             (let [word (-> e .-target .-value)]
+                               (if (pass-captcha state word) (sim-key :right))))
+                }]
+              [:br] [:br]
+              [:input
+               {:type :button :value "Play Sound Again"
+                :on-click (fn [e] (play-sound :word))}]]))
+    ;; when we start out, we can skip this if we dont need to pass-captcha
+    ;; ie settings/:skip-catcha == true
+    :start (fn[state] (do (play-sound :word) state))
+
+    ;; NB. presented second b/c if first,
+    ;; going back another goes to min. which is this. endless loop
+    :skip pass-captcha
+    :stop identity
+    ;; only advance if captcha is passed
+    ;; will likely be here after sim-key from on-change textbox
+    :key {:right (fn[state]
+                   (if (pass-captcha state)
+                     (-> state
+                         ;; dont have to do captcha again
+                         (assoc-in [:record :settings :skip-captcha] true)
+                         ;; go to next instruction
+                         (update-to-from 1 2))
+                     state))}
+   }
    {:text (fn[state]
             (html
              [:div  "Before we start, pick a character!"
@@ -130,7 +185,7 @@
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :active-at] time-cur))
     :stop (fn [{:keys [water time-cur] :as state}]
-            (assoc-in state [:water] (water/water-state-fresh)))} 
+            (assoc-in state [:water] (water/water-state-fresh)))}
    {:text (fn[_] (str "And get as much " (item-name :water) " as possible!"))
     :pos (fn[_] {:x 50 :y 250})
     :start (fn[{:keys [water time-cur] :as state}]
@@ -205,24 +260,22 @@
     }
    {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
-    :start (fn[{:keys [time-cur wells] :as  state}]
-             (let [side (-> state find-far-well key)
-                   farstep (get-in [:step-sizes 1] @settings/current-settings)]
-               (if (= 0 farstep)
-                 ;; skip instruction if far is same as close.
-                 ;; safe to inc. we know there's instructions after this
-                 (update-in state [:phase :idx] inc)
 
-                 ;; otheriwse show this note about far taking longer
-                 (-> state
-                     (assoc-in [:wells side :active-at] time-cur)
-                     (assoc-in [:wells side :score] 1))))
-             )
+    ;; skip instruction if far is same as close.
+    ;; causes recursion if done in start:(update-to-from state i-cur (inc i-cur))
+    :skip (fn[state]
+            (-> @settings/current-settings (get-in [:step-sizes 1]) (= 0)))
+    :start (fn[{:keys [time-cur wells] :as  state}]
+             (let [side (-> state find-far-well key)]
+               ;; otheriwse show this note about far taking longer
+               (-> state
+                   (assoc-in [:wells side :active-at] time-cur)
+                   (assoc-in [:wells side :score] 1))))
     :stop (fn[state]
-             (-> state
-                 ;; wells/wells-turn-off
-                 (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
-                 ))}
+            (-> state
+                ;; wells/wells-turn-off
+                (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
+                ))}
   {
     :pos (fn[state] (-> state (get-in [:avatar :pos])
                        (update :y #(- % 150))
@@ -253,22 +306,28 @@
                    [:br] "You're done when the green bar reaches the end!"
                    ]))}
    {:text (fn[state]
-            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water) 
+            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water)
                    [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
-   
    {:text (fn[state] [:div  "Ready? Push the right arrow to start!"])}])
 
-
-(defn fn-or-idnt [var fnc] (if fnc (fnc var) var))
-(defn update-to-from
-  "run INSTRUCTION's stop and start functions on state
-  if either is nil, pass along state unchanged"
-  [state i-cur i-next]
-  (let [stop  (get-in INSTRUCTION [i-cur :stop])
-        start (get-in INSTRUCTION [i-next :start])]
-    (-> state
-        (fn-or-idnt stop)
-        (fn-or-idnt start))))
+(defn instruction-finished [state time-cur]
+  (-> state
+      ;; NB. maybe bug?
+      ;; we move to "home" at start and dont want to intercept any
+      ;; keys until we are there.
+      ;; START TASK buy moving :phase :name to iti
+      ;; TODO pull iti from somewhere?
+      (phase/phase-update)
+      ;; (assoc :phase (merge {:iti-dur 2000}
+      ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
+      ;; save both the time since animation (relative to other onsets)
+      ;; and the actual time (according to the browser) to the struct
+      ;; that will be sent away by phases/phone-home
+      (assoc-in [:record :start-time] (records/make-start-time time-cur))
+      ;; wells normally turned off on :chose->:waiting flip
+      ;; here we skip right over that into the first :iti so explicitly close
+      (wells/wells-close)
+      (assoc :key (key/key-state-fresh))))
 
 (defn read-keys [{:keys [key phase time-cur] :as state}]
   (let [dir (case (:have key)
@@ -288,29 +347,12 @@
       ;; changing which what we should see
       (not= i-cur i-next)
       (-> state
-          (assoc-in [:phase :idx] i-next)
           (assoc-in [:key :have] nil)
           (update-to-from i-cur i-next))
 
       ;; we want to go past the end (are "ready")
       (and dir (= i-cur i-next) (= i-cur (dec (count INSTRUCTION))))
-      (-> state
-          ;; NB. maybe bug?
-          ;; we move to "home" at start and dont want to intercept any
-          ;; keys until we are there.
-          ;; START TASK buy moving :phase :name to iti
-          ;; TODO pull iti from somewhere?
-          (phase/phase-update)
-          ;; (assoc :phase (merge {:iti-dur 2000}
-          ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
-          ;; save both the time since animation (relative to other onsets)
-          ;; and the actual time (according to the browser) to the struct
-          ;; that will be sent away by phases/phone-home
-          (assoc-in [:record :start-time] (records/make-start-time time-cur))
-          ;; wells normally turned off on :chose->:waiting flip
-          ;; here we skip right over that into the first :iti so explicitly close
-          (wells/wells-close)
-          (assoc :key (key/key-state-fresh)))
+      (instruction-finished state time-cur)
 
       ;; otherwise no change
       :else

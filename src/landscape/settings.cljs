@@ -10,11 +10,17 @@
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    :prob {:low 20 :mid 50 :high 100}
    })
+(def tweaks ""
+   {:skip-captcha false
+    :vis-type :desert
+    :enforce-timeout true
+    :show-instructions true
+    :debug false})
 
 ; desert or mountain
 ; set by anchor of url eg http://localhost:9500/#mountain
 ; see core.cljs
-(def current-settings (atom (merge BOARD {:vis-type :desert})))
+(def current-settings (atom (merge BOARD tweaks)))
 
 ; not used everywhere!
 ; TODO: replace all hard coded numbers

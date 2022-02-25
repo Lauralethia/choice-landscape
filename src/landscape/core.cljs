@@ -7,6 +7,7 @@
    [landscape.model.timeline :as timeline]
    [landscape.model :as model :refer [STATE]]
    [landscape.settings :as settings :refer [current-settings]]
+   [landscape.instruction :refer [INSTRUCTION instruction-finished]]
    [goog.string :refer [unescapeEntities]]
    [goog.events :as gev]
    [cemerick.url :as url]
@@ -25,7 +26,7 @@
 
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
-  (let [best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
+  (let[best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
         prob-low (get-in  @current-settings [:prob :low] ) ; initially 20
         prob-mid (get-in  @current-settings [:prob :mid] ) ; initially 50
         prob-high (get-in @current-settings [:prob :high] ) ; originally 100, then 90 (20211104)
@@ -99,13 +100,23 @@
 (defn pattern-in-url
   "do either url map's path or anchor contain a pattern.
   useful for checking parameter permutations set by server (path) or static (anchor)"
-  [umap patt] (any? (map #(re-find patt (str %)) (-> (umap) (select-keys [:path :anchor]) vals))))
+  ([patt] (pattern-in-url (get-url-map) patt))
+  ([umap patt] (some some? (map #(re-find patt (str %))
+                            (-> umap (select-keys [:path :anchor]) vals)))))
 
+(defn update-settings [settings u pattern where value]
+  (if (pattern-in-url u pattern) (assoc-in settings where value) settings))
 (defn task-parameters-url
   "setup parameterization of task settings based on text in the url"
   [settings u]
-  (if (pattern-in-url u #"mx95") (assoc-in settings [:prob :high] 95))
-  (if (pattern-in-url u #"nofar") (assoc-in settings [:step-sizes 1] 0)))
+  (-> settings 
+      (update-settings u #"mx95"  [:prob :high] 95)
+      (update-settings u #"nofar"  [:step-sizes 1] 0)
+      (update-settings u #"VERBOSEDEBUG"  [:debug] true)
+      (update-settings u #"NO_TIMEOUT"  [:enforce-timeout] false)
+      ;; currently broken. need to get TIME?
+      ;; (update-settings u #"noinstruction" [:show-instructions] false)
+      (update-settings u #"nocaptcha"  [:skip-captcha] true)))
 
 (defn -main []
   (gev/listen (KeyHandler. js/document)
@@ -126,6 +137,11 @@
     (reset! settings/current-settings (task-parameters-url @settings/current-settings u))
     (swap! STATE assoc-in [:record :settings] @settings/current-settings))
 
+  ;; view debug
+  (when (:debug @settings/current-settings)
+    (set! landscape.view.DEBUG true))
+
+
   (let [well-list (gen-well-list)]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
@@ -138,6 +154,17 @@
                                         ; instruction/step (and when phase name changes, will redirect to model/step-task)
                                         ; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
+
+  ;; broken
+  ;; need to wait for the avatar to finish walking down from the screen?
+  ;; need TIME?
+  ;; (if (:show-instructions @settings/current-settings)
+  ;;   (swap! STATE assoc-in [:phase :name] :instruction)
+  ;;   (swap! STATE (instruction-finished TIME)))
+  
+                                        ; run the first instructions start function
+                                        ; BUG - this doesn't play any sound!
+  (reset! STATE ((-> INSTRUCTION first :start) @STATE))
 
                                         ; grab any url parameters and store with what's submited to the server
 

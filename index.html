@@ -4,10 +4,63 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="imgs/favicon.png">
     <title>Landscape Choice Static Pages</title>
+
+<script>
+   // settings to append to anchor of url
+  function ifchecked(name){
+    let box =  document.querySelector("input[name="+name+"]").checked;
+    return(box?name:"")
+  }
+   function get_anchor(){
+       let landscape =  document.querySelector("#landscape")
+       let ltype = landscape.selectedOptions[landscape.selectedIndex].value;
+       let tweaks = ["photodiode", "nofar", "mx95"]
+                    .map(x=>ifchecked(x))
+                    .filter(x=>x!="")
+                    .join("&");
+       return("#" + ltype + (tweaks?("&"+tweaks):""))
+   }
+
+   function make_url(){
+     return("out/index.html" + get_anchor()); // important trailing slash
+   }
+  
+   let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha?',
+                 'photodiode': 'photodiode (sEEG)',
+                 'nofar': 'make all wells equadistant (no far well)?',
+                 'mx95': 'best well prob=95',
+                 'VERBOSEDEBUG': 'verbose debugging',
+                 'NO_TIMEOUT': 'disable timeout'
+}
+
+  function add_tweaks(){
+      let f =  document.querySelector("#task_setting_tweaks");
+      Object.keys(tweaks).forEach(x =>
+            f.innerHTML += ('<input type="checkbox" name="'+ x +'"/> '+ tweaks[x] +'? <br>'))
+
+   }
+
+
+   // TODO: could launch in fullscreen here a la psiturk
+   // NB. would require actual button push to work in modern browsers. we have that here
+   function go_url(){
+         window.location.replace(make_url());
+   }
+</script>
   </head>
-  <body>
+  <body onload="add_tweaks()">
      <ul><li><a href="out/index.html"> static js version </a></li>
         <li><a href="out/cards.html"> devcards </a></li>
         <li><a href="https://github.com/LabNeuroCogDevel/choice-landscape">git repo</a></li>
-     </ul></body>
-</html>
+     </ul>
+<h2> task parameters </h2>
+<form onsubmit="go_url(); return false" >
+      <label for="">landscape type:</label>
+      <select id="landscape">
+         <option name=landscape selected>desert</option>
+         <option name=landscape>mountains</option>
+      </select>  <br>
+      <!-- see "tweaks" above -->
+      <div id="task_setting_tweaks"></div>
+  <input type="submit" value="open">
+</form> </body> </html>

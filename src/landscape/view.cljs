@@ -117,7 +117,8 @@
   [{:keys [wells] :as state} side]
   (position-at (get-in wells [side :pos])
                (html [:div {:on-click #(key/sim-key side)}
-                      (well-show state (side wells))])))
+                      (well-show state (side wells))
+                      (if DEBUG [:div (-> wells side :prob)])])))
 
 (defn well-show-all
   "3 wells not all equadistant. sprite for animate"
