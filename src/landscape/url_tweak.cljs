@@ -27,6 +27,7 @@
        (update-settings u #"photodiode"  [:use-photodiode?] true)
        (update-settings u #"mx95"  [:prob :high] 95)
        (update-settings u #"nofar"  [:step-sizes 1] 0)
+       (update-settings u #"yesfar"  [:step-sizes 1] 150)
        (update-settings u #"VERBOSEDEBUG"  [:debug] true)
        (update-settings u #"NO_TIMEOUT"  [:enforce-timeout] false)
        ;; currently broken. need to get TIME?
