@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8"/>
 <title>psiClj</title>
+
+<!-- in out/extra but shows up in root (/) with psiclj -->
+<script src="tweaks.js" type="text/javascript"></script>
 <script>
    // get value from input element
    // task is selection dropdown and handled explicilty
@@ -18,14 +21,6 @@
      }
      // todo: validate? timepoint and run should be ints < 100
      return(val);
-   }
-
-   // settings to append to anchor of url
-   function get_anchor(){
-       let landscape =  document.querySelector("#landscape")
-       let ltype = landscape.selectedOptions[landscape.selectedIndex].value;
-       let PD =  document.querySelector("input[name=photodiode]").checked;
-       return("#" + ltype + "&" + (PD?"photodiode":""))
    }
 
    function make_url(){
@@ -62,7 +57,7 @@
    }
 </script>
    </head>
-   <body onload="update_tasks()">
+   <body onload="update_tasks(); add_tweaks();">
      <h1> Task specifications </h1>
       <form onsubmit="go_url(); return false"> <!-- return false supresses form action -->
       <label for="id">id:</label> <input name=id type="text" size=5> <br>
@@ -79,7 +74,7 @@
          <option name=landscape>mountains</option>
       </select>  <br>
 
-      <label for="photodiode">photodiode?</label> <input name=photodiode type="checkbox" value=photodiode> <br>
+      <div id="task_setting_tweaks"></div>
 
       <input type="submit" value="open">
    </form>
