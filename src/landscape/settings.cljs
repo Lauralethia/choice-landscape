@@ -9,6 +9,10 @@
    :bar-pos {:x 50 :y 500} ; where to position the progress bar
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    :prob {:low 20 :mid 50 :high 100}
+   :nTrials
+     {:pairsInBlock 24 ; see left-right pair 24 times in a block. likely 2 blocks
+      :deval 10 ; pairs when lower prob wells are updated to 100%. last block 
+      }
    })
 (def tweaks ""
    {:skip-captcha false

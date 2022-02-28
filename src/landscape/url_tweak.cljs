@@ -31,4 +31,9 @@
        (update-settings u #"NO_TIMEOUT"  [:enforce-timeout] false)
        ;; currently broken. need to get TIME?
        ;; (update-settings u #"noinstruction" [:show-instructions] false)
-       (update-settings u #"nocaptcha"  [:skip-captcha] true))))
+
+       (update-settings u #"nocaptcha"  [:skip-captcha] true)
+
+       ;; always have one forced deval so 0 is actually 1
+       (update-settings u #"fewtrials"  [:nTrials :pairsInBlock] 1)
+       (update-settings u #"fewtrials"  [:nTrials :deval] 0))))

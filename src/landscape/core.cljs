@@ -32,14 +32,14 @@
         prob-high (get-in @current-settings [:prob :high] ) ; originally 100, then 90 (20211104)
        ]
     (vec (concat
-       ;; first set of 16*(3 lowhigh + 3 highlow + 3 lowhigh):
+       ;; first set of 24*(3 lowhigh + 3 highlow + 3 lowhigh):
        ;; two close are meh on rewards
        (->
         ; ({:left 100 :right 30 :up 20}, {... :up 30 :right 20})
         (timeline/side-probs prob-low prob-mid best-side)
 
         ; ({:resp-each-side 24 :left 100...}, {:reps-each-side ...}
-        (timeline/add-reps-key 24) ; 24*3 trials per block
+        (timeline/add-reps-key (-> @current-settings :nTrials :pairsInBlock)) ; 24*3 trials per block
 
         ; 20211216 - remove. now only 2 blocks before deval
         ; ({..:up 20}, {.. :up 30}, {.. :up 20})
@@ -78,7 +78,7 @@
        (timeline/gen-wells
         {:prob-low prob-high
          :prob-high prob-high
-         :reps-each-side 9
+         :reps-each-side (- 1 (-> @current-settings :nTrials :devalue))
          ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
          ;; 20211216 inc to 9 (+1 above)
          :side-best best-side})))))
