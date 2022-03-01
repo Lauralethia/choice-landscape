@@ -37,4 +37,4 @@
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials :pairsInBlock] 1)
-       (update-settings u #"fewtrials"  [:nTrials :deval] 0))))
+       (update-settings u #"fewtrials"  [:nTrials :devalue] 0))))

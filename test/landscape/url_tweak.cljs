@@ -14,7 +14,12 @@
   ;; test page unlikely to have anchor and less likey to have  "mountain" in it
   (is (= :desert (vis-type-from-url (-> js/window .-location .-href url/url)))))
 
-(deftest photodiode
+(deftest url-photodiode
   (is (:use-photodiode? (task-parameters-url {} {:anchor "mountain&photodiode"}))
   (is (not (:use-photodiode? (task-parameters-url @current-settings {:anchor "desert"})))))
   (is (not (:use-photodiode? (task-parameters-url @current-settings {})))))
+
+(deftest url-fewtrials
+  (is 10 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :devalue]))
+  (is 1 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :pairsInBlock]))
+  (is 0  (get-in (task-parameters-url {} {:anchor "fewtrials"}) [:nTrials :devalue])))

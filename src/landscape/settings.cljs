@@ -11,7 +11,7 @@
    :prob {:low 20 :mid 50 :high 100}
    :nTrials
      {:pairsInBlock 24 ; see left-right pair 24 times in a block. likely 2 blocks
-      :deval 10 ; pairs when lower prob wells are updated to 100%. last block 
+      :devalue 10 ; pairs when lower prob wells are updated to 100%. last block
       }
    })
 (def tweaks ""

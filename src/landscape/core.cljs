@@ -78,7 +78,7 @@
        (timeline/gen-wells
         {:prob-low prob-high
          :prob-high prob-high
-         :reps-each-side (- 1 (-> @current-settings :nTrials :devalue))
+         :reps-each-side (max 0 (- (-> @current-settings :nTrials :devalue) 1))
          ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
          ;; 20211216 inc to 9 (+1 above)
          :side-best best-side})))))
