@@ -28,3 +28,5 @@ results/raw.tsv: results/raw.json
 
 results/data.tsv results/data_id-hidden.tsv: results/raw.tsv
 	Rscript -e "setwd('results'); source('./read.R'); fix_and_save()"
+results/summary.csv: results/data.tsv
+	Rscript -e "setwd('results'); source('./summary.R')"
