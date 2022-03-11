@@ -19,11 +19,18 @@
 (defn update-settings [settings u pattern where value]
   (if (pattern-in-url u pattern) (assoc-in settings where value) settings))
 
+(defn url-path-info
+  "could be surving nested on another server?
+  work path backwards to get id/task/timepoint/run/"
+  [u]
+  (-> u :path (clojure.string/split #"/") reverse (#(zipmap [:run :timepoint :task :id] %))))
+
 (defn task-parameters-url
   "setup parameterization of task settings based on text in the url"
   ([settings] (task-parameters-url settings (get-url-map)))
   ([settings u]
    (-> settings 
+       (assoc-in :path-info (url-path-info u))
        (update-settings u #"photodiode"  [:use-photodiode?] true)
        (update-settings u #"mx95"  [:prob :high] 95)
        (update-settings u #"nofar"  [:step-sizes 1] 0)
@@ -34,6 +41,10 @@
        ;; (update-settings u #"noinstruction" [:show-instructions] false)
 
        (update-settings u #"nocaptcha"  [:skip-captcha] true)
+
+       ;; where to submit finishing
+       (update-settings u #"mturk=sand"  [:post-back-url] "https://workersandbox.mturk.com/mturk/externalSubmit")
+       (update-settings u #"mturk=live"  [:post-back-url] "https://mturk.com/mturk/externalSubmit")
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials :pairsInBlock] 1)

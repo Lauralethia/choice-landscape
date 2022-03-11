@@ -21,6 +21,8 @@
     :use-photodiode? false
     :enforce-timeout true
     :debug false
+    ;; mturk (or maybe prolific) past back url
+    :post-back-url false
 })
 
 ; desert or mountain

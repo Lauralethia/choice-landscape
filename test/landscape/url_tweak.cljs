@@ -23,3 +23,7 @@
   (is 10 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :devalue]))
   (is 1 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :pairsInBlock]))
   (is 0  (get-in (task-parameters-url {} {:anchor "fewtrials"}) [:nTrials :devalue])))
+
+(deftest url-path-info
+ (is (url-path-info "domain.path/id/task/timepoint/run/?junk")
+     {:run "run", :timepoint "timepoint",:task  "task" , :id "id" }))
