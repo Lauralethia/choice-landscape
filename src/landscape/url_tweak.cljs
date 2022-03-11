@@ -1,6 +1,7 @@
 (ns landscape.url-tweak
   (:require
-   [cemerick.url :as url]))
+   [cemerick.url :as url]
+   [clojure.string]))
 
 (defn get-url-map [] (-> js/window .-location .-href url/url))
 
@@ -30,7 +31,7 @@
   ([settings] (task-parameters-url settings (get-url-map)))
   ([settings u]
    (-> settings 
-       (assoc-in :path-info (url-path-info u))
+       (assoc :path-info (url-path-info u))
        (update-settings u #"photodiode"  [:use-photodiode?] true)
        (update-settings u #"mx95"  [:prob :high] 95)
        (update-settings u #"nofar"  [:step-sizes 1] 0)

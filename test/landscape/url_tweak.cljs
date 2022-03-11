@@ -1,6 +1,6 @@
 (ns landscape.url-tweak-test
   (:require
-   [landscape.url-tweak :refer [vis-type-from-url task-parameters-url]]
+   [landscape.url-tweak :refer [vis-type-from-url task-parameters-url url-path-info]]
    [landscape.settings :refer [current-settings]]
    [cemerick.url :as url]
    [clojure.test :refer [is deftest]])
@@ -24,6 +24,6 @@
   (is 1 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :pairsInBlock]))
   (is 0  (get-in (task-parameters-url {} {:anchor "fewtrials"}) [:nTrials :devalue])))
 
-(deftest url-path-info
+(deftest url-path-info-test
  (is (url-path-info "domain.path/id/task/timepoint/run/?junk")
      {:run "run", :timepoint "timepoint",:task  "task" , :id "id" }))

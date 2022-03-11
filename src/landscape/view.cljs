@@ -178,16 +178,16 @@
   (html [:div#instruction
           [:h1 "Great Job!"] [:h3 "You filled the pond!"]
           [:br] "Thank you for contributing to our research!"
-         (if (not (:post-back-url @current-state))
+         (if (not (:post-back-url @current-settings))
            [:div
             [:br] "Your responses have been recorded. You can close this page."
             [:br]]
            [:div
             [:br] "Click the submit button below to finish" [:br]
-            [:forum {:method "POST" :action (:post-back-url @current-state) }
+            [:forum {:method "POST" :action (:post-back-url @current-settings) }
              ;; NB. "timepoint" in path is assignmentID for mturk
              ;; :task is HIT and :id is worker_id
-             [:input {:type "hidden" :name "AssignmentID" :value (-> @current-state:path-info :timepoint)}]
+             [:input {:type "hidden" :name "AssignmentID" :value (-> @current-settings :path-info :timepoint)}]
              [:input {:type "submit"} "SUBMIT!"]
              ]])]))
 
