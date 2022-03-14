@@ -30,13 +30,20 @@
         prob-low (get-in  @current-settings [:prob :low] ) ; initially 20
         prob-mid (get-in  @current-settings [:prob :mid] ) ; initially 50
         prob-high (get-in @current-settings [:prob :high] ) ; originally 100, then 90 (20211104)
+       prob-deval-other (get-in @current-settings [:prob :devalue-good :other]) ;likely 75 or 100 depending on settings
+       n-devalue-good-trials (get-in @current-settings [:nTrials :devalue-good])
+        
        ]
     (vec (concat
        ;; first set of 24*(3 lowhigh + 3 highlow + 3 lowhigh):
-       ;; two close are meh on rewards
+       ;; initially had two close wells with infreq rewards. far is all rewards
+       ;; then version where all wells are equidistant but 2 are still meh
+       ;; finally a version with an additional block where the good well is deval
        (->
         ; ({:left 100 :right 30 :up 20}, {... :up 30 :right 20})
         (timeline/side-probs prob-low prob-mid best-side)
+        ;; 20220314 maybe no reversal!?
+        (#(take (if (:reversal-block @current-settings) 2 1) %))
 
         ; ({:resp-each-side 24 :left 100...}, {:reps-each-side ...}
         (timeline/add-reps-key (-> @current-settings :nTrials :pairsInBlock)) ; 24*3 trials per block
@@ -81,7 +88,14 @@
          :reps-each-side (max 0 (- (-> @current-settings :nTrials :devalue) 1))
          ; 20211104 increased from 4 to 8; 8*(2 high/low swap, h=l)*(3 per perm)
          ;; 20211216 inc to 9 (+1 above)
-         :side-best best-side})))))
+         :side-best best-side})
+       ;; 20220314 - optionally add a 4th block to devalue good
+       (when (> n-devalue-good-trials 0)
+         (timeline/gen-wells
+          {:prob-low prob-deval-other
+           :prob-high prob-deval-other
+           :reps-each-side n-devalue-good-trials
+           :side-best (get-in @current-settings [:prob :devalue-good :good])}))))))
 
 (defn vis-class-to-body
   "style body based on visual type (desert/mountain)"
@@ -127,16 +141,15 @@
   ; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
 
-  ;; broken
-  ;; need to wait for the avatar to finish walking down from the screen?
-  ;; need TIME?
-  ;; (if (:show-instructions @settings/current-settings)
-  ;;   (swap! STATE assoc-in [:phase :name] :instruction)
-  ;;   (swap! STATE (instruction-finished TIME)))
-  
   ; run the first instructions start function
   ; BUG - this doesn't play any sound! but we moved sound captcha to second slide
   (reset! STATE ((-> INSTRUCTION first :start) @STATE))
+
+  ;; jump to ready screen if no instructions
+  (if (not (:show-instructions @settings/current-settings))
+    ;; (reset! STATE (instruction-finished @STATE 0))
+    (swap! STATE assoc-in [:phase :idx] (dec (count INSTRUCTION))))
+  
   
   ; update background for mountain or desert 
   (vis-class-to-body) 

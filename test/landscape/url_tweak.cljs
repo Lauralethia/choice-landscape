@@ -24,6 +24,11 @@
   (is 1 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :pairsInBlock]))
   (is 0  (get-in (task-parameters-url {} {:anchor "fewtrials"}) [:nTrials :devalue])))
 
+(deftest url-blocks-tweaks
+  (is 12 (get-in (task-parameters-url {} {:anchor "2devalue=75"}) [:nTrials :devalue-good]))
+  (is 80  (get-in (task-parameters-url {} {:anchor "2devalue=100_80"}) [:prob :devalue-good :good]))
+  (is 75  (get-in (task-parameters-url {} {:anchor "2devalue=75"}) [:prob :devalue-good :good])))
+
 (deftest url-path-info-test
  (is (url-path-info "domain.path/id/task/timepoint/run/?junk")
      {:run "run", :timepoint "timepoint",:task  "task" , :id "id" }))

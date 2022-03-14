@@ -51,6 +51,11 @@
            [:button {:on-click (fn [_] (swap! state (fn[_] {:water {:level 5 :active-at 10} :time-cur 0} )))} "reset"]]
           ))
   {:water {:level 5 :active-at 10} :time-cur 10})
+
+;; moved from survey to avoid warnings
+(defcard survey-forum
+  "what does the survey look like"
+  (survey/view-questions))
 ;; help from 
 ;; https://github.com/onetom/clj-figwheel-main-devcards
 ;; https://github.com/bhauman/devcards/issues/148

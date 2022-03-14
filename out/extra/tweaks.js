@@ -6,7 +6,11 @@ let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha?',
               'mx95': 'best well prob=95',
               'VERBOSEDEBUG': 'verbose debugging',
               'NO_TIMEOUT': 'disable timeout',
-              'fewtrials': 'reduce trial count: only 1 pair ea. per block'
+              'fewtrials': 'reduce trial count: only 1 pair ea. per block',
+              '1devalue': '3 blocks (original 8 versions)',
+              '2devalue=75': '4th deval all equal',
+              '2devalue=100_80': '4th deval good now bad',
+              'norev', 'remove 2nd block reversal'
 }
 // settings to append to anchor of url
 function ifchecked(name){

@@ -3,8 +3,7 @@
    [landscape.model.phase :as phase]
    [landscape.key :as key]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
-  (:require-macros [devcards.core :refer [defcard]]))
+   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
 (defrecord survey [q answers shortname])
 (def SURVEYS
   [
@@ -166,6 +165,3 @@
         (assoc-in [:record :survey] @forum-atom)
         (assoc-in [:phase :name] (if done-at :done :forum)))))
 
-(defcard survey-forum
-  "what does the survey look like"
-  (view-questions))

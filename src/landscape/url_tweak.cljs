@@ -39,14 +39,22 @@
        (update-settings u #"VERBOSEDEBUG"  [:debug] true)
        (update-settings u #"NO_TIMEOUT"  [:enforce-timeout] false)
        ;; currently broken. need to get TIME?
-       ;; (update-settings u #"noinstruction" [:show-instructions] false)
+       (update-settings u #"noinstruction" [:show-instructions] false)
 
        (update-settings u #"nocaptcha"  [:skip-captcha] true)
 
        ;; where to submit finishing
        (update-settings u #"mturk=sand"  [:post-back-url] "https://workersandbox.mturk.com/mturk/externalSubmit")
        (update-settings u #"mturk=live"  [:post-back-url] "https://mturk.com/mturk/externalSubmit")
+       
+       ;; 20220314 - blocks 3 or 4.
+       ;; 4th block (devalue-good) has different probabilities for good well
+       (update-settings u #"1devalue" [:nTrials] {:pairsInBlock 24 :devalue 10 :devalue-good 0})
+       (update-settings u #"2devalue=.*"  [:nTrials] {:pairsInBlock 12 :devalue 12 :devalue-good 12})
+       (update-settings u #"2devalue=75"     [:prob :devalue-good] {:good 75 :other  75})
+       (update-settings u #"2devalue=100_80" [:prob :devalue-good] {:good 80 :other 100})
+
+       (update-settings u #"norev" [:reversal-block] false)
 
        ;; always have one forced deval so 0 is actually 1
-       (update-settings u #"fewtrials"  [:nTrials :pairsInBlock] 1)
-       (update-settings u #"fewtrials"  [:nTrials :devalue] 0))))
+       (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1}))))
