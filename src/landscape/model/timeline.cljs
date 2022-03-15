@@ -30,13 +30,14 @@
   "create array of different side-probabilty pairings. like
     [{:left 50 :right 20 :up 90 :side-best :up}
      {:left 20 :right 50 :up 90 :side-best :up}]"
-  [high low side-best]
-  (let [others (filter #(not= side-best %) [:left :up :right])
-        fst (first others)
-        snd (second others)
-        prob-high (get-in @current-settings [:prob :high])]
-    [{fst high snd low side-best prob-high :side-best side-best}
-     {fst low snd high side-best prob-high :side-best side-best}]))
+  ([high low side-best]
+   (side-probs (get-in @current-settings [:prob :high]) high low side-best))
+  ([best high low side-best]
+   (let [others (filter #(not= side-best %) [:left :up :right])
+         fst (first others)
+         snd (second others)]
+     [{fst high snd low side-best best :side-best side-best}
+      {fst low snd high side-best best :side-best side-best}])))
 ;; 2. then shuffle which is disabled for all sides
 (defn rep-block [prob-map ntrials]
   (let [disabled-map (mapv #(merge prob-map {:side-disabled %}) [:left :up :right])
@@ -44,10 +45,16 @@
     (shuffle (flatten (repeat nrep disabled-map)))))
 ;; 3. then recombine
 (defn gen-wells
-  [{:keys [prob-low prob-high reps-each-side side-best] :as props}]
-  (let [phases (shuffle (side-probs prob-high prob-low side-best))
-        trialdesc (flatten (mapv #(rep-block % (* 3 reps-each-side)) phases))]
-    (mapv #(well-trial (merge % {:side-best side-best})) trialdesc)))
+  "2 args if we want to specify good well probability. 1 with keys otherwise"
+  ([{:keys [prob-low prob-high reps-each-side side-best] :as props}]
+   (let [phases (shuffle (side-probs prob-high prob-low side-best))]
+     (gen-wells phases side-best reps-each-side )))
+  ([prob-goodwell {:keys [prob-low prob-high reps-each-side side-best] :as props}]
+   (let [phases (shuffle (side-probs prob-goodwell prob-high prob-low side-best))]
+     (gen-wells phases side-best reps-each-side)))
+  ([phases side-best reps-each-side ]
+   (let [trialdesc (flatten (mapv #(rep-block % (* 3 reps-each-side)) phases))]
+     (mapv #(well-trial (merge % {:side-best side-best})) trialdesc))))
 
 
 ;; 20211203 - redo for more eplict stucture

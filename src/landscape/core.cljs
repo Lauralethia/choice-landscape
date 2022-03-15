@@ -92,10 +92,11 @@
        ;; 20220314 - optionally add a 4th block to devalue good
        (when (> n-devalue-good-trials 0)
          (timeline/gen-wells
+          (get-in @current-settings [:prob :devalue-good :good])
           {:prob-low prob-deval-other
            :prob-high prob-deval-other
            :reps-each-side n-devalue-good-trials
-           :side-best (get-in @current-settings [:prob :devalue-good :good])}))))))
+           :side-best best-side}))))))
 
 (defn vis-class-to-body
   "style body based on visual type (desert/mountain)"
