@@ -308,7 +308,22 @@
    {:text (fn[state]
             (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water)
                    [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
-   {:text (fn[state] [:div  "Ready? Push the right arrow to start!"])}])
+   {:text (fn[state] [:div  {:style {:text-align "left"}}
+      "Ready? Push the right arrow to start!"
+      [:ul
+       [:li "Fill the " (item-name :pond)
+        " by visiting " (item-name :well) "s that give " (item-name :water)
+        ". Try to avoid empty " (item-name :well) "s."]
+       [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
+       [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
+       [:li "The amount of " (item-name :water)
+        " when there is " (item-name :water)
+        " is the same for all " (item-name :well) "s."]
+       [:li "Respond faster to finish sooner."]
+       (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
+         [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
+       [:li "How often you visit a " (item-name :well)
+        " does not change how often it gives " (item-name :water) ]]])}])
 
 (defn instruction-finished [state time-cur]
   (-> state

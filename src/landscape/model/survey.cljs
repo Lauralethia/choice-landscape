@@ -142,15 +142,16 @@
                          :on-change #(update-forum-atom :understand %)
                          :value (:understand @forum-atom)}]
 
-           [:br] [:br][:label {:for "device"}
-                       "What kind of device are you using"]
-           [:br][:select {:name "device" :id "device"
-                          :on-change #(update-forum-atom-select :device %)
-                          :value (:device @forum-atom)}
-                 [:option {:value "computer"} "computer"]
-                 [:option {:value "phone"} "phone"]
-                 [:option {:value "tablet"} "tablet"]
-                 [:option {:value "other"} "other"]]
+           ; 20220315 - no one is doing this on a phone or tablet
+           ;[:br] [:br][:label {:for "device"}
+           ;            "What kind of device are you using"]
+           ;[:br][:select {:name "device" :id "device"
+           ;               :on-change #(update-forum-atom-select :device %)
+           ;               :value (:device @forum-atom)}
+           ;      [:option {:value "computer"} "computer"]
+           ;      [:option {:value "phone"} "phone"]
+           ;      [:option {:value "tablet"} "tablet"]
+           ;      [:option {:value "other"} "other"]]
 
            [:br] [:br][:label {:for "feedback"}
                        "Any feedback will be very helpful!"
