@@ -1,5 +1,6 @@
 // parts of the task we can change with a flag
 let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha?',
+              'noinstruction': 'skip all instructions (go to ready screen)',
               'photodiode': 'photodiode (sEEG)',
               'nofar': 'make all wells equadistant (no far well)?',
               'yesfar': 'far well ~3x as far as close (this used if conflict)',
@@ -7,14 +8,14 @@ let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha?',
               'VERBOSEDEBUG': 'verbose debugging',
               'NO_TIMEOUT': 'disable timeout',
               'fewtrials': 'reduce trial count: only 1 pair ea. per block',
-              '1devalue': '3 blocks (original 8 versions)',
-              '2devalue=75': '4th deval all equal',
-              '2devalue=100_80': '4th deval good now bad',
+              'devalue1': '3 blocks (original 8 versions)',
+              'devalue2=75': '4th deval all equal',
+              'devalue2=100_80': '4th deval good now bad',
               'norev': 'remove 2nd block reversal'
 }
 // settings to append to anchor of url
 function ifchecked(name){
- let box =  document.querySelector("input[name="+name+"]").checked;
+ let box =  document.querySelector("input[name='"+name+"']").checked;
  return(box?name:"")
 }
 

@@ -49,10 +49,10 @@
        
        ;; 20220314 - blocks 3 or 4.
        ;; 4th block (devalue-good) has different probabilities for good well
-       (update-settings u #"1devalue" [:nTrials] {:pairsInBlock 24 :devalue 10 :devalue-good 0})
-       (update-settings u #"2devalue=.*"  [:nTrials] {:pairsInBlock 12 :devalue 12 :devalue-good 12})
-       (update-settings u #"2devalue=75"     [:prob :devalue-good] {:good 75 :other  75})
-       (update-settings u #"2devalue=100_80" [:prob :devalue-good] {:good 80 :other 100})
+       (update-settings u #"devalue1" [:nTrials] {:pairsInBlock 24 :devalue 10 :devalue-good 0})
+       (update-settings u #"devalue2=.*"  [:nTrials] {:pairsInBlock 12 :devalue 12 :devalue-good 12})
+       (update-settings u #"devalue2=75"     [:prob :devalue-good] {:good 75 :other  75})
+       (update-settings u #"devalue2=100_80" [:prob :devalue-good] {:good 80 :other 100})
 
        (update-settings u #"norev" [:reversal-block] false)
 
