@@ -25,10 +25,10 @@
   (is 0  (get-in (task-parameters-url {} {:anchor "fewtrials"}) [:nTrials :devalue])))
 
 (deftest url-blocks-tweaks
-  (is 12 (get-in (task-parameters-url {} {:anchor "devalue2=75"}) [:nTrials :devalue-good]))
-  (is 80  (get-in (task-parameters-url {} {:anchor "devalue2=100_80"}) [:prob :devalue-good :good]))
-  (is 75  (get-in (task-parameters-url {} {:anchor "devalue2=75"}) [:prob :devalue-good :good])))
+  (is (= 12 (get-in (task-parameters-url {} {:anchor "devalue2=75"}) [:nTrials :devalue-good])))
+  (is (= 80 (get-in (task-parameters-url {} {:anchor "devalue2=100_80"}) [:prob :devalue-good :good])))
+  (is (= 75 (get-in (task-parameters-url {} {:anchor "devalue2=75"}) [:prob :devalue-good :good]))))
 
 (deftest url-path-info-test
- (is (url-path-info "domain.path/id/task/timepoint/run/?junk")
-     {:run "run", :timepoint "timepoint",:task  "task" , :id "id" }))
+  (is (= (url-path-info (url/url "domain.path/id/task/timepoint/run/?junk"))
+         {:run "run", :timepoint "timepoint",:task  "task" , :id "id" })))
