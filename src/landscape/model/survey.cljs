@@ -136,6 +136,12 @@
                          :on-change #(update-forum-atom :fun %)
                          :value (:fun @forum-atom)}]
 
+           [:br] [:br][:label {:for "understand"}
+                       "How well do you think you understood the instructions (1=\"not at all\" to 5=\"entirely\")"]
+           [:br][:input {:name "understand" :size 1 :type "text"
+                         :on-change #(update-forum-atom :understand %)
+                         :value (:understand @forum-atom)}]
+
            [:br] [:br][:label {:for "device"}
                        "What kind of device are you using"]
            [:br][:select {:name "device" :id "device"
