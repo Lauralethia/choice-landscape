@@ -10,7 +10,7 @@ let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha?',
               '1devalue': '3 blocks (original 8 versions)',
               '2devalue=75': '4th deval all equal',
               '2devalue=100_80': '4th deval good now bad',
-              'norev', 'remove 2nd block reversal'
+              'norev': 'remove 2nd block reversal'
 }
 // settings to append to anchor of url
 function ifchecked(name){
