@@ -93,12 +93,15 @@
       ;; keys-set-want -- not needed, get from well :open state
       ))
 
+(declare STATE) ; defined below
 (defn done-step [state]
-  ;TODO: maybe send-finished tells us where to go
-  ; redirect to close out the amazon turk
   (http/send-resp (:record state))
-  (http/send-finished)
-  ;TODO: un-fullscreen
+  ;; if there is a parent with taskCompleteCode function
+  ;; sending finish will update that page and submit
+  ;; if that works, will close this page
+  (println "sending finish")
+  (http/send-finished-state-code-and-close STATE)
+  ; also see just (http/send-finished)
   (assoc state :running? false))
 
 (defn next-step

@@ -175,20 +175,15 @@
 
 (defn done-view [state]
   (html [:div#instruction
-          [:h1 "Great Job!"] [:h3 "You filled the pond!"]
-          [:br] "Thank you for contributing to our research!"
-         (if (not (:post-back-url @current-settings))
-           [:div
-            [:br] "Your responses have been recorded. You can close this page."
-            [:br]]
-           [:div
-            [:br] "Click the submit button below to finish" [:br]
-            [:forum {:method "POST" :action (:post-back-url @current-settings) }
-             ;; NB. "timepoint" in path is assignmentID for mturk
-             ;; :task is HIT and :id is worker_id
-             [:input {:type "hidden" :name "AssignmentID" :value (-> @current-settings :path-info :timepoint)}]
-             [:input {:type "submit"} "SUBMIT!"]
-             ]])]))
+         [:h1 "Great Job!"] [:h3 "You filled the pond!"]
+         [:br] "Thank you for contributing to our research!"
+         [:div
+          [:br] "Your responses have been recorded."
+          (if-let [code (get-in state [:record :mturk :code])]
+            [:div.confirmcode "Your completion code is " code [:br] "Enter the code into the other page. Save it for your records."]
+            [:span "You can close this page."])]
+          [:br]
+          ]))
 
 (defn display-state
   "html to render for display. updates for any change in display"

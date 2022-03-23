@@ -12,5 +12,5 @@
 ;;    onset times, choice, score. see [phase/phone-home]
 ;;
 ;; in model/STATE as :record
-(defrecord record          [events url avatar ^start-time start-time survey])
-(defn record-init [] (->record  []  {}    nil                     {}     []))
+(defrecord record          [events url avatar ^start-time start-time survey mturk])
+(defn record-init [] (->record  []  {}    nil                     {}     [] {}))
