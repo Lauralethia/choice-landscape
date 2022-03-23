@@ -1,6 +1,6 @@
 (ns landscape.view-test
   (:require [landscape.view :refer [photodiode-color]]
-            [cljs.test :as t :include-macros true]
+            ;[cljs.test :as t :include-macros true]
             [clojure.test :refer [is deftest]]
 ))
 
