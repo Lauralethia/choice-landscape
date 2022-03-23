@@ -18,7 +18,9 @@
                   clj-commons/pomegranate {:mvn/version "1.2.1"}         ;; load depends in repl
                   net.mikera/core.matrix {:mvn/version "0.62.0"}         ;; tests use matrix
                   }
-                 :extra-paths ["target" "test"]}
+                 :extra-paths ["target"] ; "test"
+                 ;; 20220323 inc "test" causes dev build to hang. tests still accessible w/o
+}
            ;:cardbuild {
            ;            :main "landscape.main"
            ;            :devcards true
