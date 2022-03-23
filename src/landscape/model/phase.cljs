@@ -5,7 +5,7 @@
             [landscape.http :as http]
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
-            [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+            ;[debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
 

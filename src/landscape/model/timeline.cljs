@@ -1,8 +1,7 @@
 (ns landscape.model.timeline
   (:require
    [landscape.model.wells :as wells]
-   [landscape.settings :as settings :refer [current-settings]]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+   [landscape.settings :as settings :refer [current-settings]]))
 
 (defrecord well [step open prob active-at pos])
 

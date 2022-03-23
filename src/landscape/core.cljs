@@ -14,7 +14,7 @@
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+   ;[debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    )
   (:import [goog.events EventType KeyHandler]))
 

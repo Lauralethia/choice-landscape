@@ -2,8 +2,7 @@
   (:require
    [landscape.model.phase :as phase]
    [landscape.key :as key]
-   [sablono.core :as sab :include-macros true :refer-macros [html]]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+   [sablono.core :as sab :include-macros true :refer-macros [html]]))
 (defrecord survey [q answers shortname])
 (def SURVEYS
   [

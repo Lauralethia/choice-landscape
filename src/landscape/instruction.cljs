@@ -13,8 +13,7 @@
    [landscape.model.phase :as phase]
    [landscape.sound :refer [play-sound]]
    [clojure.string]
-   [sablono.core :as sab :include-macros true :refer-macros [html]]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+   [sablono.core :as sab :include-macros true :refer-macros [html]]))
 
 (defn find-far-well [{:keys [wells] :as state}]
   (apply max-key #(:step (val %)) wells))

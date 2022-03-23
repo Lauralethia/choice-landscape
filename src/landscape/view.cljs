@@ -10,7 +10,6 @@
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
 

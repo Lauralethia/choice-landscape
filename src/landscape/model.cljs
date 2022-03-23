@@ -12,9 +12,7 @@
    [landscape.model.water :as water]
    [landscape.model.phase :as phase]
    [landscape.model.survey :as survey]
-   [landscape.http :as http]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]])
-  (:require-macros [devcards.core :refer [defcard]]))
+   [landscape.http :as http]))
 
 
 ;; wells

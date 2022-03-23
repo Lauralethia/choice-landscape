@@ -1,6 +1,5 @@
 (ns landscape.model.wells
 (:require [landscape.settings :refer [current-settings]]
-          [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
           [landscape.utils :as utils]
           [landscape.sound :as snd]))
 

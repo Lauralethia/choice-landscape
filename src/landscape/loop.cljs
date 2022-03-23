@@ -2,7 +2,6 @@
   (:require
    [landscape.view :as view]
    [landscape.model :as model]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
    (:require-macros  [cljs.core.async.macros :refer [go-loop go]]))
 

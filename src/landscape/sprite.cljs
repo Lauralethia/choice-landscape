@@ -1,7 +1,6 @@
 (ns landscape.sprite
   (:require
-   [sablono.core :as sab :include-macros true :refer-macros [html]]
-   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+   [sablono.core :as sab :include-macros true :refer-macros [html]]))
 
 (defn sprite-create
   [{ :keys [ width height frame-size frames url dur-ms] :as sprit-info }]

@@ -4,7 +4,8 @@
   POST info      - info about e.g browser agent. screen size
   POST finished  - all done. disable from overwriting responses again
   "
-  (:require [ajax.core :refer [POST GET]]))
+  (:require
+   [ajax.core :refer [POST GET]]))
 
 ;; http will fail silently when no server is running
 ;; but if we're running interatively/REPL, HTTP-DEBUG can be set to locally running psiclj

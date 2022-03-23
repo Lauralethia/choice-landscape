@@ -1,6 +1,5 @@
 (ns landscape.key
-  (:require [landscape.settings :refer [KEYCODES]]
-            [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]))
+  (:require [landscape.settings :refer [KEYCODES]]))
 (defn keypress-init [] {:key nil
                         :first nil
                         :up nil
