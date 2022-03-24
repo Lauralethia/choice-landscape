@@ -9,13 +9,13 @@
 
 ;; http will fail silently when no server is running
 ;; but if we're running interatively/REPL, HTTP-DEBUG can be set to locally running psiclj
-(def HTTP-DEBUG nil) ;; eg. "0.0.0.0:3001"
+(def HTTP-DEBUG nil) ;; eg. (set! landscape.http/HTTP-DEBUG "0.0.0.0:3001")
 (defn get-url
   "return just the input value unless HTTP-DEBUG"
   [rest]
   (str (if
        HTTP-DEBUG
-       (str "http://" HTTP-DEBUG "/iddebug/testtask/nover/1/1/")
+       (str "http://" HTTP-DEBUG "/iddebug/testtask/1/1/")
        "")
    rest))
 
