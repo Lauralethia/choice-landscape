@@ -175,12 +175,14 @@
 
 (defn done-view [state]
   (html [:div#instruction
-         [:h1 "Great Job!"] [:h3 "You filled the pond!"]
+         [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
          [:br] "Thank you for contributing to our research!"
          [:div
-          [:br] "Your responses have been recorded."
+          [:br] "Your responses have been recorded. " [:br]
           (if-let [code (get-in state [:record :mturk :code])]
-            [:div.confirmcode "Your completion code is " code [:br] "Enter the code into the other page. Save it for your records."]
+            [:div.confirmcode "Your completion code is " [:br]
+             [:h3 code] [:br]
+             "Enter the code into the other page. Save it for your records."]
             [:span "You can close this page."])]
           [:br]
           ]))

@@ -102,7 +102,10 @@
   (println "sending finish")
   (http/send-finished-state-code-and-close STATE)
   ; also see just (http/send-finished)
-  (assoc state :running? false))
+
+  ; doesn't have to be running for :record :mturk :code to change display?
+  (assoc state :running? false)
+)
 
 (defn next-step
   "dispatch to instruction or task

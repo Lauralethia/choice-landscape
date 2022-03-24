@@ -35,23 +35,28 @@
          }))
 (defn send-finished [] (POST (get-url "finish")))
 
+(defn set-mturk-code-opener [code]
+  ;; "taskCompleteCode" defined by psiclj mturk.js
+  ;; window.opener.taskCompleteCode("4fcdb")
+  (when (.. js/window -opener)
+    (when-let [code-func (.. js/window -opener -taskCompleteCode)]
+      (console.log "opener func to set code:" code-func)
+      ;; true if success. can close the window
+      (when (code-func code)
+        (. js/window close)))))
+
 (defn set-mturk-code
   "try to set the opener pages complete code and submit"
   [resp STATE]
-  (let [code (:code resp)
-        opener-func (.. js/window -opener -taskCompleteCode)]
-    (println code)
-    (println resp)
-    (println opener-func)
+  (let [code (or (:code resp) "COMPLETE")]
+    (println "code:" code)
+    (println "resp:" resp)
     (swap! STATE assoc-in [:record :mtruk :code] code)
-    (println (-> @STATE :record :mturk))
-    ;; "taskCompleteCode" defined by psiclj mturk.js
-    ;; window.opener.taskCompleteCode("4fcdb")
-    (when (opener-func code)
-      (. js/window close))))
+    (println "sate recrod mturk:" (-> @STATE :record :mturk))
+    (set-mturk-code-opener code)
+    ))
 
 (defn send-finished-state-code-and-close [STATE]
         (let [finish-url (get-url "finish")] 
-          (println "posting finish to" finish-url)
           (POST finish-url {:handler (fn [resp] (set-mturk-code resp STATE))
                             :response-format :json :keywords? true})))
