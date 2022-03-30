@@ -13,4 +13,4 @@
 ;;
 ;; in model/STATE as :record
 (defrecord record          [events url avatar ^start-time start-time survey mturk])
-(defn record-init [] (->record  []  {}    nil                     {}     [] {:code nil}))
+(defn record-init [] (->record  []  {}    nil                     {}     [] {:code "WXYZ1"}))

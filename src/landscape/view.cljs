@@ -174,18 +174,18 @@
                     (button-keys)]]))))
 
 (defn done-view [state]
-  (html [:div#instruction
-         [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
-         [:br] "Thank you for contributing to our research!"
-         [:div
-          [:br] "Your responses have been recorded. " [:br]
-          (if-let [code (get-in state [:record :mturk :code])]
-            [:div.confirmcode "Your completion code is " [:br]
-             [:h3 code] [:br]
-             "Enter the code into the other page. Save it for your records."]
-            [:span "You can close this page."])]
-          [:br]
-          ]))
+  (let [code (get-in state [:record :mturk :code] )]
+       (html [:div#instruction
+              [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
+              [:br] "Thank you for contributing to our research!!"
+              [:div
+               [:br] "Your responses have been recorded. " [:br]
+               [:div.confirmcode "Your completion code is " [:br]
+                 [:h3 code] [:br]
+                 "Save it for your records. If you came here from Amazon Turk, enter it into the other page"]
+               [:span "You can close this page."]]
+              [:br]
+              ])))
 
 (defn display-state
   "html to render for display. updates for any change in display"

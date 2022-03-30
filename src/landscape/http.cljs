@@ -52,7 +52,7 @@
     (println "code:" code)
     (println "resp:" resp)
     (swap! STATE assoc-in [:record :mtruk :code] code)
-    (println "sate recrod mturk:" (-> @STATE :record :mturk))
+    (println "state recrod mturk:" (-> @STATE :record :mturk))
     (set-mturk-code-opener code)
     ))
 
