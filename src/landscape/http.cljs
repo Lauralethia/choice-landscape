@@ -51,8 +51,8 @@
   (let [code (or (:code resp) "COMPLETE")]
     (println "code:" code)
     (println "resp:" resp)
-    (swap! STATE assoc-in [:record :mtruk :code] code)
-    (println "state recrod mturk:" (-> @STATE :record :mturk))
+    (swap! STATE assoc-in [:record :mturk :code] code)
+    (println "state record mturk:" (-> @STATE :record :mturk :code))
     (set-mturk-code-opener code)
     ))
 

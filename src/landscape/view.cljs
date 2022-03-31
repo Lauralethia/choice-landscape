@@ -180,9 +180,11 @@
               [:br] "Thank you for contributing to our research!!"
               [:div
                [:br] "Your responses have been recorded. " [:br]
-               [:div.confirmcode "Your completion code is " [:br]
-                 [:h3 code] [:br]
-                 "Save it for your records. If you came here from Amazon Turk, enter it into the other page"]
+               ;; code defaults to WXYZ1 so this will always be ween
+               ;; TODO: check if is amazon turk? might be in anchor
+               (if code [:div.confirmcode "Your completion code is " [:br]
+                         [:h3 code] [:br]
+                         "Save it for your records." [:br]])
                [:span "You can close this page."]]
               [:br]
               ])))
