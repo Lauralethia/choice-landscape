@@ -85,7 +85,7 @@
   "clean slate for keys.
   20211007 - currently not using util, want, or next"
   []
-  {:until nil :want [] :next nil :have nil :time nil :touch nil})
+  {:until nil :want [] :next nil :have nil :time nil :touch nil :all-pushes [] })
 
 ;; 20211007 - just assoc w/key-state-fresh
 ;; (defn remove-key

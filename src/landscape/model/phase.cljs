@@ -61,17 +61,22 @@
           (update-in [:record :events trial0] #(merge % (wells/wide-info wells))))
 
       :waiting
-      (-> state-time (assoc-in [:record :events trial0 :picked] picked)
+      (-> state-time
+          (assoc-in [:record :events trial0 :picked] picked)
           ;; add picked and avoided
           (update-in [:record :events trial0]
                      #(merge % (wells/wide-info-picked wells picked))))
 
       :feedback
       (-> (assoc-in state-time [:record :events trial0 :score] (get phase :scored))
+          (assoc-in [:record :events trial0 :all-keys]
+                    (-> state :key :all-pushes))
           (send-identity))
 
       ;;  TODO!
-      :survey                 ; finished survey about to be done
+      ;; NB. :done is it's own state. using :forum for text based questions
+      ;;     survey would work w/ buttonbox (20220331)
+      :survey                       ; finished survey about to be done
       (-> state-time (println "TODO:  SHOULD PHONE HOME ABOUT DONE. also upload survey results"))
       ;; if no match, default to doing nothing
       state-time

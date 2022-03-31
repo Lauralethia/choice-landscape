@@ -122,15 +122,17 @@
 
 
 (defn add-key-to-state
-  "updates state with keypush. :key {:have :time}
+  "updates state with keypush. :key {:have :time :all-pushes}
   used in core for simulated keypress on button push"
   [state keypress]
-  (let [key (landscape.key/keynum keypress)]
+  (let [key (landscape.key/keynum keypress)
+        now (utils/now)]
     (if keypress
              ;(= :chose (get-in state [:phase :name])))
       (-> state
+          (update-in [:key :all-pushes] conj {:key key :time now})
           (assoc-in [:key :have] key)
-          (assoc-in [:key :time] (utils/now)))
+          (assoc-in [:key :time] now))
       state)))
 
 
