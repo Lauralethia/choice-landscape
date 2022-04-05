@@ -38,12 +38,13 @@
 (defn set-mturk-code-opener [code]
   ;; "taskCompleteCode" defined by psiclj mturk.js
   ;; window.opener.taskCompleteCode("4fcdb")
-  (when (.. js/window -opener)
+  (if (.. js/window -opener)
     (when-let [code-func (.. js/window -opener -taskCompleteCode)]
       (console.log "opener func to set code:" code-func)
       ;; true if success. can close the window
       (when (code-func code)
-        (. js/window close)))))
+        (. js/window close)))
+    (console.log "WARNING: no opener window to send competion code to" (.. js/window -opener))))
 
 (defn set-mturk-code
   "try to set the opener pages complete code and submit"
