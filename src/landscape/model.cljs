@@ -45,7 +45,7 @@
                        1
                        (points/map->pos (get-in wells [hit-side :pos]))
                        ;; where is the water centered on?
-                       (points/->pos 300 90))]
+                       (points/->pos 590 0))]
         (-> score-state
             (update :points-floating #(conj % new-point))
             (update-in [:water] #(water/water-inc % time-cur step-size))))

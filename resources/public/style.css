@@ -17,6 +17,16 @@ body.mountain{
    height:  299px;
    position: absolute;
 }
+#scorebox {
+   border-radius: 15px;
+   width: 100px;
+   padding: 5px;
+   right: -10px;
+   top: 10px;
+   position:absolute;
+   background-color: white;
+   color: black;
+}
 #background.desert {
    background: url("imgs/desert_nowater.jpg");
 }

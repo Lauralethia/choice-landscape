@@ -91,9 +91,12 @@
   "show scored points (eg '+1') at position
   should be floated up by state update
   list of points in state:points-floating "
-  [{:keys [pos points] :as p}]
-  (position-at pos
-    (html [:div.pointfloating "+" (str points)])))
+  [{:keys [pos points progress] :as p}]
+  (position-at
+   pos
+   (html [:div.pointfloating
+          {:style {:opacity (- 1 progress)}}
+          "+" (str points)])))
 
 (defn show-points-floating [{:keys[points-floating] :as state}]
   "show all points in points-floating{:pos :points}"
@@ -205,6 +208,9 @@
               [:br]
               ])))
 
+(defn view-score [score]
+  (html [:div#scorebox "Total: " score]))
+
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -213,6 +219,8 @@
     (sab/html
      [:div#background {:class vis-class}
       (if DEBUG [:div {:style {:color "white"}} (str phase)])
+      (if (-> state :phase :name (= :instruction) not)
+        (view-score (get-in state [:water :score])))
       (water state)
       (well-show-all state)
       ;; NB. this conditional is only for display
