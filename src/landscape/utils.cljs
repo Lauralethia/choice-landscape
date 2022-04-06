@@ -20,13 +20,16 @@
   ;   0    >= 1-100
   ;  100   >= 1-100
   (>= prob (inc (rand-int 99))))
-
+(defn distance
+  "eclidian distance"
+  [a b ]
+  (.pow js/Math
+        (+ (.pow js/Math (- (:x b) (:x a)) 2)
+           (.pow js/Math (- (:y b) (:y a)) 2))
+        .5))
 (defn collide?
   "euclidian: sqrt sum of squares"
   [a b]
   (let [thres 10]
-    (<  (.pow js/Math
-              (+ (.pow js/Math (- (:x b) (:x a)) 2)
-                 (.pow js/Math (- (:y b) (:y a)) 2))
-              .5)
+    (< (distance a b) 
         thres)))

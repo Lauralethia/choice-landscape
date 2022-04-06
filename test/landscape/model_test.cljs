@@ -3,6 +3,7 @@
  [landscape.model :refer [wells-fire-hits]]
  [landscape.model.wells :refer [activate-well hit-now]]
  [landscape.model.avatar :refer [move-closer]]
+ [landscape.model.points :as points]
  [landscape.model.water :refer [water-pulse-water]]
  [clojure.test :refer [is deftest]]))
 
@@ -35,3 +36,40 @@
              (water-pulse-water {:active-at 10 :level 10 :scale 10} 11))))
   (is (= 0 (:active-at
             (water-pulse-water {:active-at 10 :level 10 :scale 10} 999999)))))
+
+(deftest point-move-one
+  "move toward goal without overshooting"
+  (is (= 20  (points/move-one-dim 10 100 10)))
+  (is (= 100 (points/move-one-dim 95 100 10)))
+  (is (= 10  (points/move-one-dim 20   0 10)))
+  (is (= 0   (points/move-one-dim 2    0 10))))
+(deftest point-move-twoard
+  "move both x and y independently"
+  (is (= (points/->pos 9 90)
+         (points/move-toward {:x 0 :y 100} {:x 9 :y 0} 10))))
+(deftest point-floating-create
+  "set alpha and start-distance"
+  (let [new (points/new-point-floating 1 (points/->pos 0 0) (points/->pos 10 10) )]
+    (is (= (:progress new) 0))
+    (is (> (:start-distance new) 10))))
+(deftest point-floating-move
+  "move point"
+  (let [init (points/new-point-floating 1 (points/->pos 0 0) (points/->pos 10 10) )
+        moved (points/point-floating-step init 10)]
+    (is (> (:start-distance init) 10))
+    (is (= .5 (points/progress-calc (assoc init :pos (points/->pos 5 5)))))
+    (is (= (:progress moved) 1))
+    (is (= (:pos moved) (:dest init)))))
+(deftest test-points-floating-update
+  "move many points that are floating"
+  (let [state {:points-floating
+              [(points/new-point-floating 1 (points/->pos 0 0) (points/->pos 10 10))
+               (points/new-point-floating 1 (points/->pos 0 0) (points/->pos 100 100))]}
+       next (points/points-floating-update state 50)
+       ;; make sure we dont die when there's nothing to do
+       next2 (-> next (points/points-floating-update 50)
+                 (points/points-floating-update 50))]
+   (is (= 2 (-> state :points-floating count)))
+   (is (= 50 (-> next :points-floating last :pos :x)))
+   (is (= 1 (-> next :points-floating count)))
+   (is (= 0 (-> next2 :points-floating count)))))

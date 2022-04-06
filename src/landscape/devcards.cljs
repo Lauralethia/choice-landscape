@@ -6,6 +6,7 @@
    [landscape.model.survey :as survey]
    [landscape.model :as model]
    [landscape.model.avatar :as avatar]
+   [landscape.model.points :as points]
    [sablono.core :as sab :include-macros true :refer-macros [html]])
   (:require-macros [devcards.core :refer [defcard]]))
 (enable-console-print!)
@@ -51,6 +52,19 @@
            [:button {:on-click (fn [_] (swap! state (fn[_] {:water {:level 5 :active-at 10} :time-cur 0} )))} "reset"]]
           ))
   {:water {:level 5 :active-at 10} :time-cur 10})
+
+;; moving scoring point around
+(defcard single-point-float-card
+"what one point looks like"
+  (let [point (points/new-point-floating 1 (points/->pos 10 10) (points/->pos 0 0))]
+    (landscape.view/show-point-floating point)))
+(defcard points-float-card
+"score a point, float up"
+  (let [state
+        {:points-floating
+         [(points/new-point-floating 1 (points/->pos 10 0) (points/->pos 0 0))
+          (points/new-point-floating 2 (points/->pos 40 10) (points/->pos 0 0))]}]
+    (landscape.view/show-points-floating state)))
 
 ;; moved from survey to avoid warnings
 (defcard survey-forum

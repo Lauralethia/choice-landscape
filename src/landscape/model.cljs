@@ -11,9 +11,11 @@
    [landscape.model.avatar :as avatar]
    [landscape.model.water :as water]
    [landscape.model.phase :as phase]
+   [landscape.model.points :as points]
    [landscape.model.survey :as survey]
-   [landscape.http :as http]))
-
+   [landscape.http :as http]
+   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+   ))
 
 ;; wells
 ;; uses snd, wells, and avatar. dont want cyclical depends so this goes here
@@ -38,8 +40,14 @@
           state)]
     ;; update score
     (if score
-      (let [step-size (water/step-size state)]
+      (let [step-size (water/step-size state)
+            new-point (points/new-point-floating
+                       1
+                       (points/map->pos (get-in wells [hit-side :pos]))
+                       ;; where is the water centered on?
+                       (points/->pos 300 90))]
         (-> score-state
+            (update :points-floating #(conj % new-point))
             (update-in [:water] #(water/water-inc % time-cur step-size))))
       score-state)))
 
@@ -91,6 +99,9 @@
       ;; wells-update-prob
       ;; check-timeout -- done in phase-update
       ;; keys-set-want -- not needed, get from well :open state
+
+      ;; move points closer to their goal (:pos & :progress). rm if reached :dest
+      (points/points-floating-update 10) 
       ))
 
 (declare STATE) ; defined below

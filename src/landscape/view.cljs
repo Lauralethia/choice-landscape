@@ -85,6 +85,22 @@
                         ;[:div#progressbar_score  {:style {:height "49%" :width (str (* score 100) "%")}}]
 ]))))
 
+
+;; points
+(defn show-point-floating
+  "show scored points (eg '+1') at position
+  should be floated up by state update
+  list of points in state:points-floating "
+  [{:keys [pos points] :as p}]
+  (position-at pos
+    (html [:div.pointfloating "+" (str points)])))
+
+(defn show-points-floating [{:keys[points-floating] :as state}]
+  "show all points in points-floating{:pos :points}"
+  (html [:div (mapv #'show-point-floating points-floating)]))
+
+;; 
+
 (defn bucket []
   (let [imgsrc (case (get @current-settings :vis-type)
                            :mountain "imgs/axe.png"
@@ -210,6 +226,7 @@
                      (html [:div.iti "+"]))
         (position-at avatar-pos (sprite/avatar-disp state avatar)))
 
+      (show-points-floating state)
       (progress-bar state)
 
       ;; instructions on top so covers anything else

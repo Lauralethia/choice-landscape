@@ -96,3 +96,6 @@ ul#pick>li.picked { background: lightblue;}
 
 /* for precision timing (iEEG/EEG). background color will change */
 #photodiode {height: 20px; width: 20px; display: block}
+
+/* score a point */
+.pointfloating { color: blue; font-weight: bold; }
