@@ -12,11 +12,14 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 
 * implementation
   
-** TODO audio captcha
-** TODO parameterize some task settings
+** audio captcha
+   plays a speaker saying a word. word must be typed before continuing
+
+** parameterize some task settings
     * high prob well is far (yes/no).
     * distribution of sides (high prob more freq?)
-    * probabilities
+    * +/- 4th devalue block
+    * +/- reversal
 ** instructions/state advance
    instructions step through individual actions (sprites, buckets, etc)
 ** TODO [#A] allow for fixed timing
@@ -29,6 +32,7 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 ** integrated with http server
    POST requests are made before the transition from feedback to iti. intended to be picked up by ~psiclj~ tool/server
 ** TODO [#B] use full screen
+   NB. mturk /ad w/psiclj or psiturk uses a popup window
 *** zoom body?
     ~translation: scale(1.5)~ works for content but does not scale background.
     with lower wells, maybe less of a problem
