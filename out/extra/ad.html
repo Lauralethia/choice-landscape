@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+ <head>
+   <title>HIT Ad</title>
+   <style type="text/css" media="screen">
+     html { font-family: sans-serif;text-rendering: optimizeLegibility;}
+     body {max-width: 600px; margin:auto; }
+     li { padding-bottom: .5em}
+     .clickme {size: larger;
+               background: #fe4e4e;
+               font-weight: bolder;
+               padding:20px;
+               display: inline-block;
+               text-align: center;
+               margin: 0 20px 0 20px;
+               width: 20%;}
+     .clickme:visited { background: lightgreen;}
+   </style>
+   <script type="text/javascript" src="mturk.js"> </script>
+ </head> 
+ <!-- consent only added when not preview (have assignmentId in url). clicking replaces html with instructions and "PLAY!" link -->
+ <body onload="add_consent()">
+
+   <!-- to be toggled by status of url (?assignmentId=something that looks real) -->
+   <div id="preview">
+  <h1>Play a game for science!</h1>
+  <ul>
+    <li>The game will open in it's own browser window with further instructions.</li>
+    <li>You may be asked a few questions at the end of the game.</li>
+    <li>When you've finished, you will see confirmation your responses have been recorded and that it is safe to close the game window.</li>
+    <li>How you play this game will help scientists understand adolescent development. </li>
+  </ul>
+  <b>Please disable pop-up blockers before continuing.</b><br>
+  <!--
+    "PLAY!" link appended when assignmentId is there and not ASSIGNMENT_ID_NOT_AVAILABLE via mturk.js:append_play_link()
+  --> 
+  </div>
+
+   <!-- to be toggled by status of url (?assignmentId=something that looks real) e.g. add_consent -->
+   <div id="accept" style="display: none">
+   You must
+   <ol>
+    <li>Click "Read Consent" to read the pop up and confirm your participation.</li>
+    <li>Then the "Play" button will appear. Click to play in a new window!</li>
+    <li>When you finish, you will be given a completion code to enter back here.</li>
+    <!--  This should be automaticly entered and submited for you. -->
+   </ol>
+   <div id='buttons'>
+     <a class='clickme' href='#' onClick='consent_form_clicked()'>Read Consent</a>
+   </div>
+  </div>
+ </body>
+</html>
