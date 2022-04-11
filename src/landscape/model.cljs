@@ -110,7 +110,7 @@
   ;; if there is a parent with taskCompleteCode function
   ;; sending finish will update that page and submit
   ;; if that works, will close this page
-  (println "sending finish")
+  (console.log "sending finish")
   (http/send-finished-state-code-and-close STATE)
   ; also see just (http/send-finished)
 
