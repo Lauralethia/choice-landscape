@@ -142,7 +142,9 @@
               [:br] [:br]
               [:input
                {:type :button :value "Play Sound Again"
-                :on-click (fn [e] (play-sound :word))}]]))
+                :on-click (fn [e] (play-sound :word))}]
+              ;; 20220411 - on old chromium 69 (debian) autoadvance did not workg
+              [:br] "Push the right arrow key when you have entered the correct word"]))
     ;; when we start out, we can skip this if we dont need to pass-captcha
     ;; ie settings/:skip-catcha == true
     :start (fn[state] (do (play-sound :word) state))
@@ -252,7 +254,8 @@
    {:text (fn[state]
             (html [:div "Don't wait too long to choose."
                    [:br]
-                   "If you're too slow, all the " (item-name :well)"s  will be empty!"]))
+                   "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
+                   [:b "You will not get paid if you do not respond!"]]))
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
     :stop wells/wells-turn-off
@@ -318,6 +321,7 @@
        [:li "The amount of " (item-name :water)
         " when there is " (item-name :water)
         " is the same for all " (item-name :well) "s."]
+       [:li  [:b "You must respond to be paid"]]
        [:li "Respond faster to finish sooner."]
        (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
          [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
