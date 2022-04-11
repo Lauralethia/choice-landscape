@@ -105,16 +105,16 @@ function add_consent(){
 
    //NB. <div#buttons> used by append_play_link (otherwise replaces body)
    let preview = document.querySelector("div#preview")
-   let consent = document.querySelector("div#consent")
-   if(preview !== null && consent !== null) > {
+   let consent = document.querySelector("div#accept")
+   if(preview !== null && consent !== null)  {
       preview.style.display = "none";
       consent.style.display = "block";
    } else {
       document.body.innerHTML =
         'You must <ol><li>Click "Read Consent" to read the pop up and confirm your participation.</li>'+
         '<li> Then the "Play" button will appear. Click to play in a new window!</li>' +
-        '<li> When you finish, you will be given a completion code to enter back here. This should be automaticly entered and submited for you.</li></ol>' +
-        "<div id='buttons'> <a class='clickme' href='#' onClick='consent_form_clicked()'>Read Consent</a></div>";
+        '<li> When you finish, you will be given a completion code to enter back here.</li></ol>' +
+        "<div id='buttons'> <a class='clickme' href='#' onClick='consent_form_clicked()'>Read the Consent</a></div>";
    }
 }
 
