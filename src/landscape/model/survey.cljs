@@ -1,5 +1,6 @@
 (ns landscape.model.survey
   (:require
+   [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    [landscape.model.phase :as phase]
    [landscape.key :as key]
    [sablono.core :as sab :include-macros true :refer-macros [html]]))
@@ -107,9 +108,12 @@
 ;; !debugging note! to see section, run
 ;;   (swap! landscape.model/STATE assoc-in [:phase :name] :forum)
 ;;   (get-in @landscape.model/STATE [:record :survey])
-(defrecord forum-data [age feedback fun device done])
+
+;; removed "device" 20220412, but removed from options in 20220315
+;;   added "understand" which should have already been in the record
+(defrecord forum-data [age feedback fun understand done])
 ;; UGLY -- use forum-atom as global!
-(def forum-atom (atom (->forum-data nil nil nil nil nil)))
+(def forum-atom (atom (->forum-data nil nil nil nil false)))
 (defn add-forum-watcher [main-atom forum-atom]
   (add-watch :forum-watcher forum-atom
              (fn [_key _atom old new]
@@ -117,6 +121,18 @@
 (defn evtval [evt] (.. evt -target -value))
 (defn update-forum-atom [key evt] (swap! forum-atom assoc key (evtval evt)))
 (defn update-forum-atom-select [key evt] (swap! forum-atom assoc key (.. evt -target -value)))
+(defn validate-form
+  []
+   (let [need [:age :fun :feedback :understand]
+         form-map @forum-atom
+         have (vals (select-keys form-map need))]
+     (if (not-any? empty? have)
+       (swap! forum-atom assoc :done true)
+       (js/alert (str "Survey responses are essential for improving our game! Please fill out all the fields."
+                      (if (or (nil? (:age @forum-atom)) (empty? (:age @forum-atom)))
+                        "\n\n If you are unable to share your age, enter 0.")))))
+   @forum-atom)
+
 (defn view-questions []
   (html [:div  {:id "instruction"}
          [:h3 "Almost Done!"]
@@ -164,7 +180,7 @@
            [:br] [:br] [:input {
                                 :value "Finished!"
                                 :type :submit
-                                :on-click #(swap! forum-atom assoc :done true)}]]]]))
+                                :on-click validate-form}]]]]))
 (defn step-forum [state time]
   (let [done-at (if (:done @forum-atom) time nil)]
     (-> state

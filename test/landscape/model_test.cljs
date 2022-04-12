@@ -5,6 +5,7 @@
  [landscape.model.avatar :refer [move-closer]]
  [landscape.model.points :as points]
  [landscape.model.water :refer [water-pulse-water]]
+ [landscape.model.survey :as survey ]
  [clojure.test :refer [is deftest]]))
 
 ;; moving right changes x
@@ -73,3 +74,34 @@
    (is (= 50 (-> next :points-floating last :pos :x)))
    (is (= 1 (-> next :points-floating count)))
    (is (= 0 (-> next2 :points-floating count)))))
+
+
+(def alert-val (atom ""))
+(deftest validate-form-test-bad
+  "not validate"
+  (with-redefs [js/alert (fn[m] (reset! alert-val m))]
+    (survey/validate-form)
+    (is (not (:done @survey/forum-atom)))
+    (is (re-matches #"(?s).*Please.*age.*0.*" @alert-val))))
+(deftest validate-form-test-bad-bu-have-age
+  "not validate, but no age message"
+  (with-redefs [js/alert (fn[m] (reset! alert-val m))
+                survey/forum-atom (atom (survey/->forum-data "10" "" "" ""  false))          ]
+    (survey/validate-form)
+    (is (not (:done @survey/forum-atom)))
+    (is (re-matches #"(?s).*Please.*" @alert-val))
+    (is (not (re-matches #"(?s).*age.*0.*" @alert-val)))))
+(deftest validate-form-test-good
+  "does validate"
+  (reset! alert-val "")
+  (with-redefs
+    [js/alert (fn[m] (reset! alert-val m))
+     survey/forum-atom (atom (survey/->forum-data "10" "feedback" "2" "3"  false))]
+    (survey/validate-form)
+    (is (= "" @alert-val))
+    (is (:done @survey/forum-atom))))
+;; (deftest validate-form-test-good
+;;   "validate"
+;;   (let [fa (atom (survey/->forum-data 1 2 3 "feedback" false))]
+;;     (do (validate-form fa)
+;;         (is (not (:done @fa))))))

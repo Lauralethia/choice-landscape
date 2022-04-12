@@ -68,8 +68,13 @@
 
 ;; moved from survey to avoid warnings
 (defcard survey-forum
-  "what does the survey look like"
-  (survey/view-questions))
+  "what does the survey look like. TODO: working forum"
+  (fn [fa o]
+    (html [:div (survey/view-questions)
+           [:b (:age @fa)]
+           [:button {:onclick (fn [_](reset! fa @survey/forum-atom))} "reset"]])
+    )
+  (atom {:age 10 :understand 0 :done false}))
 ;; help from 
 ;; https://github.com/onetom/clj-figwheel-main-devcards
 ;; https://github.com/bhauman/devcards/issues/148
