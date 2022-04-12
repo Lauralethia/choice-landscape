@@ -4,23 +4,31 @@
 #
 # NB. works for lab pilot where id encodes age and sex
 #     will need to merge lunaid to age sex later.
-#
+# (pre-20220412) also handle age in survey
 # 20211101WF - init
+# 20220412WF - mturk data! have new block devalueAll (all 75) or devalueGood (only good 75)
+#              add_blocktype has init switch davalue_all_100 devalue_all_low devalue_good_low
 # ----
 suppressPackageStartupMessages({library(dplyr)
 library(tidyr)})
+
+extract_block_cols <- function(d)
+    d %>%
+    extract(block,
+      into=c('left_pos', 'left_prob',
+             'up_pos', 'up_prob',
+             'right_pos', 'right_prob'),
+       'L(c|f)(\\d+)U(c|f)(\\d+)R(c|f)(\\d+)',
+      remove=F) %>%
+      # make sure probs are numeric
+      mutate_at(vars(matches("(left|right|up)_prob")), as.numeric)
 
 # fix bug on+before 20211029 where step_picked is erroneously step_avoid
 # prob for each side is same within a block, and step is the same throughout
 # the block identifier string stores that info
 # we can pair that with the "picked" (the side) which is reported correctly
 fix_prob_picked <- function(d){
-   d <- d %>% extract(block,
-      into=c('left_pos', 'left_prob',
-             'up_pos', 'up_prob',
-             'right_pos', 'right_prob'),
-       'L(c|f)(\\d+)U(c|f)(\\d+)R(c|f)(\\d+)',
-      remove=F) 
+   d <- d %>% extract_block_cols()
    nonaidx <- which(d$picked %in% c("left","up","right"))
    picked_col_prob <- paste(sep="_",d$picked, "prob")
    picked_col_pos <- paste(sep="_", d$picked, "pos")
@@ -98,13 +106,43 @@ add_blocktype <- function(d)
      group_by(id, ver, timepoint, run) %>%
         mutate(blocknum = cumsum(lag(block,default=first(block))!=block)+1,
                blocktype = case_when(
-                     left_prob==right_prob & up_prob==right_prob ~ 'devalue',
+                     (left_prob==right_prob) & (up_prob==right_prob) & (up_prob == 100) ~ 'devalue_all_100',
+                     (left_prob==right_prob) & (up_prob==right_prob) & (up_prob < 100) ~ 'devalue_all_low',
+                     ((left_prob==100) + (right_prob==100) + (up_prob==100)) == 2 ~ 'devalue_good_low', # TODO: hacky. might need to revisit
                      block == first(block) & blocknum<=1 ~ 'init',
-                     block == first(block) ~ paste0('rev',blocknum -1),
                      block != first(block) ~ paste0('switch',blocknum -1),
                      TRUE ~ 'unknown')) %>%
     # survey has own iti? not an actual trial
     filter(block!="")
+
+test_add_blocktype<-function(){
+    require(testthat)
+    mkblocks <- function(bl)
+        data.frame(id=1,ver=1,timepoint=1,run=1, block=bl) %>%
+            extract_block_cols %>% add_blocktype
+
+
+    # reps okay
+    has_reps <- mkblocks(c("Lc50Uf100Rc20", "Lc50Uf100Rc20", "Lc20Uf100Rc50", "Lc20Uf100Rc50"))
+    expect_equal(has_reps$blocktype, c("init","init","switch1","switch1"))
+    expect_equal(has_reps$blocknum, c(1,1,2,2))
+
+    # original scheme
+    orig3block <- mkblocks(c("Lc50Uf100Rc20","Lc20Uf100Rc50", "Lc100Uf100Rc100"))
+    expect_equal(orig3block$blocktype, c("init","switch1","devalue_all_100"))
+
+    # new 4 block. when all are equal at the end
+    block4alldeval <- mkblocks(c("Lc50Uf100Rc20","Lc20Uf100Rc50", "Lc100Uf100Rc100", "Lc75Uf75Rc75"))
+    expect_equal(block4alldeval$blocktype, c("init","switch1","devalue_all_100", "devalue_all_low"))
+
+    # new 4 block. good is devalued
+    block4alldeval <- mkblocks(c("Lc50Uf100Rc20","Lc20Uf100Rc50", "Lc100Uf100Rc100", "Lc100Uf75Rc100"))
+    expect_equal(block4alldeval$blocktype, c("init","switch1","devalue_all_100", "devalue_good_low"))
+
+    # no switch/reversal
+    block3norev <- mkblocks(c("Lc50Uf100Rc20", "Lc100Uf100Rc100", "Lc75Uf75Rc75"))
+    expect_equal(block3norev$blocktype, c("init","devalue_all_100", "devalue_all_low"))
+}
 
 read_taskdata <- function(fpath='raw.tsv'){
     d <- read.csv(fpath, header=T, sep="\t") %>%

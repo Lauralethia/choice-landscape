@@ -20,13 +20,16 @@ out/card.js: $(wildcard src/landscape/*cljs src/landscape/*/*.cljs)
 #mkifdiff from lncdtools
 results/raw.json: .ALWAYS
 	psql `results/dburl` -A -qtc \
-		"select json_agg(json_build_object('id',worker_id,'task',task_name,'created_at', created_at, 'ver', version,'timepoint',timepoint, 'run_number',run_number,'json', json::json)) from run where finished_at is not null;" | \
+		"select json_agg(json_build_object('id',worker_id,'task',task_name,'created_at', created_at, 'finished_at',finished_at, 'ver', version,'timepoint',timepoint, 'run_number',run_number,'json', json::json)) from run where finished_at is not null;" | \
 		mkifdiff $@;
 
 results/raw.tsv: results/raw.json
 	results/dbjsontotsv.jq < $<  > $@
 
+results/survey.tsv: results/raw.json
+	results/extra_info.jq < $<  > $@
+
 results/data.tsv results/data_id-hidden.tsv: results/raw.tsv
 	Rscript -e "setwd('results'); source('./read.R'); fix_and_save()"
-results/summary.csv: results/data.tsv
+results/summary.csv: results/data.tsv results/survey.tsv
 	Rscript -e "setwd('results'); source('./summary.R')"
