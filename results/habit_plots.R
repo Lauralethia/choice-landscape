@@ -1,10 +1,8 @@
 #!/usr/bin/env Rscript
 # 20220412FC - init copied in (WF)
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(shiny, shinydashboard, tidyr, dplyr,
-               readr, DT, pracma, XML, ggplot2, zoo, 
-               tractor.base, jsonlite, sjPlot, tidyquant,
-               mgcv, mgcViz, scam, forcats)
+pacman::p_load(tidyr, dplyr, ggplot2, mgcv, mgcViz, tidyquant,cowplot)
+theme_set(theme_cowplot())
 select <- dplyr::select
 
 read_raw <- function(fname="data.tsv") {
@@ -15,7 +13,10 @@ read_raw <- function(fname="data.tsv") {
 
   rawdata <- read.csv(fname, sep='\t') %>% 
     filter(!grepl(BAD_IDS, id)) %>%
-    mutate(vdate=lubridate::ymd_hms(vdate))
+    mutate(vdate=lubridate::ymd_hms(vdate),
+           age = as.numeric(age),
+           survey_age = as.numeric(survey_age),
+           age=ifelse(is.na(age),survey_age,age))
     #filter(id != 'WWF34M' & id != 'ACP34F' & id != 'AP' & id != 'FC' & ver == '20211104v4-90max_pbar_moredeval')
     #filter(ver == '20211025v3-longertrials')
   
@@ -54,55 +55,6 @@ read_raw <- function(fname="data.tsv") {
 rawdata <- read_raw()
 MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
 
-true.na <- function(x) !is.na(x) & x
-subset_data <- function(rawdata, date_range, versions, tasks_selection) {
-  # narrow data to just more recent versions
-  #VER_REGEX <- 'v9_|v10_'
-  #grepl(VER_REGEX,ver)
-  # date_range = structure(c(1646088374.05442, 1649727627.27253), class = c("POSIXct", "POSIXt"), tzone = "UTC")
-  sub <- rawdata %>% filter(vdate >= date_range[1],
-                     vdate <= date_range[2],
-                     ver %in% versions,
-                     #tasks %in% tasks_selection
-  )
-  data <-
-   sub %>%
-   mutate(
-     choiceWell  = side_label_to_num(picked),
-     avoidedWell = side_label_to_num(avoided),
-     # what wells be chosen
-     farAvailable = choiceWell == farWell | avoidedWell == farWell,
-     initHighAval = choiceWell == initHigh | avoidedWell == initHigh,
-     # only care about high and best decisions
-     # NA needed for subsetting? cant use e.g.: choseFar = farAvailable & choiceWell == farWell,
-     choseFar        = ifelse(farAvailable, choiceWell == farWell, NA),
-     avoidedFar      = ifelse(farAvailable, avoidedWell == farWell, NA),
-     choseInitHigh   = ifelse(initHighAval, choiceWell == initHigh,NA),
-     avoidedInitHigh = ifelse(initHighAval, avoidedWell == initHigh,NA),
-     # 
-     blocknum = blocktype_to_num(blocktype),
-     choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
-
-}
-
-all_runs <- function(rawdata){
-    # TODO: better summary meterics. maybe use habit number
-    rawdata %>% select(id, survey_age, vdate, ver) %>% distinct()
-}
-
-
-
-
-#
-#        farWell_x = case_when(left_prob == farProb ~ 1,
-#                              up_prob == farProb ~ 2,
-#                              right_prob==farProb ~ 3,
-#                              TRUE ~ NA),
-#        initHigh_x = case_when(left_prob == 50 ~ 1,
-#                             up_prob   == 50 ~ 2,
-#                             TRUE ~ 3),
-#
-
 # probably could do with as.factor and keep labels or use case_when.
 # blocktype needs additional attention. have more names
 # numbers only needed to compare to farWell and initHigh.
@@ -125,7 +77,67 @@ test_blocktypenum<-function(){
     testthat::expect_false(rawdata$blocktype %>% unique %>% blocktype_to_num %>% is.na %>% any)
 }
 
+true.na <- function(x) !is.na(x) & x
+add_choice_cols <- function(data) {
+   data %>%
+   mutate(
+     choiceWell  = side_label_to_num(picked),
+     avoidedWell = side_label_to_num(avoided),
+     # what wells be chosen
+     farAvailable = choiceWell == farWell | avoidedWell == farWell,
+     initHighAval = choiceWell == initHigh | avoidedWell == initHigh,
+     # only care about high and best decisions
+     # NA needed for subsetting? cant use e.g.: choseFar = farAvailable & choiceWell == farWell,
+     choseFar        = ifelse(farAvailable, choiceWell == farWell, NA),
+     avoidedFar      = ifelse(farAvailable, avoidedWell == farWell, NA),
+     choseInitHigh   = ifelse(initHighAval, choiceWell == initHigh,NA),
+     avoidedInitHigh = ifelse(initHighAval, avoidedWell == initHigh,NA),
+     # 
+     blocknum = blocktype_to_num(blocktype),
+     choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
+}
+subset_data <- function(rawdata, date_range, versions, task_selection) {
+  # narrow data to just more recent versions
+  #VER_REGEX <- 'v9_|v10_'
+  #grepl(VER_REGEX,ver)
+  # date_range = structure(c(1646088374.05442, 1649727627.27253), class = c("POSIXct", "POSIXt"), tzone = "UTC")
+  sub <- rawdata %>% filter(vdate >= date_range[1],
+                     vdate <= date_range[2],
+                     ver %in% versions,
+                     task %in% task_selection)
+  data <- add_choice_cols(sub)
+}
+
+#### descrptions
+
+all_runs <- function(rawdata){
+    # TODO: better summary meterics. maybe use habit number
+    rawdata %>%
+        mutate(vdate=format(vdate,"%y-%m-%d")) %>%
+        select(id, survey_age, vdate, ver) %>%
+        distinct()
+}
+
+smry_pChoice<-function(data){
+  data %>%
+     group_by(id, blocktype) %>%
+     summarize(choseFar = sum(choseFar, na.rm=T),
+                avoidedFar = sum(avoidedFar, na.rm=T),
+                pChoseFar = choseFar / (choseFar + avoidedFar)) %>%
+    # hard coding block names requires maintenance
+    #mutate(blocktype = fct_relevel(blocktype, c('init','switch1','rev2','devalue'))) %>%
+    group_by(blocktype) %>%
+    summarize(pChoseFar_m = mean(pChoseFar, na.rm=T),
+              pChoseFar_sd = sd(pChoseFar, na.rm=T),
+              pChoseFar_se = sd(pChoseFar, na.rm=T)/sqrt(n()),
+              n=n())  
+} 
+
+
+
 #### PLOTTING
+data_far_only <- function(data)  far_only <- data %>% filter(!is.na(choseFar))  %>% arrange(trial)
+data_no_far <- function(data)      no_far <- data %>% filter(is.na(choseFar)) %>% arrange(trial)
 
 geom_block_rect <- function(d, gby, ylim=c(0,4)) {
     # gby should be at least var('blocktype')
@@ -138,159 +150,149 @@ geom_block_rect <- function(d, gby, ylim=c(0,4)) {
 }
 
 
-
 # optimal choices during learning phase
-no_deval <- data %>% filter(!is.na(optimal_choice) & !grepl('devalue', blocktype))
-ggplot(no_deval) +
-    aes(x=trial, y=1*optimal_choice, group=id, color=id) + 
-    geom_block_rect(no_deval, vars('id','blocktype')) +
-    geom_point() + 
-    geom_ma(n = 10, ma_fun = EMA, color = "red", linetype=1) + 
-    facet_wrap(facets = vars(id))
+plot_learn_optimal<-function(data){
+   no_deval <- data %>% filter(!is.na(optimal_choice) & !grepl('devalue', blocktype))
+   ggplot(no_deval) +
+       aes(x=trial, y=1*optimal_choice, group=id, color=id) + 
+       geom_block_rect(no_deval, vars('id','blocktype')) +
+       geom_point() + 
+       geom_ma(n = 10, ma_fun = EMA, color = "red", linetype=1) + 
+       coord_cartesian(xlim = c(1,MAXTRIALS), ylim=c(0,1)) +
+       facet_wrap(facets = vars(id))
+}
 
-# preference for far well by block
-far_only <- data %>% filter(!is.na(choseFar))  %>% arrange(trial)
-ggplot(far_only)+
-  aes(x=trial, y=1*choseFar, group=id, color=id) + 
-  geom_block_rect(far_only, vars('id','blocktype')) +
-  geom_point() + 
-  geom_ma(n = 10, ma_fun = EMA, color = "red", linetype=1) + 
-  facet_wrap(facets = vars(id), ncol = 4) +
-  coord_cartesian(xlim = c(1,MAXTRIALS)) +
-  theme(legend.position = 'none')
+plot_pref_far<-function(data) {
+   # preference for far well by block
+   far_only <- data_far_only(data)
+   ggplot(far_only)+
+     aes(x=trial, y=1*choseFar, group=id, color=id) + 
+     geom_block_rect(far_only, vars('id','blocktype')) +
+     geom_point() + 
+     geom_ma(n = 10, ma_fun = EMA, color = "red", linetype=1) + 
+     facet_wrap(facets = vars(id), ncol = 4) +
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim=c(0,1)) +
+     theme(legend.position = 'none')
+}
 
 # reversal learning (trials excluded far well as a choice)
-no_far <- data %>% filter(is.na(choseFar)) %>% arrange(trial)
-ggplot(no_far)+
-  aes(x=trial, y=1*choseInitHigh, group=id, color=id) + 
-  geom_block_rect(no_far, vars('id','blocktype')) +
-  geom_point() + 
-  geom_ma(n = 5, ma_fun = EMA, color = "red", linetype=1) + 
-  facet_wrap(facets = vars(id), ncol = 4) +
-  coord_cartesian(xlim = c(1,MAXTRIALS)) +
-  theme(legend.position = 'none')
+plot_revlearn <- function(data) {
+  no_far <- data_no_far(data)
+  ggplot(no_far)+
+    aes(x=trial, y=1*choseInitHigh, group=id, color=id) + 
+    geom_block_rect(no_far, vars('id','blocktype')) +
+    geom_point() + 
+    geom_ma(n = 5, ma_fun = EMA, color = "red", linetype=1) + 
+    facet_wrap(facets = vars(id), ncol = 4) +
+    coord_cartesian(xlim = c(1,MAXTRIALS), ylim=c(0,1)) +
+    theme(legend.position = 'none')
+}
 
 
 # group average learning
-ggplot(no_far) +
-  aes(x=trial, y=1*choseInitHigh) + 
-  geom_block_rect(no_far, vars('blocktype','blockseq')) +
-  geom_ma(n = 50, ma_fun = EMA, color = "red", linetype=1) + 
-  coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-  theme(legend.position = 'none') +
-  facet_wrap(~blockseq)
+plot_grp_learn <- function(data, trace=FALSE){
+   no_far <- data_no_far(data)
+   p <- ggplot(no_far) +
+     aes(x=trial, y=1*choseInitHigh) + 
+     geom_block_rect(no_far, vars('blocktype','blockseq')) +
+     geom_ma(n = 50, ma_fun = EMA, color = "red", linetype=1) + 
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
+     theme(legend.position = 'none') +
+     facet_wrap(~blockseq)
+
+   if(trace) p <- p +
+     stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess')
+   return(p)
+} 
 
 # group average - far well
-ggplot(far_only) +
-  aes(x=trial, y=1*choseFar) + 
-  geom_block_rect(far_only, vars('blocktype','blockseq')) +
-  stat_smooth(span=0.1) +
-  coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-  facet_wrap(~blockseq) +
-  theme(legend.position = 'none')
+plot_grp_far<-function(data) {
+   far_only <- data_far_only(data)
+   ggplot(far_only) +
+     aes(x=trial, y=1*choseFar) + 
+     geom_block_rect(far_only, vars('blocktype','blockseq')) +
+     stat_smooth(span=0.1) +
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
+     facet_wrap(~blockseq) +
+     theme(legend.position = 'none')
+}
 
 # group average - far well, + indiv traces
-ggplot(far_only) +
-  aes(x=trial, y=1*choseFar) + 
-  geom_block_rect(far_only, vars('blocktype','blockseq')) +
-  stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess') +
-  stat_smooth(span=0.1, se=T) +
-  coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-  facet_wrap(~blockseq) +
-  theme(legend.position = 'none')
+plot_grp_far_trace<-function(data){
+   far_only <- data_far_only(data)
+   ggplot(far_only) +
+     aes(x=trial, y=1*choseFar) + 
+     geom_block_rect(far_only, vars('blocktype','blockseq')) +
+     stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess') +
+     stat_smooth(span=0.1, se=T) +
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
+     facet_wrap(~blockseq) +
+     theme(legend.position = 'none')
+}
 
-# group average - far well, + indiv traces, moving avg
-ggplot(far_only)+
-  aes(x=trial, y=1*choseFar) + 
-  geom_block_rect(far_only, vars('blocktype','blockseq')) +
-  geom_ma(n = 20, ma_fun = ZLEMA, linetype=1, aes(group=id), color='gray') + 
-  geom_ma(n = 150, ma_fun = ZLEMA, linetype=1, color='blue') + 
-  coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-  facet_wrap(~blockseq) +
-  theme(legend.position = 'none')
+# group average - far well, + indiv traces, moving avg   
+plot_grp_far_trace_mvavg <- function(data){
+   far_only <- data_far_only(data)
+   ggplot(far_only)+
+     aes(x=trial, y=1*choseFar) + 
+     geom_block_rect(far_only, vars('blocktype','blockseq')) +
+     geom_ma(n = 20, ma_fun = ZLEMA, linetype=1, aes(group=id), color='gray') + 
+     geom_ma(n = 150, ma_fun = ZLEMA, linetype=1, color='blue') + 
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
+     facet_wrap(~blockseq) +
+     theme(legend.position = 'none')
+ }
 
 #data %>% group_by(id) %>% summarize(n = n()) %>% group_by(n) %>% tally()
 
 
-no_far_no_deval <- data %>% filter(is.na(choseFar) & !grepl('devalue',blocktype)) %>% arrange(trial)
-ggplot(no_far_no_deval) +
-  aes(x=trial, y=1*optimal_choice) + 
-  geom_block_rect(no_far_no_deval, vars('blocktype','blockseq')) +
-  geom_ma(n = 25, ma_fun = EMA, color = "red", linetype=1) + 
-  coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-  facet_wrap(~blockseq) +
-  theme(legend.position = 'none')
+plot_grp_nofar_trace_mvavg <- function(data){
+   no_far_no_deval <- data %>% filter(is.na(choseFar) & !grepl('devalue',blocktype)) %>% arrange(trial)
+   ggplot(no_far_no_deval) +
+     aes(x=trial, y=1*optimal_choice) + 
+     geom_block_rect(no_far_no_deval, vars('blocktype','blockseq')) +
+     geom_ma(n = 25, ma_fun = EMA, color = "red", linetype=1) + 
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
+     facet_wrap(~blockseq) +
+     theme(legend.position = 'none')
+}
 
 
-# group average - RT
-rt_data <- data %>% filter(!is.na(rt)) %>% arrange(trial)
-ggplot(rt_data) + aes(x=trial, y=rt, color=as.factor(choiceType)) + 
-  geom_block_rect(rt_data, vars('blocktype','blockseq'), ylim=c(400,800)) +
-  stat_smooth(span = 0.5) +
-  coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(400,800)) +
-  facet_wrap(~blockseq) +
-  theme(legend.position = 'top')
+plot_grp_rt_trace_mvavg <- function(data){
+   # group average - RT
+   rt_data <- data %>% filter(!is.na(rt)) %>% arrange(trial)
+   ggplot(rt_data) + aes(x=trial, y=rt, color=as.factor(choiceType)) + 
+     geom_block_rect(rt_data, vars('blocktype','blockseq'), ylim=c(400,800)) +
+     stat_smooth(span = 0.5) +
+     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(400,800)) +
+     facet_wrap(~blockseq) +
+     theme(legend.position = 'top')
+}
 
-smry_pChoice<-function(date){
-  data %>% group_by(id, blocktype) %>%
-    summarize(choseFar = sum(choseFar, na.rm=T), avoidedFar = sum(avoidedFar, na.rm=T), pChoseFar = choseFar / (choseFar + avoidedFar)) %>%
-    # hard coding block names requires maintenance
-    #mutate(blocktype = fct_relevel(blocktype, c('init','switch1','rev2','devalue'))) %>%
-    group_by(blocktype) %>%
-    summarize(pChoseFar = mean(pChoseFar, na.rm=T),
-              pChoseFar_sd = sd(pChoseFar, na.rm=T),
-              pChoseFar_se = sd(pChoseFar, na.rm=T)/sqrt(n()),
-              n=n())  
-} 
 
 plot_habit_line <- function(data){
    # compute % choseFar in final block, plot vs age
-    print(head(data))
    habitBeh <- data %>%
        filter(trial > 140) %>%
-       group_by(id, age.x, age.y, blockseq, task) %>% 
+       group_by(id, age.x, blockseq, task) %>% 
      summarize(pHabit = sum(choseFar, na.rm=T) /
                        (sum(choseFar, na.rm=T) + sum(avoidedFar, na.rm=T)))
    
-   ggplot(data=habitBeh %>% filter(age.x < 50 & age.x > 18))+
-    aes(x=age.x, y=pHabit) +
-    geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5)))) +
-    stat_smooth(method='loess') +
-    coord_cartesian(ylim=c(0,1)) +
-    theme(legend.position = 'bottom')
+   habitBeh %>%
+    filter(age.x < 50, age.x > 18, !is.na(pHabit)) %>%
+    ggplot()+
+     aes(x=age.x, y=pHabit) +
+     geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5)))) +
+     geom_smooth(method='loess') +
+     coord_cartesian(ylim=c(0,1)) +
+     theme(legend.position = 'bottom')
 }
  
-
-# ggplot(habitBeh) + aes(age.x) + geom_histogram()
-
-MINDATE <-min(rawdata$vdate)
-MAXDATE <-max(rawdata$vdate)
-ui <- fluidPage(
-    titlePanel("habitTask"),
-    sidebarLayout(
-     sidebarPanel(
-      sliderInput("date_range", label="dates", min=MINDATE, max=MAXDATE, value=c(MINDATE,MAXDATE)),
-      selectInput("task_selection", label="tasks (each mturk is new task)",
-                  choices=unique(rawdata$tasks), selected=unique(rawdata$tasks), multiple = TRUE),
-     ), mainPanel(
-         tabsetPanel(type="tabs",
-           tabPanel("habit plot", plotOutput("habit_line")),
-           tabPanel("runs tbl", tableOutput("smry_tbl")),
-           tabPanel("choice tbl", tableOutput("pchoice_tbl")),
-))))
-
-server <- function(input, output){
-    d <- reactive({
-        subset_data(rawdata, input$date_range,
-                    tasks_selection=unique(rawdata$task),
-                  versions=unique(rawdata$ver))})
-
-    output$habit_line <- renderPlot({plot_habit_line(d())})
-    output$smry_tbl <- renderTable({all_runs(d())})
-    output$pchoice_tbl <-renderTable({smry_pChoice(d())})
-
-    return(output)
+plot_hist<-function(data){
+   # ggplot(habitBeh) + aes(age.x) + geom_histogram()
+   data %>%
+        group_by(id,age) %>%
+        distinct %>%
+        ggplot() + aes(age.x) %>%
+        geom_histogram
 }
-
-# options(browser="firefox")
-shinyApp(ui, server)
