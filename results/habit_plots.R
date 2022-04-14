@@ -14,6 +14,8 @@ read_raw <- function(fname="data.tsv") {
   rawdata <- read.csv(fname, sep='\t') %>% 
     filter(!grepl(BAD_IDS, id)) %>%
     mutate(vdate=lubridate::ymd_hms(vdate),
+           age = as.numeric(age),
+           survey_age = as.numeric(survey_age),
            age=ifelse(is.na(age),survey_age,age))
     #filter(id != 'WWF34M' & id != 'ACP34F' & id != 'AP' & id != 'FC' & ver == '20211104v4-90max_pbar_moredeval')
     #filter(ver == '20211025v3-longertrials')
@@ -76,17 +78,8 @@ test_blocktypenum<-function(){
 }
 
 true.na <- function(x) !is.na(x) & x
-subset_data <- function(rawdata, date_range, versions, task_selection) {
-  # narrow data to just more recent versions
-  #VER_REGEX <- 'v9_|v10_'
-  #grepl(VER_REGEX,ver)
-  # date_range = structure(c(1646088374.05442, 1649727627.27253), class = c("POSIXct", "POSIXt"), tzone = "UTC")
-  sub <- rawdata %>% filter(vdate >= date_range[1],
-                     vdate <= date_range[2],
-                     ver %in% versions,
-                     task %in% task_selection)
-  data <-
-   sub %>%
+add_choice_cols <- function(data) {
+   data %>%
    mutate(
      choiceWell  = side_label_to_num(picked),
      avoidedWell = side_label_to_num(avoided),
@@ -102,7 +95,17 @@ subset_data <- function(rawdata, date_range, versions, task_selection) {
      # 
      blocknum = blocktype_to_num(blocktype),
      choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
-
+}
+subset_data <- function(rawdata, date_range, versions, task_selection) {
+  # narrow data to just more recent versions
+  #VER_REGEX <- 'v9_|v10_'
+  #grepl(VER_REGEX,ver)
+  # date_range = structure(c(1646088374.05442, 1649727627.27253), class = c("POSIXct", "POSIXt"), tzone = "UTC")
+  sub <- rawdata %>% filter(vdate >= date_range[1],
+                     vdate <= date_range[2],
+                     ver %in% versions,
+                     task %in% task_selection)
+  data <- add_choice_cols(sub)
 }
 
 #### descrptions
@@ -269,19 +272,20 @@ plot_grp_rt_trace_mvavg <- function(data){
 
 plot_habit_line <- function(data){
    # compute % choseFar in final block, plot vs age
-   print(head(data))
    habitBeh <- data %>%
        filter(trial > 140) %>%
-       group_by(id, age.x, age.y, blockseq, task) %>% 
+       group_by(id, age.x, blockseq, task) %>% 
      summarize(pHabit = sum(choseFar, na.rm=T) /
                        (sum(choseFar, na.rm=T) + sum(avoidedFar, na.rm=T)))
    
-   ggplot(data=habitBeh %>% filter(age.x < 50 & age.x > 18))+
-    aes(x=age.x, y=pHabit) +
-    geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5)))) +
-    stat_smooth(method='loess') +
-    coord_cartesian(ylim=c(0,1)) +
-    theme(legend.position = 'bottom')
+   habitBeh %>%
+    filter(age.x < 50, age.x > 18, !is.na(pHabit)) %>%
+    ggplot()+
+     aes(x=age.x, y=pHabit) +
+     geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5)))) +
+     geom_smooth(method='loess') +
+     coord_cartesian(ylim=c(0,1)) +
+     theme(legend.position = 'bottom')
 }
  
 plot_hist<-function(data){
@@ -289,6 +293,6 @@ plot_hist<-function(data){
    data %>%
         group_by(id,age) %>%
         distinct %>%
-        ggplot()+aes(age.x) %>%
+        ggplot() + aes(age.x) %>%
         geom_histogram
 }
