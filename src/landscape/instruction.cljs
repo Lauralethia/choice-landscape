@@ -144,7 +144,9 @@
                {:type :button :value "Play Sound Again"
                 :on-click (fn [e] (play-sound :word))}]
               ;; 20220411 - on old chromium 69 (debian) autoadvance did not workg
-              [:br] "Push the right arrow key when you have entered the correct word"]))
+              [:br] [:br]
+              [:span {:style {:font-size "smaller"}}
+               "Push the right arrow key when you have entered the correct word"]]))
     ;; when we start out, we can skip this if we dont need to pass-captcha
     ;; ie settings/:skip-catcha == true
     :start (fn[state] (do (play-sound :word) state))
@@ -203,6 +205,13 @@
                    [:br]
                    "Use the arrow keys on the keyboard: left, up, and right"
                    ]))}
+   {:text (fn[state]
+            (html [:div "Make choices with a single tap."
+                   [:br]
+                   [:b "Do not hold keys down."]
+                   [:br] [:br]
+                   "Held keys misrepresent choice timing, leading to study disqualification."]
+                   ))}
    {:text (fn[state]
             (html [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
                    [:br] "when they have a " (item-name :bucket) "."
@@ -326,7 +335,8 @@
        (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
          [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
        [:li "How often you visit a " (item-name :well)
-        " does not change how often it gives " (item-name :water) ]]])}])
+        " does not change how often it gives " (item-name :water) ]
+       [:li "Make choices with a single tap. Do not hold keys down."]]])}])
 
 (defn instruction-finished [state time-cur]
   (-> state
