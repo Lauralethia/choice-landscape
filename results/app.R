@@ -1,6 +1,8 @@
 #!/usr/bin/env Rscript
 # run like
 # Rscript -e "shiny::runApp()"
+# Rscript -e "shiny::runApp(host='0.0.0.0', port=3001)"
+
 source('habit_plots.R') # reads rawdata, sets MAXTRIALS
 library(shiny)
 
@@ -22,6 +24,7 @@ ui <- fluidPage(
          tabsetPanel(type="tabs",
            tabPanel("runs tbl", tableOutput("smry_tbl")),
            tabPanel("habit plot", plotOutput("habit_line")),
+           tabPanel("idv runs", plotOutput("plot_idv")),
            tabPanel("grp learn", plotOutput("plot_grp_learn_trace")),
            tabPanel("grp far", plotOutput("plot_grp_far_trace")),
            tabPanel("grp rt", plotOutput("plot_grp_rt_trace_mvavg")),
@@ -40,6 +43,7 @@ server <- function(input, output){
                     #versions=input$versions
                     )})
     output$habit_line <- renderPlot({plot_habit_line(d())})
+    output$plot_idv <- renderPlot({plot_idv_wf(d())})
     output$plot_grp_learn_trace <- renderPlot({plot_grp_learn(d(),trace=TRUE)})
     output$plot_grp_far_trace <- renderPlot({plot_grp_far_trace(d())})
     output$plot_grp_rt_trace_mvavg <- renderPlot({plot_grp_rt_trace_mvavg(d())})

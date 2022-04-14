@@ -287,6 +287,26 @@ plot_habit_line <- function(data){
      coord_cartesian(ylim=c(0,1)) +
      theme(legend.position = 'bottom')
 }
+
+
+plot_idv_wf <- function(data){
+  ## plot all trials. facet by id (currently, id is unique to each run)
+  # color rectanges for block switches. hard coding first100 and first50 b/c '*unified' columns could have NA
+  maxwell <- max(data$avoid_unified,na.rm=T)
+  d_facet_id <- data %>% rename(age=age.x) %>%
+      mutate(shortver=substr(gsub('.*(v[0-9]+).*','\\1',ver),0,10),
+             shortid=substr(id,0,7),
+             facet=paste(age,shortver,id))
+
+  ggplot(d_facet_id) +
+      aes(x=trial) +
+      geom_block_rect(d_facet_id, vars('facet','blocktype')) +
+      geom_point(aes(y=avoid_unified),color='gray') +
+      geom_point(aes(y=picked_unified,color=optimal_choice,shape=score)) +
+      facet_grid(facet~.) +
+      scale_shape_manual(values=c(4,5,20)) +
+      ylab('side') + theme(strip.text.x = element_text(hjust = -0.02))
+}
  
 plot_hist<-function(data){
    # ggplot(habitBeh) + aes(age.x) + geom_histogram()
