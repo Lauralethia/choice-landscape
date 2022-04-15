@@ -1,5 +1,5 @@
 #!/usr/bin/env -S jq -Mfr
-["id","task","vdate","endtime",
+["id","task","perm", "vdate","endtime",
  "timepoint", "run", "ver","avatar",
  "age","understand","fun","feedback"],
 (.[]|
@@ -7,10 +7,11 @@
    .created_at as $vdate_start| .finished_at as $vdate_end|
    .json.avatar as $av|
    .json.survey as $survey|
-   [$id, $task, $vdate_start, $vdate_end,
+   .json.url.anchor as $anchor|
+   [$id, $task, $anchor, $vdate_start, $vdate_end,
     $tp, $rn, $ver, $av,
     if($survey|type=="array") then
-     [null, null, null, null] else
+     [$survey[0].age, $survey[0].understand, $survey[0].fun, $survey[0].feedback] else
      [$survey.age, $survey.understand, $survey.fun, $survey.feedback]
     end
    ]|flatten )|

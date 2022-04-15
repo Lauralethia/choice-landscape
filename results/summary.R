@@ -7,9 +7,8 @@ MINDATE <- ymd('2022-04-10')
 VERSION_FILTER_REGEX <- "v10"
 
 # from extra_info.jq (run by Makefile)
-survey <- read.table("survey.tsv",sep="\t",header=T,comment.char="") %>%
-    mutate(vdate=ymd_hms(vdate))
-
+survey <- read.table("survey.tsv",sep="\t",header=T,comment.char="",quote="") %>%
+    mutate(vdate=ymd_hms(vdate), age=as.numeric(age)) # numeric b/c some are empty. one student reported age="I 8"
 # from ./read.R
 d <- read.csv(file="data.tsv", sep="\t") %>% mutate(vdate=ymd_hms(vdate)) %>%
   # x is junk ID used for testing
@@ -17,7 +16,7 @@ d <- read.csv(file="data.tsv", sep="\t") %>% mutate(vdate=ymd_hms(vdate)) %>%
 
 # remove "rnd" later. maybe filter(vdate>"2022-02-24") instead
 #d_rcnt <- d %>% filter(grepl("^\\d{5}", id)) # lunaids; also restrict to version: grepl("v9", ver), 
-d_rcnt <- d  %>% filter(vdate > MINDATE)
+d_rcnt <- d %>% mutate(age=as.numeric(age)) #%>% filter(vdate > MINDATE)
 
 
 # quick metrics for assessing performance
@@ -41,7 +40,7 @@ smry <- d_rcnt %>% group_by(id,ver,vdate,age) %>%
               dur=(max(iti_onset)-min(iti_onset))/(60*10^3))
 
 smry_fbk <- left_join(smry, survey)
-write.csv(smry_fbk, 'summary.csv', row.names=F, quote=F)
+write.csv(smry_fbk, 'summary.csv', row.names=F, quote=T)
    
 ## plot all trials. facet by id (currently, id is unique to each run)
 # color rectanges for block switches. hard coding first100 and first50 b/c '*unified' columns could have NA

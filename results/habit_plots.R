@@ -53,6 +53,7 @@ read_raw <- function(fname="data.tsv") {
 }
 
 rawdata <- read_raw()
+summary_data <- read.csv("summary.csv", comment.char="")
 MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
 
 # probably could do with as.factor and keep labels or use case_when.
@@ -112,10 +113,18 @@ subset_data <- function(rawdata, date_range, versions, task_selection) {
 
 all_runs <- function(rawdata){
     # TODO: better summary meterics. maybe use habit number
-    rawdata %>%
+    smry <- summary_data %>%
+       select(id, ver, end=endtime, n_trials=n, perm,
+              rt_mean,rt_sd,score,n_miss, n_keys_mean,
+              avatar,understand,fun,feedback) %>%
+       mutate(end=format(ymd_hms(end),"%H:%M"))
+    run_info <- rawdata %>%
         mutate(vdate=format(vdate,"%y-%m-%d")) %>%
-        select(id, survey_age, vdate, ver) %>%
+        select(id, age=survey_age, vdate, ver) %>%
         distinct()
+
+    left_join(run_info, smry,by=c("id","ver"))
+
 }
 
 smry_pChoice<-function(data){
@@ -279,12 +288,12 @@ plot_habit_line <- function(data){
                        (sum(choseFar, na.rm=T) + sum(avoidedFar, na.rm=T)))
    
    habitBeh %>%
-    filter(age.x < 50, age.x > 18, !is.na(pHabit)) %>%
     ggplot()+
      aes(x=age.x, y=pHabit) +
-     geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5)))) +
      geom_smooth(method='loess') +
+     geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5))), size=3) +
      coord_cartesian(ylim=c(0,1)) +
+     facet_wrap(~blockseq) +
      theme(legend.position = 'bottom')
 }
 
