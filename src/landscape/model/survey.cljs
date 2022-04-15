@@ -129,8 +129,9 @@
      (if (not-any? empty? have)
        (swap! forum-atom assoc :done true)
        (js/alert (str "Survey responses are essential for improving our game! Please fill out all the fields."
-                      (if (or (nil? (:age @forum-atom)) (empty? (:age @forum-atom)))
-                        "\n\n If you are unable to share your age, enter 0.")))))
+                      ;; (if (or (nil? (:age @forum-atom)) (empty? (:age @forum-atom)))
+                      ;;   "\n\n If you are unable to share your age, enter 0.")
+                      ))))
    @forum-atom)
 
 (defn view-questions []
