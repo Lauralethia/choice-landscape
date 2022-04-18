@@ -248,14 +248,14 @@ plot_grp_far_trace<-function(data, idv_ma_win=20, grp_ma_win=150){
      aes(x=trial, y=1*choseFar) + 
      geom_block_rect(far_only, vars('blocktype','blockseq')) +
      geom_abline(slope=0, intercept=0.5, linetype=1) +
-     geom_ma(n = idv_ma_win, ma_fun = ZLEMA, linetype=1, aes(group=id), color='gray')
+     geom_ma(n = grp_ma_win, ma_fun = ZLEMA, linetype=1, color='blue')
      #stat_smooth(span=0.1, se=T) +
   if(idv_ma_win>0)
      # 2022-04-18 need to remove AEZL6P69UF6KE who hardly responded
      # so make sure we have enough samples in terms of idv_ma_win
      p <- p +
         geom_ma(data=far_only %>% group_by(id) %>% filter(n()>=3*idv_ma_win),
-                  n = grp_ma_win, ma_fun = ZLEMA, linetype=1, color='blue')
+                n = idv_ma_win, ma_fun = ZLEMA, linetype=1, aes(group=id), color='gray')
      #stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess')
 
   p + coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
