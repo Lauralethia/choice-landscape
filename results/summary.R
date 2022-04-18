@@ -1,3 +1,7 @@
+#!/usr/bin/env Rscript
+# summarise mturk/herokuapp into row per run
+# pull in survey results and key presses
+ 
 library(dplyr)
 library(ggplot2)
 library(lubridate)
