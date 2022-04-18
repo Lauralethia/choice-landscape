@@ -5,6 +5,42 @@ pacman::p_load(tidyr, dplyr, ggplot2, mgcv, mgcViz, tidyquant,cowplot)
 theme_set(theme_cowplot())
 select <- dplyr::select
 
+side_label_to_num <- function(side) ifelse(side == 'left', 1, ifelse(side=='up', 2, ifelse(side=='right', 3, NA)))
+blocktype_to_num <- function(blocktype)
+    ifelse(   blocktype == 'init',                1,
+     ifelse(  blocktype == 'switch1',             2,
+      ifelse( blocktype %in% c("rev2","switch2"), 3,
+       ifelse(grepl('devalue', blocktype),        4,
+                                                  NA))))
+
+# make sure we get the blocks correctly
+test_blocktypenum<-function(){
+    testthat::expect_equal(blocktype_to_num('switch1'), 2)
+    testthat::expect_equal(blocktype_to_num('devalue_all_100'), 4)
+    testthat::expect_equal(blocktype_to_num('devalue_good_75'), 4)
+    testthat::expect_equal(blocktype_to_num(c('switch1','devalue_all_low')), c(2,4))
+    testthat::expect_false(rawdata$blocktype %>% unique %>% blocktype_to_num %>% is.na %>% any)
+}
+
+true.na <- function(x) !is.na(x) & x
+add_choice_cols <- function(data) {
+   data %>%
+   mutate(
+     choiceWell  = side_label_to_num(picked),
+     avoidedWell = side_label_to_num(avoided),
+     # what wells be chosen
+     farAvailable = choiceWell == farWell | avoidedWell == farWell,
+     initHighAval = choiceWell == initHigh | avoidedWell == initHigh,
+     # only care about high and best decisions
+     # NA needed for subsetting? cant use e.g.: choseFar = farAvailable & choiceWell == farWell,
+     choseFar        = ifelse(farAvailable, choiceWell == farWell, NA),
+     avoidedFar      = ifelse(farAvailable, avoidedWell == farWell, NA),
+     choseInitHigh   = ifelse(initHighAval, choiceWell == initHigh,NA),
+     avoidedInitHigh = ifelse(initHighAval, avoidedWell == initHigh,NA),
+     # 
+     blocknum = blocktype_to_num(blocktype),
+     choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
+}
 read_raw <- function(fname="data.tsv") {
 
   # exclude testing runs (IDs with our initials, or 'x')
@@ -49,11 +85,24 @@ read_raw <- function(fname="data.tsv") {
 
   rawdata %>%
       merge(perSubj, by=c('id','vdate')) %>%
-      left_join(blockseq_df, by=c("id","ver","timepoint"))
+      left_join(blockseq_df, by=c("id","ver","timepoint")) %>%
+  add_choice_cols 
 }
 
-rawdata <- read_raw()
-summary_data <- read.csv("summary.csv", comment.char="")
+read_summary <- function() read.csv("summary.csv", comment.char="")
+
+
+rawdata <<- NULL
+summary_data <<- NULL
+update_data  <- function(runMake=FALSE){
+   if(runMake) system("make summary.csv")
+   rawdata <<- read_raw()
+   summary_data <<- read_summary()
+}
+
+# modifies globals rawdata and summary_data
+update_data(runMake=FALSE) 
+
 MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
 
 # probably could do with as.factor and keep labels or use case_when.
@@ -61,52 +110,18 @@ MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
 # numbers only needed to compare to farWell and initHigh.
 # can maybe save some effort and use string values directly?
 # blocknum only used to display block rectangles
-side_label_to_num <- function(side) ifelse(side == 'left', 1, ifelse(side=='up', 2, ifelse(side=='right', 3, NA)))
-blocktype_to_num <- function(blocktype)
-    ifelse(   blocktype == 'init',                1,
-     ifelse(  blocktype == 'switch1',             2,
-      ifelse( blocktype %in% c("rev2","switch2"), 3,
-       ifelse(grepl('devalue', blocktype),        4,
-                                                  NA))))
-
-# make sure we get the blocks correctly
-test_blocktypenum<-function(){
-    testthat::expect_equal(blocktype_to_num('switch1'), 2)
-    testthat::expect_equal(blocktype_to_num('devalue_all_100'), 4)
-    testthat::expect_equal(blocktype_to_num('devalue_good_75'), 4)
-    testthat::expect_equal(blocktype_to_num(c('switch1','devalue_all_low')), c(2,4))
-    testthat::expect_false(rawdata$blocktype %>% unique %>% blocktype_to_num %>% is.na %>% any)
-}
-
-true.na <- function(x) !is.na(x) & x
-add_choice_cols <- function(data) {
-   data %>%
-   mutate(
-     choiceWell  = side_label_to_num(picked),
-     avoidedWell = side_label_to_num(avoided),
-     # what wells be chosen
-     farAvailable = choiceWell == farWell | avoidedWell == farWell,
-     initHighAval = choiceWell == initHigh | avoidedWell == initHigh,
-     # only care about high and best decisions
-     # NA needed for subsetting? cant use e.g.: choseFar = farAvailable & choiceWell == farWell,
-     choseFar        = ifelse(farAvailable, choiceWell == farWell, NA),
-     avoidedFar      = ifelse(farAvailable, avoidedWell == farWell, NA),
-     choseInitHigh   = ifelse(initHighAval, choiceWell == initHigh,NA),
-     avoidedInitHigh = ifelse(initHighAval, avoidedWell == initHigh,NA),
-     # 
-     blocknum = blocktype_to_num(blocktype),
-     choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
-}
-subset_data <- function(rawdata, date_range, versions, task_selection) {
+subset_data <- function(rawdata, date_range, versions, task_selection, blockseq_select) {
   # narrow data to just more recent versions
   #VER_REGEX <- 'v9_|v10_'
   #grepl(VER_REGEX,ver)
   # date_range = structure(c(1646088374.05442, 1649727627.27253), class = c("POSIXct", "POSIXt"), tzone = "UTC")
-  sub <- rawdata %>% filter(vdate >= date_range[1],
-                     vdate <= date_range[2],
-                     ver %in% versions,
-                     task %in% task_selection)
-  data <- add_choice_cols(sub)
+
+  sub <- rawdata %>%
+     filter(vdate >= date_range[1],
+            vdate <= date_range[2],
+            ver %in% versions,
+            task %in% task_selection,
+            blockseq %in% blockseq_select)
 }
 
 #### descrptions
@@ -120,11 +135,18 @@ all_runs <- function(rawdata){
        mutate(end=format(ymd_hms(end),"%H:%M"))
     run_info <- rawdata %>%
         mutate(vdate=format(vdate,"%y-%m-%d")) %>%
-        select(id, age=survey_age, vdate, ver) %>%
+        select(id, age=survey_age, vdate, ver, task, blockseq) %>%
         distinct()
 
     left_join(run_info, smry,by=c("id","ver"))
 
+}
+smry_perms <- function(data){
+ all_runs(data) %>%
+    group_by(perm, blockseq, task) %>%  
+    summarise(n_trials=first(n_trials), n=n(),
+            rt=mean(rt_mean), start=min(vdate), end=max(vdate)) %>%
+    arrange(-as.numeric(gsub('-','',end)))
 }
 
 smry_pChoice<-function(data){
@@ -168,7 +190,8 @@ plot_learn_optimal<-function(data){
        geom_point() + 
        geom_ma(n = 10, ma_fun = EMA, color = "red", linetype=1) + 
        coord_cartesian(xlim = c(1,MAXTRIALS), ylim=c(0,1)) +
-       facet_wrap(facets = vars(id))
+       facet_wrap(facets = vars(id)) +
+       theme(legend.position = 'none')
 }
 
 plot_pref_far<-function(data) {
@@ -199,67 +222,53 @@ plot_revlearn <- function(data) {
 
 
 # group average learning
-plot_grp_learn <- function(data, trace=FALSE){
+plot_grp_learn <- function(data, grp_ma_win=50, idv_ma_win=0){
    no_far <- data_no_far(data)
    p <- ggplot(no_far) +
      aes(x=trial, y=1*choseInitHigh) + 
      geom_block_rect(no_far, vars('blocktype','blockseq')) +
+     geom_abline(slope=0, intercept=0.5, linetype=1) +
      geom_ma(n = 50, ma_fun = EMA, color = "red", linetype=1) + 
      coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
      theme(legend.position = 'none') +
      facet_wrap(~blockseq)
 
-   if(trace) p <- p +
-     stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess')
+   if(idv_ma_win>0) p <- p +
+     #stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess')
+     geom_ma(n = idv_ma_win, ma_fun = EMA, linetype=1, aes(group=id), color='gray',
+             data= no_far %>% group_by(id) %>% filter(n()>3*idv_ma_win))
    return(p)
 } 
 
-# group average - far well
-plot_grp_far<-function(data) {
-   far_only <- data_far_only(data)
-   ggplot(far_only) +
-     aes(x=trial, y=1*choseFar) + 
-     geom_block_rect(far_only, vars('blocktype','blockseq')) +
-     stat_smooth(span=0.1) +
-     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-     facet_wrap(~blockseq) +
-     theme(legend.position = 'none')
-}
-
 # group average - far well, + indiv traces
-plot_grp_far_trace<-function(data){
-   far_only <- data_far_only(data)
-   ggplot(far_only) +
+plot_grp_far_trace<-function(data, idv_ma_win=20, grp_ma_win=150){
+   # use idv_ma_win=0 to disable showing traces
+  far_only <- data_far_only(data)
+  p <- ggplot(far_only) +
      aes(x=trial, y=1*choseFar) + 
      geom_block_rect(far_only, vars('blocktype','blockseq')) +
-     stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess') +
-     stat_smooth(span=0.1, se=T) +
-     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
+     geom_abline(slope=0, intercept=0.5, linetype=1) +
+     geom_ma(n = idv_ma_win, ma_fun = ZLEMA, linetype=1, aes(group=id), color='gray')
+     #stat_smooth(span=0.1, se=T) +
+  if(idv_ma_win>0)
+     # 2022-04-18 need to remove AEZL6P69UF6KE who hardly responded
+     # so make sure we have enough samples in terms of idv_ma_win
+     p <- p +
+        geom_ma(data=far_only %>% group_by(id) %>% filter(n()>=3*idv_ma_win),
+                  n = grp_ma_win, ma_fun = ZLEMA, linetype=1, color='blue')
+     #stat_smooth(aes(group=id), se=F, span=1.5, color='gray', method='loess')
+
+  p + coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
      facet_wrap(~blockseq) +
      theme(legend.position = 'none')
 }
-
-# group average - far well, + indiv traces, moving avg   
-plot_grp_far_trace_mvavg <- function(data){
-   far_only <- data_far_only(data)
-   ggplot(far_only)+
-     aes(x=trial, y=1*choseFar) + 
-     geom_block_rect(far_only, vars('blocktype','blockseq')) +
-     geom_ma(n = 20, ma_fun = ZLEMA, linetype=1, aes(group=id), color='gray') + 
-     geom_ma(n = 150, ma_fun = ZLEMA, linetype=1, color='blue') + 
-     coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
-     facet_wrap(~blockseq) +
-     theme(legend.position = 'none')
- }
-
-#data %>% group_by(id) %>% summarize(n = n()) %>% group_by(n) %>% tally()
-
 
 plot_grp_nofar_trace_mvavg <- function(data){
    no_far_no_deval <- data %>% filter(is.na(choseFar) & !grepl('devalue',blocktype)) %>% arrange(trial)
    ggplot(no_far_no_deval) +
      aes(x=trial, y=1*optimal_choice) + 
      geom_block_rect(no_far_no_deval, vars('blocktype','blockseq')) +
+     geom_abline(slope=0, intercept=0.5, linetype=1) +
      geom_ma(n = 25, ma_fun = EMA, color = "red", linetype=1) + 
      coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(0,1)) +
      facet_wrap(~blockseq) +
@@ -272,6 +281,7 @@ plot_grp_rt_trace_mvavg <- function(data){
    rt_data <- data %>% filter(!is.na(rt)) %>% arrange(trial)
    ggplot(rt_data) + aes(x=trial, y=rt, color=as.factor(choiceType)) + 
      geom_block_rect(rt_data, vars('blocktype','blockseq'), ylim=c(400,800)) +
+     geom_abline(slope=0, intercept=0.5, linetype=1) +
      stat_smooth(span = 0.5) +
      coord_cartesian(xlim = c(1,MAXTRIALS), ylim = c(400,800)) +
      facet_wrap(~blockseq) +
@@ -281,6 +291,8 @@ plot_grp_rt_trace_mvavg <- function(data){
 
 plot_habit_line <- function(data){
    # compute % choseFar in final block, plot vs age
+   # TODO: trials after 140 might not be best "devalue" measure
+   # should use blocktype names?
    habitBeh <- data %>%
        filter(trial > 140) %>%
        group_by(id, age.x, blockseq, task) %>% 

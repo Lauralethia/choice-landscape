@@ -9,20 +9,25 @@ library(shiny)
 MINDATE <-min(rawdata$vdate)
 MAXDATE <-max(rawdata$vdate)
 TASKS <- unique(rawdata$task)
+BLKSQ <- unique(rawdata$blockseq)
 VERS <- unique(rawdata$ver)
 ui <- fluidPage(
     titlePanel("habitTask"),
     sidebarLayout(
      sidebarPanel(
       sliderInput("date_range", label="dates", min=MINDATE, max=MAXDATE,
-                  value=c(ymd_hms("2022-03-10T00:00:00"),MAXDATE)),
+                  value=c(ymd_hms("2022-04-09T00:00:00"),MAXDATE)),
+      selectInput("blockseq_select", label="block types",
+                  choices=BLKSQ, selected=BLKSQ, multiple = TRUE),
       selectInput("task_selection", label="tasks (each mturk is new task; shift click for multiple)",
                   choices=TASKS, selected=TASKS, multiple = TRUE),
       #selectInput("versions", label="versions of task (task code)",
       #            choices=VERS, selected=VERS, multiple = TRUE),
+      actionButton("reload_data", "Reload data"),
      ), mainPanel(
          tabsetPanel(type="tabs",
            tabPanel("runs tbl", tableOutput("smry_tbl")),
+           tabPanel("perm tbl", tableOutput("smry_perms")),
            tabPanel("habit plot", plotOutput("habit_line")),
            tabPanel("idv runs", plotOutput("plot_idv")),
            tabPanel("grp learn", plotOutput("plot_grp_learn_trace")),
@@ -35,21 +40,28 @@ ui <- fluidPage(
 ))))
 
 server <- function(input, output){
+    # rerun fetch and update global vars
+    observeEvent(input$reload_data,{
+      update_data(runMake=TRUE) # update globals raw_data, summary_data
+    })
+
     d <- reactive({
         subset_data(rawdata,
                     date_range=input$date_range,
                     task_selection=input$task_selection,
-                    versions = VERS
+                    versions = VERS,
+                    blockseq_select=input$blockseq_select
                     #versions=input$versions
                     )})
     output$habit_line <- renderPlot({plot_habit_line(d())})
     output$plot_idv <- renderPlot({plot_idv_wf(d())})
-    output$plot_grp_learn_trace <- renderPlot({plot_grp_learn(d(),trace=TRUE)})
-    output$plot_grp_far_trace <- renderPlot({plot_grp_far_trace(d())})
+    output$plot_grp_learn_trace <- renderPlot({plot_grp_learn(d(),idv_ma_win=3)})
+    output$plot_grp_far_trace <- renderPlot({plot_grp_far_trace(d(),idv_ma_win=20)})
     output$plot_grp_rt_trace_mvavg <- renderPlot({plot_grp_rt_trace_mvavg(d())})
      
 
-    output$smry_tbl <- renderTable({all_runs(d())})
+    output$smry_tbl <- renderTable({all_runs(d()) %>% select(-ver,-task)})
+    output$smry_perms <- renderTable({smry_perms(d())})
     output$pchoice_tbl <-renderTable({smry_pChoice(d())})
     
     output$plot_learn_optimal <- renderPlot({plot_learn_optimal(d())})
