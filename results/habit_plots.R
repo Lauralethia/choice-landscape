@@ -141,9 +141,12 @@ all_runs <- function(rawdata){
     left_join(run_info, smry,by=c("id","ver"))
 
 }
-smry_perms <- function(data){
+
+smry_perms <- function(data, usetask=FALSE){
+ grp <- vars(blockseq)
+ if(usetask) grp <- vars(perm,blockseq, task)
  all_runs(data) %>%
-    group_by(perm, blockseq, task) %>%  
+    group_by(!!!grp) %>%
     summarise(n_trials=first(n_trials), n=n(),
             rt=mean(rt_mean), start=min(vdate), end=max(vdate)) %>%
     arrange(-as.numeric(gsub('-','',end)))
@@ -161,7 +164,7 @@ smry_pChoice<-function(data){
     summarize(pChoseFar_m = mean(pChoseFar, na.rm=T),
               pChoseFar_sd = sd(pChoseFar, na.rm=T),
               pChoseFar_se = sd(pChoseFar, na.rm=T)/sqrt(n()),
-              n=n())  
+              n=n())
 } 
 
 

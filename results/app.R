@@ -7,7 +7,7 @@ source('habit_plots.R') # reads rawdata, sets MAXTRIALS
 library(shiny)
 
 MINDATE <-min(rawdata$vdate)
-MAXDATE <-max(rawdata$vdate)
+MAXDATE <- ymd_hms(max(rawdata$vdate))+days(1)
 TASKS <- unique(rawdata$task)
 BLKSQ <- unique(rawdata$blockseq)
 VERS <- unique(rawdata$ver)
@@ -24,6 +24,7 @@ ui <- fluidPage(
       #selectInput("versions", label="versions of task (task code)",
       #            choices=VERS, selected=VERS, multiple = TRUE),
       actionButton("reload_data", "Reload data"),
+      checkboxInput("tasktblgrp","perm tbl w/task?",value=FALSE)
      ), mainPanel(
          tabsetPanel(type="tabs",
            tabPanel("runs tbl", tableOutput("smry_tbl")),
@@ -43,6 +44,7 @@ server <- function(input, output){
     # rerun fetch and update global vars
     observeEvent(input$reload_data,{
       update_data(runMake=TRUE) # update globals raw_data, summary_data
+      #NB MAXDATE likely still off
     })
 
     d <- reactive({
@@ -61,7 +63,7 @@ server <- function(input, output){
      
 
     output$smry_tbl <- renderTable({all_runs(d()) %>% select(-ver,-task)})
-    output$smry_perms <- renderTable({smry_perms(d())})
+    output$smry_perms <- renderTable({smry_perms(d(), usetask=input$tasktblgrp)})
     output$pchoice_tbl <-renderTable({smry_pChoice(d())})
     
     output$plot_learn_optimal <- renderPlot({plot_learn_optimal(d())})
