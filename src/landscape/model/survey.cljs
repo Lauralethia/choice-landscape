@@ -15,6 +15,9 @@
                      " and the right arrow to go to the next question"]])
              ["If I must" "OK!"]
              "start")
+   (->survey "How well did you understand the instructions"
+             ["not at all" "not well" "okay" "mostly" "perfectly"]
+             "understand")
    (->survey "Which was best at first?"
              ["left" "up" "right"]
              "best_1st")
@@ -27,9 +30,9 @@
    (->survey "Do you think wells changed how often they gave water?"
              ["Always the same" "1-2 switch" "3-4 switches" "5+ switches"]
              "num_changes")
-   (->survey  "The farther well was difficult/annoying to go to:"
-              ["not at all" "a little" "a lot"]
-              "far_annoying")
+   ;; (->survey  "The farther well was difficult/annoying to go to:"
+   ;;            ["not at all" "a little" "a lot"]
+   ;;            "far_annoying")
    (->survey "What would you guess the likelihood of water was for a well at its worst?"
              ["almost never <10%" "infrequent <30%"
               "near 50/50 (40-60%)" "good (>60%)"]

@@ -197,14 +197,15 @@
        (html [:div#instruction
               [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
               [:br] "Thank you for contributing to our research!!"
-              [:div
-               [:br] "Your responses have been recorded. " [:br]
-               ;; code defaults to WXYZ1 so this will always be ween
-               ;; TODO: check if is amazon turk? might be in anchor
-               (if code [:div.confirmcode "Your completion code is " [:br]
-                         [:h3 code] [:br]
-                         "Save it for your records." [:br]])
-               [:span "You can close this page."]]
+              (if (contains? #{:online} (get @current-settings :where))
+                [:div
+                 [:br] "Your responses have been recorded. " [:br]
+                 ;; code defaults to WXYZ1 so this will always be ween
+                 ;; TODO: check if is amazon turk? might be in anchor
+                 (if code [:div.confirmcode "Your completion code is " [:br]
+                           [:h3 code] [:br]
+                           "Save it for your records." [:br]])
+                 [:span "You can close this page."]])
               [:br]
               ])))
 

@@ -56,5 +56,7 @@
 
        (update-settings u #"norev" [:reversal-block] false)
 
+       ;; MRI settings
+       (update-settings u #"where=mr" [:where] :mri)
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1}))))

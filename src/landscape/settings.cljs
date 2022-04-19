@@ -30,6 +30,7 @@
     :step-wise false        ;; make far well additional clicks
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal
+    :where :online          ;; :mri :eeg :seeg
 })
 
 (def current-settings (atom (merge BOARD tweaks)))

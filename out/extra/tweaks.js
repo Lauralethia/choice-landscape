@@ -1,5 +1,6 @@
 // parts of the task we can change with a flag
 let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha?',
+              'where=mri': 'MRI: glove box and embeded up/down survey',
               'noinstruction': 'skip all instructions (go to ready screen)',
               'VERBOSEDEBUG': 'verbose debugging',
               'fewtrials': 'reduce trial count: only 1 pair ea. per block',
