@@ -1,5 +1,7 @@
 (ns landscape.key
-  (:require [landscape.settings :refer [KEYCODES]]))
+  (:require
+   [landscape.settings :refer [current-settings]]
+   [clojure.set :refer [map-invert]]))
 (defn keypress-init [] {:key nil
                         :first nil
                         :up nil
@@ -69,7 +71,7 @@
 (defn sim-key
   "simulate keypress using keyCode"
   [keysym]
-  (let [keycode (keysym KEYCODES)
+  (let [keycode (keysym (:keycodes @current-settings))
         jskey (clj->js {:keyCode keycode})
         el js/document
         event-down (new js/KeyboardEvent "keydown" jskey)
@@ -87,6 +89,14 @@
   []
   {:until nil :want [] :next nil :have nil :time nil :touch nil :all-pushes [] })
 
+
+(defn side-from-keynum
+  "invert map to get up/down/left/right from keypush
+TOOD: invert map might be expensive to do every keypush?"
+  [keynum]
+  (get
+   (map-invert (:keycodes @landscape.settings/current-settings))
+   keynum))
 ;; 20211007 - just assoc w/key-state-fresh
 ;; (defn remove-key
 ;;   "remove any keypress from state"

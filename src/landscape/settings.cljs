@@ -16,7 +16,20 @@
       :devalue 12 ; pairs when lower prob wells are updated to 100%. after first 2. orginal 10 reps (30 total)
       :devalue-good 12 ; 20220314=10 (init) devalue good well
       }
+
+     :keycodes {:left  37
+                :up     38
+                :right  39
+                :down   40}
    })
+(def mri-glove-keys
+  "button glove at MR uses 1-thumb 2-index .... 5-pinky
+  key to num: ! is 16 where as 1 is 49"
+  {:left   50  ; index
+   :up     51  ; middle
+   :right  52  ; ring
+   :down   49  ; thumb
+})
 
 ; set by anchor of url. eg http://localhost:9500/#mountain
 ; see url_tweak.cljs
@@ -35,12 +48,6 @@
 
 (def current-settings (atom (merge BOARD tweaks)))
 
-; not used everywhere!
-; TODO: replace all hard coded numbers
-(def KEYCODES {:left  37
-              :up     38
-              :right  39
-              :down   40})
 
 (def ITIDUR 1000)
 

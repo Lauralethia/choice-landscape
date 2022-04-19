@@ -1,6 +1,7 @@
 (ns landscape.url-tweak
   (:require
    [cemerick.url :as url]
+   [landscape.settings :as settings]
    [clojure.string]))
 
 (defn get-url-map [] (-> js/window .-location .-href url/url))
@@ -44,6 +45,8 @@
        (update-settings u #"nocaptcha"  [:skip-captcha] true)
 
        ;; where to submit finishing
+       ;; 20220419 - this is unused!? handled by opener (within iframe)
+       ;; TODO: remove
        (update-settings u #"mturk=sand"  [:post-back-url] "https://workersandbox.mturk.com/mturk/externalSubmit")
        (update-settings u #"mturk=live"  [:post-back-url] "https://mturk.com/mturk/externalSubmit")
        
@@ -58,5 +61,7 @@
 
        ;; MRI settings
        (update-settings u #"where=mr" [:where] :mri)
+       (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
+
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1}))))

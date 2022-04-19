@@ -58,12 +58,8 @@
   "read any keypush, clear, and translate to avatar motion"
   [{:keys [key wells] :as state}]
   (let [pushed (:have key)
-        dir (case pushed
-              37 :left
-              38 :up
-              39 :right
-              ;40 :down   ;; maybe disallow
-              nil)]
+        ; will include down, but wont do anything b/c down wont be open?
+        dir (key/side-from-keynum (:have key))]
     (if
       ;; chose phase only time we can pick. and only when we haven't already
       ;; and only when the well choice is aviable (open)

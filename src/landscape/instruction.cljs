@@ -358,12 +358,7 @@
       (assoc :key (key/key-state-fresh))))
 
 (defn read-keys [{:keys [key phase time-cur] :as state}]
-  (let [dir (case (:have key)
-              37 :left
-              38 :up
-              39 :right
-              40 :down ;; maybe disallow
-              nil)
+  (let [dir (key/side-from-keynum (:have key))
         i-cur (:idx phase)
         i-keyfn (get-in INSTRUCTION [i-cur :key dir])
         i-next (if dir (instruction-goto i-cur dir) i-cur)

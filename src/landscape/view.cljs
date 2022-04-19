@@ -219,7 +219,7 @@
         vis-class (-> @current-settings :vis-type name)]
     (sab/html
      [:div#background {:class vis-class}
-      (if DEBUG [:div {:style {:color "white"}} (str phase)])
+      (if DEBUG [:div {:style {:color "white"}} (str phase) [:br] (str (:key state))])
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
       (water state)
