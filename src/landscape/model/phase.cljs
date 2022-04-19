@@ -15,14 +15,16 @@
   {:name pname :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
 
 (defn phase-done-or-next-trial
-  "reset to next trial (chose) or to done (survey or finished)"
+  "reset to next trial (chose) or to done (:done :chose :forum)"
   [{:keys [trial time-cur well-list] :as state}]
-  (if (>= trial (count well-list))
-    ;; TODO change to survey ... if we want to collect feedback
-    ;(set-phase-fresh :done time-cur) ; use for no questions
-    ;(set-phase-fresh :survey time-cur) ; questions with buttonbox only
-    (set-phase-fresh :forum time-cur) ; use for textarea w/keyboard
-    (set-phase-fresh :chose time-cur)))
+  (let [where (get-in state [:record :settings :where])
+        next (cond
+               (< trial (count well-list)) :chose  ; next trail
+               ;; :survey okay forced, but w/:iti->:survey, not responsive to keys
+               (contains? #{:mri} where) :done     ; TODO: :survey (buttonbox Qs)
+               (contains? #{:online} where) :forum ; freeform text w/full keyboard
+               :else :forum)]
+    (set-phase-fresh next time-cur)))
 
 (defn send-identity
   "POST json of :record but return input state so we can use in pipeline"

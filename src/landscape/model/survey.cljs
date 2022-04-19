@@ -71,8 +71,9 @@
         i-cur (or  (:qi phase) 0)
         i-next (if dir (mv-idx-dir i-cur dir nsurvey) i-cur)
         this-q (get SURVEYS i-cur)]
+    (println "keystate: " (:have key) " dir" dir "; " i-cur "/n" nsurvey)
     (cond
-      ;; if instruction has special plans for keypushes
+      (nil? dir) state
       (not= i-cur i-next)
       (-> state
           (assoc-in [:phase :qi] i-next)
@@ -94,10 +95,11 @@
           (assoc :key (key/key-state-fresh)))
 
       ;; otherwise no change
-      :else
-      state)))
+      :else state)))
 
-(defn step [state time]
+(defn step
+  "used by model/next-step based on phase"
+  [state time]
   (read-keys state))
 
 ;;;;;;;;

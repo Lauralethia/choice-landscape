@@ -24,3 +24,16 @@
                       phase/phase-update :phase :name)))
     (is (= :waiting (-> state_chose   phase/phase-update :phase :name)))
     (is (= :timeout (-> state_nochose phase/phase-update :phase :name)))))
+
+(deftest next-phase-test 
+  "check end is advanced to approprate section"
+  (let [state-onl {:phase {:name :none} :trial 2 :well-list [1 2]
+                   :record {:settings {:where :online}}}
+        state-mri (assoc-in state-onl [:record :settings :where] :mri)
+        state-unf (assoc-in state-onl [:trial] 1)]
+    ;; online goes to textbox form
+    (is (= (-> state-onl phase/phase-done-or-next-trial :name) :forum))
+    ;; survey if mri
+    (is (= (-> state-mri phase/phase-done-or-next-trial :name) :done))
+    ;; next trial
+    (is (= (-> state-unf phase/phase-done-or-next-trial :name) :chose))))
