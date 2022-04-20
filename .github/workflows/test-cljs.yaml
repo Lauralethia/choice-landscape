@@ -23,6 +23,6 @@ jobs:
         uses: browser-actions/setup-chrome@latest
 
       - name: Run Unit tests
-        run:|
+        run: |
           chrome --no-first-run &
           make test # JVM will take longer to load than chrome
