@@ -22,6 +22,10 @@
                  :extra-paths ["target"] ; "test"
                  ;; 20220323 inc "test" causes dev build to hang. tests still accessible w/o
 }
+           :test {
+                         :extra-deps
+                         {com.lambdaisland/kaocha-cljs {:mvn/version "1.2.123"}
+                          net.mikera/core.matrix {:mvn/version "0.62.0"}}}
            ;:cardbuild {
            ;            :main "landscape.main"
            ;            :devcards true

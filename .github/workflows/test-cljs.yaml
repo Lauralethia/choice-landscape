@@ -1,0 +1,29 @@
+name: Test Clojurescript Task
+on: [push]
+jobs:
+  clojure:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Prepare java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@5.0
+        with:
+          cli: 1.10.3.1075 # Clojure CLI based on tools.deps
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Run Unit tests
+        - run:
+            command: chrome --no-first-run
+            background: true
+        - run: make test
