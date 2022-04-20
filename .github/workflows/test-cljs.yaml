@@ -30,6 +30,8 @@ jobs:
 
       - name: Run Unit tests
         run: |
-          chrome --no-first-run &
+          export DISPLAY=:0
+          Xvfb -ac :0 &
           npm install ws
+          chrome --no-first-run &
           make test # JVM will take longer to load than chrome
