@@ -18,6 +18,12 @@ jobs:
         uses: DeLaGuardo/setup-clojure@5.0
         with:
           cli: 1.10.3.1075 # Clojure CLI based on tools.deps
+          
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
 
       - name: Install Chrome
         uses: browser-actions/setup-chrome@latest
@@ -25,4 +31,5 @@ jobs:
       - name: Run Unit tests
         run: |
           chrome --no-first-run &
+          npm install ws
           make test # JVM will take longer to load than chrome
