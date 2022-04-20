@@ -19,9 +19,10 @@ jobs:
         with:
           cli: 1.10.3.1075 # Clojure CLI based on tools.deps
 
-      - name: Install Chrome and run in background
+      - name: Install Chrome
         uses: browser-actions/setup-chrome@latest
-        run: chrome --no-first-run &
 
       - name: Run Unit tests
-        run: make test
+        run:|
+          chrome --no-first-run &
+          make test # JVM will take longer to load than chrome
