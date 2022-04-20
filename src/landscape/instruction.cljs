@@ -100,14 +100,38 @@
         (assoc-in [:phase :idx] i-next))))
 
 (defn pass-captcha
- ([state]
-  (pass-captcha state
-                (if-let [target (. js/document (querySelector "#captcha"))]
-                  (.-value target)
-                  "FAIL")))
+  "without args get passphrase from #captcha.
+  otherwise check if we already did it, if this is mri, or if passphrase is correct"
+  ([state]
+   (pass-captcha state
+                 (if-let [target (. js/document (querySelector "#captcha"))]
+                   (.-value target)
+                   "FAIL")))
   ([state pass]
-  (or (-> state :record :settings :skip-captcha)
-      (= "cat" pass))))
+   (or (-> state :record :settings :skip-captcha)
+       ;; disable on mri -- no keyboard to type out the passphrase
+       (contains? #{:mri} (-> state :record :settings :where))
+       (= "cat" pass))))
+
+
+(defn instruction-finished [state time-cur]
+  (-> state
+      ;; NB. maybe bug?
+      ;; we move to "home" at start and dont want to intercept any
+      ;; keys until we are there.
+      ;; START TASK buy moving :phase :name to iti
+      ;; TODO pull iti from somewhere?
+      (phase/phase-update)
+      ;; (assoc :phase (merge {:iti-dur 2000}
+      ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
+      ;; save both the time since animation (relative to other onsets)
+      ;; and the actual time (according to the browser) to the struct
+      ;; that will be sent away by phases/phone-home
+      (assoc-in [:record :start-time] (records/make-start-time time-cur))
+      ;; wells normally turned off on :chose->:waiting flip
+      ;; here we skip right over that into the first :iti so explicitly close
+      (wells/wells-close)
+      (assoc :key (key/key-state-fresh))))
 
 
 (def INSTRUCTION
@@ -320,45 +344,35 @@
             (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water)
                    [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
    {:text (fn[state] [:div  {:style {:text-align "left"}}
-      "Ready? Push the right arrow to start!"
-      [:ul
-       [:li "Fill the " (item-name :pond)
-        " by visiting " (item-name :well) "s that give " (item-name :water)
-        ". Try to avoid empty " (item-name :well) "s."]
-       [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
-       [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
-       [:li "The amount of " (item-name :water)
-        " when there is " (item-name :water)
-        " is the same for all " (item-name :well) "s."]
-       [:li  [:b "You must respond to be paid"]]
-       [:li "Respond faster to finish sooner."]
-       (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
-         [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
-       [:li "How often you visit a " (item-name :well)
-        " does not change how often it gives " (item-name :water) ]
-       [:li "Make choices with a single tap. Do not hold keys down."]]])}])
+                   "Ready? "
+                   (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
+                     " Push the right arrow to start!"
+                     " Waiting for scanner.")
+                   [:ul
+                    [:li "Fill the " (item-name :pond)
+                     " by visiting " (item-name :well) "s that give " (item-name :water)
+                     ". Try to avoid empty " (item-name :well) "s."]
+                    [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
+                    [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
+                    [:li "The amount of " (item-name :water)
+                     " when there is " (item-name :water)
+                     " is the same for all " (item-name :well) "s."]
+                    [:li  [:b "You must respond to be paid"]]
+                    [:li "Respond faster to finish sooner."]
+                    (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
+                      [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
+                    [:li "How often you visit a " (item-name :well)
+                     " does not change how often it gives " (item-name :water) ]
+                    [:li "Make choices with a single tap. Do not hold keys down."]]])
 
-(defn instruction-finished [state time-cur]
-  (-> state
-      ;; NB. maybe bug?
-      ;; we move to "home" at start and dont want to intercept any
-      ;; keys until we are there.
-      ;; START TASK buy moving :phase :name to iti
-      ;; TODO pull iti from somewhere?
-      (phase/phase-update)
-      ;; (assoc :phase (merge {:iti-dur 2000}
-      ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
-      ;; save both the time since animation (relative to other onsets)
-      ;; and the actual time (according to the browser) to the struct
-      ;; that will be sent away by phases/phone-home
-      (assoc-in [:record :start-time] (records/make-start-time time-cur))
-      ;; wells normally turned off on :chose->:waiting flip
-      ;; here we skip right over that into the first :iti so explicitly close
-      (wells/wells-close)
-      (assoc :key (key/key-state-fresh))))
+    ;; trigger test/blocking in read-keys
+    ;; :key ...
+    }])
+
 
 (defn read-keys [{:keys [key phase time-cur] :as state}]
   (let [dir (key/side-from-keynum (:have key))
+        last-instruction (dec(count INSTRUCTION))
         i-cur (:idx phase)
         i-keyfn (get-in INSTRUCTION [i-cur :key dir])
         i-next (if dir (instruction-goto i-cur dir) i-cur)
@@ -366,7 +380,16 @@
     (cond
       ;; if instruction has special plans for keypushes
       (and i-keyfn 1)
-      (-> state i-keyfn (assoc-in [:key :have] nil))
+      (-> state (i-keyfn) (assoc-in [:key :have] nil))
+
+      ;; ready but need trigger
+      ;; check before i-cur vs i-next so we cannot go backwards if mri
+      (and (contains? #{:mri} (get-in state [:record :settings :where]))
+           (= i-cur last-instruction))
+      (if (= dir :trigger)
+        (instruction-finished state time-cur)
+        state)
+
       ;; changing which what we should see
       (not= i-cur i-next)
       (-> state
@@ -374,7 +397,7 @@
           (update-to-from i-cur i-next))
 
       ;; we want to go past the end (are "ready")
-      (and dir (= i-cur i-next) (= i-cur (dec (count INSTRUCTION))))
+      (and dir (= i-cur i-next) (= i-cur last-instruction))
       (instruction-finished state time-cur)
 
       ;; otherwise no change

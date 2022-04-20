@@ -29,6 +29,7 @@
    :up     51  ; middle
    :right  52  ; ring
    :down   49  ; thumb
+   :trigger 187  ; '=' is 187; '6' is 54. cant get '^'?
 })
 
 ; set by anchor of url. eg http://localhost:9500/#mountain
