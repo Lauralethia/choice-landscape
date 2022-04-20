@@ -19,11 +19,9 @@ jobs:
         with:
           cli: 1.10.3.1075 # Clojure CLI based on tools.deps
 
-      - name: Install Chrome
+      - name: Install Chrome and run in background
         uses: browser-actions/setup-chrome@latest
+        run: chrome --no-first-run &
 
       - name: Run Unit tests
-        - run:
-            command: chrome --no-first-run
-            background: true
-        - run: make test
+        run: make test
