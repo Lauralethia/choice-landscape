@@ -6,6 +6,7 @@
     <title>Landscape Choice Static Pages</title>
     <!-- add_tweaks() and gent_anchor() also used by not-found.html -->
     <script src="out/extra/tweaks.js"> </script>
+
     <script>
    function make_url(){
      return("out/index.html" + get_anchor()); // important trailing slash
@@ -33,4 +34,9 @@
       <!-- see "tweaks" above -->
       <div id="task_setting_tweaks"></div>
   <input type="submit" value="open">
-</form> </body> </html>
+</form>
+
+  <!-- main.js for kaocha-cljs testing, DNE outside of test repl -->
+  <script src="out/main.js"> </script>
+ </body> </html>
+

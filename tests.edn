@@ -1,8 +1,21 @@
 #kaocha/v1
-{:tests [{:id :unit-cljs
+{
+ :capture-output? false
+ ;:bindings {kaocha.type.cljs/*debug* true}
+ :tests [{:id :unit-cljs
           :type :kaocha.type/cljs
           :test-paths ["test"]
-          ;; :cljs/timeout 10000                        ; 10 seconds, the default
-          ;; :cljs/repl-env cljs.repl.node/repl-env     ; node is the default
-          :cljs/repl-env cljs.repl.browser/repl-env     ; needed for 'window' to be defined
+          :cljs/timeout 10000                        ; 10 seconds, the default
+          :cljs/repl-env cljs.repl.browser/repl-env  ; needed for 'window' to be defined
+          ;; :cljs/repl-env cljs.repl.node/repl-env  ;
+          ;; :cljs/repl-env figwheel.repl/repl-env   ; figwheel index doesnt have main.js
+
+          ;; debugging
+          :cljs/precompile? true
+
+          ;; https://clojurescript.org/reference/repl-options
+          ;; try to use a specific index.html
+          ;:repl-opts {:static-dir ["test/" "." "out/"]}
+          :cljs/compiler-options {:port           9001
+                                  :launch-browser true}
           }]}

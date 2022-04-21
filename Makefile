@@ -18,7 +18,7 @@ out/card.js: $(wildcard src/landscape/*cljs src/landscape/*/*.cljs)
 	clj -M --main cljs.main --output-to $@ --compile landscape.core -A:hostedcards
 
 test:
-	clojure -A:test -M -m kaocha.runner
+	clojure -A:fig:test -M -m kaocha.runner unit-cljs
 
 results/summary.csv: .ALWAYS
 	cd results && make
