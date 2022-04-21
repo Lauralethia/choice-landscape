@@ -27,6 +27,12 @@
   [u]
   (-> u :path (clojure.string/split #"/") reverse (#(zipmap [:run :timepoint :task :id] %))))
 
+(defn path-info-to-id
+  "create a unique id using url-path-info output"
+  [{:keys [id task timepoint run] :as url-map}]
+  (if id
+    (str id "_" task "_" timepoint "_" run)
+    "unlabeled_run"))
 (defn task-parameters-url
   "setup parameterization of task settings based on text in the url"
   ([settings] (task-parameters-url settings (get-url-map)))

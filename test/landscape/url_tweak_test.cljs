@@ -1,6 +1,7 @@
 (ns landscape.url-tweak-test
   (:require
-   [landscape.url-tweak :refer [vis-type-from-url task-parameters-url url-path-info]]
+   [landscape.url-tweak :refer
+    [vis-type-from-url task-parameters-url url-path-info path-info-to-id]]
    [landscape.settings :refer [current-settings]]
    [cemerick.url :as url]
    [clojure.test :refer [is deftest]])
@@ -32,3 +33,8 @@
 (deftest url-path-info-test
   (is (= (url-path-info (url/url "domain.path/id/task/timepoint/run/?junk"))
          {:run "run", :timepoint "timepoint",:task  "task" , :id "id" })))
+
+(deftest url-to-id-test
+  (let [url-map (url-path-info {:path "url/i/t/v/r"})]
+    (is (= "i_t_v_r" (path-info-to-id url-map)))
+    (is (= "unlabeled_run" (path-info-to-id nil)))))

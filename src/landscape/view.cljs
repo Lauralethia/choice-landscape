@@ -3,6 +3,7 @@
    [landscape.sprite :as sprite]
    [landscape.utils :as utils]
    [landscape.model :as model]
+   [landscape.url-tweak]
    [landscape.settings :refer [current-settings]]
    [landscape.instruction :as instruction]
    [landscape.model.survey :as survey]
@@ -192,22 +193,40 @@
                                choices)]
                     (button-keys)]]))))
 
+(defn create-json-url [data]
+  (let [jsonstr (.stringify js/JSON (clj->js data) )
+        blob (js/Blob. [jsonstr] {"type" "application/json"})]
+    (.createObjectURL js/URL blob)))
+
 (defn done-view [state]
-  (let [code (get-in state [:record :mturk :code] )]
-       (html [:div#instruction
-              [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
-              [:br] "Thank you for contributing to our research!!"
-              (if (contains? #{:online} (get @current-settings :where))
-                [:div
-                 [:br] "Your responses have been recorded. " [:br]
-                 ;; code defaults to WXYZ1 so this will always be ween
-                 ;; TODO: check if is amazon turk? might be in anchor
-                 (if code [:div.confirmcode "Your completion code is " [:br]
-                           [:h3 code] [:br]
-                           "Save it for your records." [:br]])
-                 [:span "You can close this page."]])
-              [:br]
-              ])))
+  (html [:div#instruction
+         [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
+         [:br] "Thank you for contributing to our research!!"
+         ;; if online, show compeltion code
+         (if (contains? #{:online} (get-in state [:record :settings :where]))
+           [:div
+             [:br] "Your responses have been recorded. " [:br]
+             ;; code defaults to WXYZ1. hopefully it's been updated since finish
+             [:div.confirmcode "Your completion code is " [:br]
+                       [:h3 (get-in state [:record :mturk :code] )] [:br]
+                       "Save it for your records." [:br]]
+             [:span "You can close this page."]])
+         ;; when mri, offer to download json
+         (if (contains? #{:mri :eeg} (get-in state [:record :settings :where]))
+           [:div [:a
+                  ;; make a useful name for the json output that we could save
+                  ;; includes url params and current timestep
+                  ;; TODO: most useful when running as a static page
+                  ;; but wont have a useful url path in that case!
+                  ;; maybe set id= and pull from path anchor?
+                  {:download (str (landscape.url-tweak/path-info-to-id
+                                   (get-in state [:record :path-info]))
+                                  "_"
+                                  (:time-cur state)
+                                  ".json")
+                   :href (-> state :record create-json-url)
+                   } "download task data"]])
+         [:br]]))
 
 (defn view-score [score]
   (html [:div#scorebox "Total: " score]))
