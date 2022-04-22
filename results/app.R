@@ -38,6 +38,8 @@ ui <- fluidPage(
            tabPanel("learn optimal", plotOutput("plot_learn_optimal")),
            tabPanel("pref far", plotOutput("plot_pref_far")),
            tabPanel("rev learn", plotOutput("plot_revlearn")),
+           tabPanel("age hist", plotOutput("plot_age_hist")),
+           tabPanel("habit hist", plotOutput("plot_habit_hist")),
 ))))
 
 server <- function(input, output){
@@ -69,7 +71,9 @@ server <- function(input, output){
     output$plot_learn_optimal <- renderPlot({plot_learn_optimal(d())})
     output$plot_pref_far <- renderPlot({plot_pref_far(d())})
     output$plot_revlearn <- renderPlot({plot_revlearn(d())})
-
+    output$plot_revlearn <- renderPlot({plot_revlearn(d())})
+    output$plot_age_hist<- renderPlot({plot_age_hist(d())})
+    output$plot_habit_hist <- renderPlot({plot_habit_hist(d())})
 
     return(output)
 }

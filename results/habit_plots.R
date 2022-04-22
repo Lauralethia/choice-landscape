@@ -291,25 +291,34 @@ plot_grp_rt_trace_mvavg <- function(data){
      theme(legend.position = 'top')
 }
 
+pHabit_deval100 <- function(data) {
+   # how often the "good" well is preferend
+   # in the devalue_all_100 block
+   habitBeh <- data %>% merge(summary_data %>% select(id,ver,timepoint,perm),
+                              by=c("id","ver","timepoint")) %>%
+       filter(grepl("devalue_all_100",blocktype)) %>%
+       group_by(id, age.x, blockseq, task, perm) %>% 
+       summarize(pHabit = sum(choseFar, na.rm=T) /
+                         (sum(choseFar, na.rm=T) + sum(avoidedFar, na.rm=T)))
+  }
 
 plot_habit_line <- function(data){
-   # compute % choseFar in final block, plot vs age
-   # TODO: trials after 140 might not be best "devalue" measure
-   # should use blocktype names?
-   habitBeh <- data %>%
-       filter(trial > 140) %>%
-       group_by(id, age.x, blockseq, task) %>% 
-     summarize(pHabit = sum(choseFar, na.rm=T) /
-                       (sum(choseFar, na.rm=T) + sum(avoidedFar, na.rm=T)))
-   
-   habitBeh %>%
-    ggplot()+
+   d  <- pHabit_deval100(data) %>% filter(age.x>18)
+   ggplot(d)+
      aes(x=age.x, y=pHabit) +
      geom_smooth(method='loess') +
-     geom_point(aes(color=blockseq, shape=as.factor(substr(task,0,5))), size=3) +
+     geom_point(aes(color=blockseq, shape=grepl("mountain",perm)), size=3) +
      coord_cartesian(ylim=c(0,1)) +
      facet_wrap(~blockseq) +
-     theme(legend.position = 'bottom')
+     theme(legend.position = 'bottom') +
+     ggtitle("habit in deval100 only")
+}
+
+plot_habit_hist  <- function(data){
+   ggplot(pHabit_deval100(data))+
+      aes(x=pHabit, fill=blockseq) +
+      geom_histogram() +
+      facet_grid(blockseq~.)
 }
 
 
@@ -332,10 +341,10 @@ plot_idv_wf <- function(data){
       ylab('side') + theme(strip.text.x = element_text(hjust = -0.02))
 }
  
-plot_hist<-function(data){
+plot_age_hist<-function(data){
    # ggplot(habitBeh) + aes(age.x) + geom_histogram()
    data %>%
-        group_by(id,age) %>%
+        group_by(id, age.x) %>%
         distinct %>%
         ggplot() + aes(age.x) %>%
         geom_histogram
