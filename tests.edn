@@ -5,7 +5,7 @@
  :tests [{:id :unit-cljs
           :type :kaocha.type/cljs
           :test-paths ["test"]
-          :cljs/timeout 10000                        ; 10 seconds, the default
+          :cljs/timeout 30000                        ; 10 seconds, the default
           :cljs/repl-env cljs.repl.browser/repl-env  ; needed for 'window' to be defined
           ;; :cljs/repl-env cljs.repl.node/repl-env  ;
           ;; :cljs/repl-env figwheel.repl/repl-env   ; figwheel index doesnt have main.js

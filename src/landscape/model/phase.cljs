@@ -117,8 +117,9 @@
   :feedback -> :iti when avatar is home
   :iti -> :choose after duration
   "
-  [{:keys [phase time-cur] :as state}]
+  [{:keys [phase time-cur trial] :as state}]
   (let [pname (get phase :name)
+        trial0 (dec trial)
         hit (get phase :hit)
         picked (get phase :picked)
         time-since (- time-cur (:start-at phase))
@@ -129,7 +130,7 @@
 
                      ;; or a choice was not made quick enough
                      (and (= pname :chose)
-                          (>= time-since (:choice-timeout settings/TIMES))
+                          (>= time-since (get-in @settings/current-settings [:times :choice-timeout]))
                           (:enforce-timeout @settings/current-settings))
                      (assoc phase :name :timeout
                             :start-at time-cur
@@ -144,13 +145,13 @@
                      (or (and (= pname :feedback) (avatar/avatar-home? state))
                          (= pname :instruction)
                          (and (= pname :timeout)
-                              (>= time-since (:timeout-dur settings/TIMES))))
+                              (>= time-since (get-in @settings/current-settings [:times :timeout-dur]))))
                      (assoc phase
                             :name :iti
                             :start-at time-cur
                             ;; TODO: this should pull from somewhere else
                             ;; for MR we likey want predefined expodential distr.
-                            :iti-dur settings/ITIDUR)
+                            :iti-dur (get-in state [:well-list trial0 :iti] settings/ITIDUR))
                      
                      ;; restart at chose when iti is over
                      (and (= pname :iti)

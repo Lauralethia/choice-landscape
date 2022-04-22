@@ -52,8 +52,11 @@
    (let [phases (shuffle (side-probs prob-goodwell prob-high prob-low side-best))]
      (gen-wells phases side-best reps-each-side)))
   ([phases side-best reps-each-side ]
-   (let [trialdesc (flatten (mapv #(rep-block % (* 3 reps-each-side)) phases))]
-     (mapv #(well-trial (merge % {:side-best side-best})) trialdesc))))
+   (let [trialdesc (flatten (mapv #(rep-block % (* 3 reps-each-side)) phases))
+         default-iti-dur (get-in @current-settings [:times :iti-dur])]
+     (mapv #(merge (well-trial (merge % {:side-best side-best}))
+                   {:iti-dur default-iti-dur})
+           trialdesc))))
 
 
 ;; 20211203 - redo for more eplict stucture
