@@ -22,7 +22,7 @@ function ifchecked(name){
 
 function get_anchor(){
     let landscape =  document.querySelector("#landscape")
-    let ltype = landscape.selectedOptions[landscape.selectedIndex].value;
+    let ltype = landscape.value //selectedOptions[landscape.selectedIndex].value;
     let tweakstr = Object.keys(tweaks)
                  .map(x=>ifchecked(x))
                  .filter(x=>x!="")
