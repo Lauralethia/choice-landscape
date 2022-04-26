@@ -57,7 +57,9 @@
 
 (def items {
             :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket"}
-            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe"}})
+            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe"}
+            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest"}
+            })
 (defn item-name [item]
   "use current-settings state to determine what words to use"
   (let [vis (or (get @settings/current-settings :vis-type) "desert")]

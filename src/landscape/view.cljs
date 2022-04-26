@@ -41,6 +41,7 @@
   [fill]
   (let [img (case (:vis-type @current-settings)
               :mountain "imgs/money_pool.png"
+              :wellcoin "imgs/money_pool.png"
               "imgs/water.png"
               )]
     (html [:img#water {:src img :style {:transform (str "scale(" (/ fill 100) ")")}}])))
@@ -108,6 +109,7 @@
 (defn bucket []
   (let [imgsrc (case (get @current-settings :vis-type)
                            :mountain "imgs/axe.png"
+                           :wellcoin "imgs/chest.png"
                            "imgs/bucket.png")]
               (html [:img {:src imgsrc :style {:transform "translate(20px, 30px)"}}])))
 
@@ -115,6 +117,7 @@
   "what sprite to use based on the board setting. default to well"
   [] (case (get @current-settings :vis-type)
        :mountain sprite/mine
+       :wellcoin sprite/wellcoin
        sprite/well))
 
 (defn well-show "draw single well. maybe animate sprite"
@@ -284,6 +287,15 @@
   "mine animation by steps"
   (fn [state owner]
     (with-redefs [current-settings (atom (assoc @current-settings :vis-type :mountain))]
+      (utils/wrap-state state [:div
+                                 (well-show @state (assoc  @state :score nil))
+                                (well-show @state (assoc  @state :score 1))])
+        ))
+  {:time-cur 100 :active-at 100 :open true})
+(defcard wellcoin-sprite
+  "well but with coins animation by steps"
+  (fn [state owner]
+    (with-redefs [current-settings (atom (assoc @current-settings :vis-type :wellcoin))]
       (utils/wrap-state state [:div
                                  (well-show @state (assoc  @state :score nil))
                                 (well-show @state (assoc  @state :score 1))])

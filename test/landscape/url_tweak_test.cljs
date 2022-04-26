@@ -9,6 +9,7 @@
 
 (deftest vis-type 
   (is (= :mountain (vis-type-from-url {:anchor "mountain-anything" }) ))
+  (is (= :wellcoin (vis-type-from-url {:anchor "wellcoin" }) ))
   (is (= :desert (vis-type-from-url {:anchor "anything" }) ))
   (is (= :desert (vis-type-from-url {})))
   (is (= :desert (vis-type-from-url {:anchor nil})))

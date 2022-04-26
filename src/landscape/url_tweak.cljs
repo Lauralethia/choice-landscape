@@ -8,8 +8,12 @@
 
 (defn vis-type-from-url [u]
   "desert or mountain from url :anchor. default to desert"
-  (let [anchor (get u :anchor "desert")]
-    (if (re-find #"mountain" (or anchor "desert")) :mountain :desert)))
+  (let [anchor (or (get u :anchor) "desert")]
+    (cond
+      (re-find #"desert" anchor) :desert
+      (re-find #"mountain" anchor) :mountain
+      (re-find #"wellcoin" anchor) :wellcoin
+      :else    :desert)))
 
 (defn pattern-in-url
   "do either url map's path or anchor contain a pattern.
