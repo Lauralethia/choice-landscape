@@ -31,7 +31,7 @@
             true 0))
 
 (defn move-avatar [{:keys [avatar time-cur] :as state}]
-  (let [step-size 10
+  (let [step-size (get @current-settings :avatar-step-size 10)
         time-step 30
         time-delta (- time-cur (:last-move avatar))
         cur (:pos avatar)

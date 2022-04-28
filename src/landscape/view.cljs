@@ -42,6 +42,7 @@
   (let [img (case (:vis-type @current-settings)
               :mountain "imgs/money_pool.png"
               :wellcoin "imgs/money_pool.png"
+              :ocean "imgs/money_pool.png" ;; NB no fill for :ocean but instructions die
               "imgs/water.png"
               )]
     (html [:img#water {:src img :style {:transform (str "scale(" (/ fill 100) ")")}}])))
@@ -110,6 +111,7 @@
   (let [imgsrc (case (get @current-settings :vis-type)
                            :mountain "imgs/axe.png"
                            :wellcoin "imgs/chest.png"
+                           :ocean "imgs/key.png"
                            "imgs/bucket.png")]
               (html [:img {:src imgsrc :style {:transform "translate(20px, 30px)"}}])))
 
@@ -118,6 +120,7 @@
   [] (case (get @current-settings :vis-type)
        :mountain sprite/mine
        :wellcoin sprite/wellcoin
+       :ocean sprite/chest
        sprite/well))
 
 (defn well-show "draw single well. maybe animate sprite"
@@ -241,10 +244,12 @@
         vis-class (-> @current-settings :vis-type name)]
     (sab/html
      [:div#background {:class vis-class}
+      (progress-bar state)
       (if DEBUG [:div {:style {:color "white"}} (str phase) [:br] (str (:key state))])
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
-      (water state)
+      (if (contains? #{:mountain :desert :wellcoin} (get @current-settings :vis-type))
+         (water state))
       (well-show-all state)
       ;; NB. this conditional is only for display
       ;; we're waiting regardless of whats shown
@@ -258,7 +263,6 @@
         (position-at avatar-pos (sprite/avatar-disp state avatar)))
 
       (show-points-floating state)
-      (progress-bar state)
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
@@ -296,6 +300,15 @@
   "well but with coins animation by steps"
   (fn [state owner]
     (with-redefs [current-settings (atom (assoc @current-settings :vis-type :wellcoin))]
+      (utils/wrap-state state [:div
+                                 (well-show @state (assoc  @state :score nil))
+                                (well-show @state (assoc  @state :score 1))])
+        ))
+  {:time-cur 100 :active-at 100 :open true})
+(defcard chest-sprite
+  "well but with coins animation by steps"
+  (fn [state owner]
+    (with-redefs [current-settings (atom (assoc @current-settings :vis-type :ocean))]
       (utils/wrap-state state [:div
                                  (well-show @state (assoc  @state :score nil))
                                 (well-show @state (assoc  @state :score 1))])

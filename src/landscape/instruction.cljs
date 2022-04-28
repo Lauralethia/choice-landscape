@@ -56,9 +56,10 @@
     (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
 
 (def items {
-            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket"}
-            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe"}
-            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest"}
+            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry"}
+            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty"}
+            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty"}
+            :ocean {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty"}
             })
 (defn item-name [item]
   "use current-settings state to determine what words to use"
@@ -82,6 +83,13 @@
         ;; :up or :down, no change
         i)))
 (defn fn-or-idnt [var fnc] (if fnc (fnc var) var))
+(defn should-skip
+  "look at :skip in instruction with state. used in loop to skip multiple all
+  TODO: might be a problem if first or last is skip"
+  [state i-next]
+  (if-let [skipfn (get-in INSTRUCTION [i-next :skip])]
+    (skipfn state)
+    false))
 (defn update-to-from
   "run INSTRUCTION's stop and start functions on state
   if either is nil, pass along state unchanged"
@@ -89,11 +97,8 @@
   (let [stop  (get-in INSTRUCTION [i-cur :stop])
         ;; if we should skip move one more in the current direction
         ;; before getting i-next's stat function
-        skip (if-let [skipfn (get-in INSTRUCTION [i-next :skip])]
-                     (skipfn state)
-                     false)
         dir (if (> 0 (- i-cur i-next)) 1 -1)
-        i-next (if skip (+ i-next dir) i-next)
+        i-next (loop [i i-next] (if (should-skip state i) (recur (+ i dir)) i)) 
         start (get-in INSTRUCTION [i-next :start])
         ]
     (-> state
@@ -209,21 +214,30 @@
                   (update state :sprite-picked (partial next-sprite :down)))
           :up (fn[state]
                 (update state :sprite-picked (partial next-sprite :up)))}}
-   {:text (fn[_] (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can"))
+   {:text (fn[_]
+            (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can"))
     :pos (fn[_] {:x 50 :y 250})
+    :skip (fn[state] (contains? #{:ocean} (get-in state [:record :settings :vis-type])))
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :active-at] time-cur))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))}
    {:text (fn[_] (str "And get as much " (item-name :water) " as possible!"))
     :pos (fn[_] {:x 50 :y 250})
+    :skip (fn[state] (contains? #{:ocean} (get-in state [:record :settings :vis-type])))
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :level] 100))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))}
+   {:text (fn[_] (html [:div "You want to get as much " (item-name :water) " as possible as quicly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]))
+    :skip (fn[state] (not (contains? #{:ocean} (get-in state [:record :settings :vis-type]))))
+    }
 
    {:text (fn[state]
-            (html [:div "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s."
+            (html [:div
+                   (if  (contains? #{:ocean} (get-in state [:record :settings :vis-type]))
+                     ""                 ;; nothing to say if no pond/gold pile
+                     (str "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s."))
                    [:br]
                    "You will choose which " (item-name :well) " to get " (item-name :water) " from."
                    [:br]
@@ -262,7 +276,7 @@
             (html [:div
                    (clojure.string/capitalize (item-name :well)) "s will not always have " (item-name :water) "."
                    [:br]
-                   "Sometimes the " (item-name :well) " will be dry."]))
+                   "Sometimes the " (item-name :well) " will be " (item-name :dry) "."]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-close-well key)]
@@ -314,9 +328,9 @@
                 (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
                 ))}
   {
-    :pos (fn[state] (-> state (get-in [:avatar :pos])
-                       (update :y #(- % 150))
-                       (update :x #(- % 100))))
+   ;; :pos (fn[state] (-> state (get-in [:avatar :pos])
+   ;;                    (update :y #(- % 150))
+   ;;                    (update :x #(- % 100))))
    :start (fn[state] (-> state
                         wells/wells-close
                         (assoc-in [:phase :show-cross] true)))
@@ -399,7 +413,7 @@
           (update-to-from i-cur i-next))
 
       ;; we want to go past the end (are "ready")
-      (and dir (= i-cur i-next) (= i-cur last-instruction))
+      (and dir (= i-cur i-next) (>= i-cur last-instruction))
       (instruction-finished state time-cur)
 
       ;; otherwise no change

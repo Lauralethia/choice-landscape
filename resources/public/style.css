@@ -9,6 +9,9 @@ body.desert{
 body.wellcoin{
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
+body.ocean{
+   background: #fee3b4 url("imgs/ocean_border.jpg") repeat-x;
+}
 body.mountain{
    background: #0d5419 url("imgs/mountain_border.jpg") repeat-x;
 }
@@ -36,6 +39,10 @@ body.mountain{
 #background.mountain {
    background: url("imgs/green_mountain.png");
 }
+#background.ocean {
+   background: url("imgs/ocean_bottom.png");
+}
+
 img#water {
    bottom: 30px;
    left: 50px;

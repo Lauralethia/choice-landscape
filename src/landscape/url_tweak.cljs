@@ -13,6 +13,7 @@
       (re-find #"desert" anchor) :desert
       (re-find #"mountain" anchor) :mountain
       (re-find #"wellcoin" anchor) :wellcoin
+      (re-find #"ocean" anchor) :ocean
       :else    :desert)))
 
 (defn pattern-in-url
@@ -74,4 +75,10 @@
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
 
        ;; always have one forced deval so 0 is actually 1
-       (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1}))))
+       (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
+       ;; ocean doesn't have water/gold pile
+       (update-settings u #"landscape=ocean"  [:bottom-y] 300)
+       (update-settings u #"landscape=ocean"  [:avatar-home :y] 300)
+       (update-settings u #"landscape=ocean"  [:bar-pos :y] 400)
+       (update-settings u #"landscape=ocean"  [:step-sizes] [140 0]) ;orig 70
+       (update-settings u #"landscape=ocean"  [:avatar-step-size] 15))))

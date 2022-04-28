@@ -4,6 +4,7 @@
   {:center-x 250
    :bottom-y 400
    :avatar-home {:x 250 :y 400}
+   :avatar-step-size 10 ; 20220428 - add here instead of hardcoded in avatar/move-avatar
    :step-sizes [70 0] ; 20211005 70 0; originally 70 150. see nofar/yesfar url tweaks
    :top-scale .66 ; perspective makes up seem farther away. scale move and disntace by this much
    :bar-pos {:x 50 :y 500} ; where to position the progress bar
