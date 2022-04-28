@@ -6,6 +6,9 @@ body{
 body.desert{
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
+body.wellcoin{
+   background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
+}
 body.mountain{
    background: #0d5419 url("imgs/mountain_border.jpg") repeat-x;
 }

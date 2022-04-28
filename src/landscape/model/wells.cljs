@@ -1,7 +1,9 @@
 (ns landscape.model.wells
 (:require [landscape.settings :refer [current-settings]]
           [landscape.utils :as utils]
-          [landscape.sound :as snd]))
+          [landscape.sound :as snd]
+          ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+          ))
 
 (defn well-pos
   "{:x # :y #} for a number of steps/count to a well"
@@ -111,8 +113,11 @@
   (update-in well [:active-at] #(if (> (- time %) (:wait-time @current-settings)) 0 %)))
 
 (defn wells-turn-off [{:keys [wells time-cur] :as state}]
-  (assoc state :wells
-    (reduce #(update %1 %2 (partial well-off time-cur)) wells (keys wells))))
+  ;; iti-dur ending up in here b/c it's in well-list?
+  (let [wellpos [:left :up :right] ;; (keys wells)
+        ]
+    (assoc state :wells
+           (reduce #(update %1 %2 (partial well-off time-cur)) wells wellpos))))
 
 
 ;; but we probably want to express wells as wide instead of nested

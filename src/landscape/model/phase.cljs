@@ -5,14 +5,15 @@
             [landscape.http :as http]
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
-            ;[debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+            ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
 
 ;; 20211007 current phases
 ;; :instruction :chose :waiting :feedback :iti
 (defn set-phase-fresh [pname time-cur]
-  {:name pname :scored nil :hit nil :picked nil :sound-at nil :start-at time-cur})
+  {:name pname :start-at time-cur
+   :scored nil :hit nil :picked nil :sound-at nil :iti-dur nil})
 
 (defn phase-done-or-next-trial
   "reset to next trial (chose) or to done (:done :chose :forum)"
@@ -115,7 +116,7 @@
   :chose -> :waiting when :picked not nil
   :waiting -> :feedback when :hit not nil
   :feedback -> :iti when avatar is home
-  :iti -> :choose after duration
+  :iti -> :chose after duration
   "
   [{:keys [phase time-cur trial] :as state}]
   (let [pname (get phase :name)
@@ -123,6 +124,7 @@
         hit (get phase :hit)
         picked (get phase :picked)
         time-since (- time-cur (:start-at phase))
+        iti-dur (get-in state [:well-list trial0 :iti-dur] settings/ITIDUR)
         phase-next (cond
                      ;; as soon as we pick, switch to waiting
                      (and (= pname :chose) (some? picked))
@@ -149,9 +151,7 @@
                      (assoc phase
                             :name :iti
                             :start-at time-cur
-                            ;; TODO: this should pull from somewhere else
-                            ;; for MR we likey want predefined expodential distr.
-                            :iti-dur (get-in state [:well-list trial0 :iti] settings/ITIDUR))
+                            :iti-dur iti-dur)
                      
                      ;; restart at chose when iti is over
                      (and (= pname :iti)
