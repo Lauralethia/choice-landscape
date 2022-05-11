@@ -237,6 +237,13 @@
 (defn view-score [score]
   (html [:div#scorebox "Total: " score]))
 
+(defn popup-state
+  "show state. reacts to button push when DEBUG
+  TODO: maybe do more than console.log"
+  [state]
+  (console.log (clj->js state)))
+
+
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -245,7 +252,11 @@
     (sab/html
      [:div#background {:class vis-class}
       (progress-bar state)
-      (if DEBUG [:div {:style {:color "white"}} (str phase) [:br] (str (:key state))])
+
+      (if DEBUG [:div {:style {:color "white"}}
+                 [:br] (str (:key state))
+                 [:button {:on-click (fn [] (popup-state state))} "show"]])
+      
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
       (if (contains? #{:mountain :desert :wellcoin} (get @current-settings :vis-type))
