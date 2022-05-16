@@ -13,6 +13,7 @@ out/*
 !out/*css
 !out/extra/*
 out/cljs_deps.js
+.cljs_node_repl/
 
 
 results/.heroku-dburl
