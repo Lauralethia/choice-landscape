@@ -63,6 +63,18 @@
       (-> state-time
           (update-in [:record :events trial0] #(merge % (wells/wide-info wells))))
 
+      ;; :timeout just resturn state-time
+
+      ;; if no response and catch
+      ;;    :avoided, :picked, and the rest of wide-info will be keys with
+      ;;    but with nil values
+      :catch
+      (-> state-time
+          (assoc-in [:record :events trial0 :picked] picked)
+          ;; add picked and avoided
+          (update-in [:record :events trial0]
+                     #(merge % (wells/wide-info-picked wells picked))))
+
       :waiting
       (-> state-time
           (assoc-in [:record :events trial0 :picked] picked)
@@ -125,14 +137,25 @@
         picked (get phase :picked)
         time-since (- time-cur (:start-at phase))
         iti-dur (get-in state [:well-list trial0 :iti-dur] settings/ITIDUR)
+        catch-dur (get-in state [:well-list trial0 :catch-dur] 0)
+        rt-max (get-in @settings/current-settings [:times :choice-timeout])
         phase-next (cond
+
+                     ;; phase=catch (isi) if response or timeout w/catch-dur
+                     ;; use catch-dur (def 0) from well-list as both duration (later)
+                     ;; and as flag for if trial is catch
+                     (and (= pname :chose)
+                          (> catch-dur 0)
+                          (or (some? picked) (>= time-since rt-max)))
+                     (assoc phase :name :catch :start-at time-cur :catch-dur catch-dur)
+
                      ;; as soon as we pick, switch to waiting
                      (and (= pname :chose) (some? picked))
                      (assoc phase :name :waiting :start-at time-cur)
 
                      ;; or a choice was not made quick enough
                      (and (= pname :chose)
-                          (>= time-since (get-in @settings/current-settings [:times :choice-timeout]))
+                          (>= time-since rt-max)
                           (:enforce-timeout @settings/current-settings))
                      (assoc phase :name :timeout
                             :start-at time-cur
@@ -146,8 +169,11 @@
                      ;; might be comming from feedback, timeout, or instructions
                      (or (and (= pname :feedback) (avatar/avatar-home? state))
                          (= pname :instruction)
+                         (and (= pname :catch)
+                              (>= time-since catch-dur))
                          (and (= pname :timeout)
                               (>= time-since (get-in @settings/current-settings [:times :timeout-dur]))))
+
                      (assoc phase
                             :name :iti
                             :start-at time-cur
