@@ -5,6 +5,7 @@
             [landscape.http :as http]
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
+            [landscape.model.floater :as floater]
             ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
@@ -73,7 +74,11 @@
           (assoc-in [:record :events trial0 :picked] picked)
           ;; add picked and avoided
           (update-in [:record :events trial0]
-                     #(merge % (wells/wide-info-picked wells picked))))
+                     #(merge % (wells/wide-info-picked wells picked)))
+          ;; add floating zzz's
+          (update-in [:zzz]
+                     #(floater/zzz-new (-> state :avatar :pos) 3))
+          )
 
       :waiting
       (-> state-time
