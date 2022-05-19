@@ -4,6 +4,7 @@
    [landscape.key]
    [landscape.view :as view]
    [landscape.sound :as sound]
+   [landscape.fixed-timing :as fixed-timing]
    [landscape.model.timeline :as timeline]
    [landscape.model :as model :refer [STATE]]
    [landscape.settings :as settings :refer [current-settings]]
@@ -129,7 +130,8 @@
     (set! landscape.view.DEBUG true))
 
 
-  (let [well-list (gen-well-list)]
+  (let [timing-method (get @settings/current-settings :timing-method :random)
+        well-list (get fixed-timing/trials timing-method (gen-well-list))]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))

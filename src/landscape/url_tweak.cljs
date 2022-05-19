@@ -73,6 +73,8 @@
        ;; MRI settings
        (update-settings u #"where=mr" [:where] :mri)
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
+       ;; fixed timing
+       (update-settings u #"timing=debug" [:timing-method] :debug)
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
