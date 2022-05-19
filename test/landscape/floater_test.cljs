@@ -13,7 +13,7 @@
 (deftest use-floater-test
   
   (let [moved (-> (f/->pos 0 0) (f/floater-new) (f/move-up))]
-    (is (< 0 (get-in moved [:pos :y]) ))
+    (is (> 0 (get-in moved [:pos :y]) )) ; moving up is more negative y
     (is (= 1 (get-in moved [:step-cur])))
     (is (> 1 (get-in moved [:alpha])))))
 
