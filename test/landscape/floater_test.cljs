@@ -8,7 +8,7 @@
   (let [flt (f/floater-new (f/->pos 0 0))]
     (is (= 0 (-> flt :pos :x)))
     (is (= 0 (-> flt :pos :y)))
-    (is (= 20 (-> flt :step-off)))))
+    (is (= 50 (-> flt :step-off)))))
 
 (deftest use-floater-test
   

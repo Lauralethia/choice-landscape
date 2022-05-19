@@ -8,8 +8,11 @@
 (defn floater-new
   "defaults for a floater. probably 'z' text with 20 steps"
   ([start-pos]
-   (floater-new start-pos 20 "z"))
+   (floater-new
+    start-pos 50
+    (html [:p {:style {:font-size "32px" :font-weight "bold"}} "z"])))
   ([start-pos step-off body]
+   ;; alpha 1.0 size 100% at step 0
    (->floater 1 100 0 step-off body start-pos)))
 
 (defn rand-init
@@ -36,7 +39,7 @@
   (<= (:step-cur f) (:step-off f)))
 
 (defn zzz-new [pos num]
-  (map #(rand-init (floater-new pos 50 (html [:p {:font-size "64px"} "z"]))) (range num)))
+  (map #(rand-init (floater-new pos)) (range num)))
 
 (defn update-state
         "move floaters up. remove if have for long enough"
