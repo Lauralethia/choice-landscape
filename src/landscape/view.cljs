@@ -72,7 +72,7 @@
    (photodiode state [0 0]))
   ([{:keys [phase] :as state} pos]
      (when (-> state :record :settings :use-photodiode?)
-       (position-at pos (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}])))))
+       (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}]))))
 
 (defn progress-bar
   "show how far along we are in the task."
@@ -375,11 +375,16 @@
   {:time-cur 100 :active-at 100 :direction :left :sprite-picked :astro :disabled? false})
 
 (defcard photodiode-card
+  "giant box to trigger event stim. style adjusted to fit here. will be bigger and fixed to top of screen. depending on photo sensor, might only be able to get on or off. currently have 4 levels"
   (fn [state owner] (html
            [:div
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :chose))} "chose"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :waiting))} "waiting"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :feedback))} "feedback"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :iti))} "iti"]
-            (photodiode @state)]))
+
+            ;; "relative !important" otherwise fixed to top of page
+            ;; this way it's at least close to the controlling/testing buttons
+            (html [:div {:style {:position "relative !important" :scale "10%"}}
+                   (photodiode @state)])]))
   {:phase {:name :chose} :record {:settings {:use-photodiode? true}}})
