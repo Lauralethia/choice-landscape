@@ -16,9 +16,9 @@
    [sablono.core :as sab :include-macros true :refer-macros [html]]))
 
 (defn find-far-well [{:keys [wells] :as state}]
-  (apply max-key #(:step (val %)) wells))
+  (apply max-key #(:step (val %)) (select-keys wells [:left :up :right])))
 (defn find-close-well [{:keys [wells] :as state}]
-  (apply min-key #(:step (val %)) wells))
+  (apply min-key #(:step (val %)) (select-keys wells [:left :up :right])))
 
 ;; Idea is to present sequential instructions using only 3 or 4 keys
 ;; instruction boxes should be positioned close to the thing they explain
