@@ -291,7 +291,8 @@
                      (html [:div.iti "+"]))
         ;; catch event will show a disabled (opaque) avatar
         (maybe-disable
-         (= (:name phase) :catch)
+         (or (= (:name phase) :catch)
+             (:fade phase))             ;; fade set in instructions
          (position-at avatar-pos (sprite/avatar-disp state avatar))))
 
       (show-points-floating state)

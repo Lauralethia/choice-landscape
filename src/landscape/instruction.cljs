@@ -10,9 +10,11 @@
    [landscape.model.wells :as wells]
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
+   [landscape.model.floater :as floater]
    [landscape.model.phase :as phase]
    [landscape.sound :refer [play-sound]]
    [clojure.string]
+   ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    [sablono.core :as sab :include-macros true :refer-macros [html]]))
 
 (defn find-far-well [{:keys [wells] :as state}]
@@ -261,11 +263,11 @@
                    ]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[state]
-             (let [well-side (find-close-well state)]
-               (-> state
-                   (assoc-in [:avatar :destination] (-> well-side val :pos))
-                   wells/wells-close
-                   (assoc-in [:wells (key well-side) :open] true))))
+                   (let [well-side (find-close-well state)]
+                     (-> state
+                         (assoc-in [:avatar :destination] (-> well-side val :pos))
+                         wells/wells-close
+                         (assoc-in [:wells (key well-side) :open] true))))
     :stop (fn[state]
             (-> state
                 (wells/wells-set-open-or-close [:left :up :right] true)
@@ -308,6 +310,19 @@
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
     :stop wells/wells-turn-off
+    }
+   {:text (fn[state]
+            (html [:div "Sometimes you will be too tired to walk." [:br]
+                   "Instead, you will fade out until you are rested." [:br]
+                   "This happens randomly and is not related your choice" [:br]]))
+    :pos (fn[state] {:x 0 :y 100})
+    :start (fn[state]
+             (-> state
+                 (assoc :zzz (floater/zzz-new (avatar/top-center-pos state) 2))
+                 (assoc-in [:phase :fade] true)))
+    :stop (fn[state] (-> state
+                         (assoc-in [:phase :fade] false)
+                         (assoc :zzz [])))
     }
    {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
@@ -426,4 +441,5 @@
   (-> state
       water/water-pulse-forever
       avatar/move-avatar
+      floater/update-state
       read-keys))
