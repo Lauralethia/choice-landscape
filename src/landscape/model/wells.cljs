@@ -21,7 +21,18 @@
 (defn well-add-pos
   "uses :step to calc :pos on well info (e.g. map within [:wells :left]) "
   [side {:keys [step] :as well}]
-  (assoc well :pos (well-pos side step)))
+   (assoc well :pos (well-pos side step)))
+
+(defn add-pos-if-missing
+  "only change pos if missing. useful for fixed-timing (MR trial list).
+  side outside of well b/c used in reduce/update w/keys (dict-add-pos)"
+  [side {:keys [step] :as well}]
+  (if (:pos well) well (assoc well :pos (well-pos side step))))
+(defn dict-add-pos [{:keys [left right up] :as wells}]
+  (reduce  #(update %1 %2 (partial add-pos-if-missing %2)) wells [:left :up :right]))
+(defn list-add-pos
+  "update position if missing on list of dicts of wells. eg. fixed-timing MR trial list"
+  [list-of-sides] (mapv dict-add-pos list-of-sides))
 
 (defn wells-state-fresh
   ;; include default settings
