@@ -138,22 +138,29 @@
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
 
-  ;; TODO: fixed iti durations
-
   ; start with instructions
   ; where lp/time-update will call into model/next-step and disbatch to
   ; instruction/step (and when phase name changes, will redirect to model/step-task)
   ; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
 
-  ; run the first instructions start function
-  ; BUG - this doesn't play any sound! but we moved sound captcha to second slide
-  (reset! STATE ((-> INSTRUCTION first :start) @STATE))
-
   ;; jump to ready screen if no instructions
-  (if (not (:show-instructions @settings/current-settings))
+  (when (not (:show-instructions @settings/current-settings))
     ;; (reset! STATE (instruction-finished @STATE 0))
     (swap! STATE assoc-in [:phase :idx] (dec (count INSTRUCTION))))
+
+
+  ;; 20220523 - ocean home is different than others
+  ;;  make sure avatar is in the right place at the start
+  (swap! STATE assoc-in [:avatar :destination] (:avatar-home @current-settings))
+
+  ; run the first instructions start function
+  ;; BUG - this doesn't play any sound! but we moved sound captcha to second slide
+  ;; 20220523 - bug may have been fixed but havent put sound slide first to confirm
+  (let [cur-idx (get-in @STATE [:phase :idx] 0)
+              cur-start (-> INSTRUCTION (nth cur-idx) :start)]
+          (reset! STATE (cur-start @STATE)))
+
   
   
   ; update background for mountain or desert 

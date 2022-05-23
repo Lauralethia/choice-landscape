@@ -386,29 +386,44 @@
                    [:br] "You're done when the green bar reaches the end!"
                    ]))}
    {:text (fn[state]
-            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water)
+            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water) "."
                    [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
-   {:text (fn[state] [:div  {:style {:text-align "left"}}
-                   "Ready? "
-                   (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
-                     " Push the right arrow to start!"
-                     " Waiting for scanner.")
-                   [:ul
-                    [:li "Fill the " (item-name :pond)
-                     " by visiting " (item-name :well) "s that give " (item-name :water)
-                     ". Try to avoid empty " (item-name :well) "s."]
-                    [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
-                    [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
-                    [:li "The amount of " (item-name :water)
-                     " when there is " (item-name :water)
-                     " is the same for all " (item-name :well) "s."]
-                    [:li  [:b "You must respond to be paid"]]
-                    [:li "Respond faster to finish sooner."]
-                    (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
-                      [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
-                    [:li "How often you visit a " (item-name :well)
-                     " does not change how often it gives " (item-name :water) ]
-                    [:li "Make choices with a single tap. Do not hold keys down."]]])
+   {
+    ;; in case we're skipping instructions:
+    ;;  send avatar to actual home (might be off if we're in landscape=ocean
+    ;;also close all wells. might not have happened if we rushed through instructions
+    :start (fn[state]
+             (-> state
+                 wells/wells-close
+                 (assoc-in [:avatar :destination]
+                           (:avatar-home @current-settings))))
+    :text (fn[state] [:div  {:style {:text-align "left"}}
+                      "Ready? "
+                      (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
+                        " Push the right arrow to start!"
+                        " Waiting for scanner.")
+                      [:ul
+                       (when (not (contains? #{:ocean}
+                                             (get-in state [:record :settings :vis-type])))
+                         [:li "Fill the " (item-name :pond)
+                          " by visiting " (item-name :well) "s that give "
+                          (item-name :water)
+                          ". Try to avoid empty " (item-name :well) "s."])
+                       [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
+                       [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
+                       [:li "The amount of " (item-name :water)
+                        " when there is " (item-name :water)
+                        " is the same for all " (item-name :well) "s."]
+
+                       (when (not(contains? #{:mri :eeg}
+                                            (get-in state [:record :settings :where])))
+                         [:li  [:b "You must respond to be paid"]])
+                       [:li "Respond faster to finish sooner."]
+                       (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
+                         [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
+                       [:li "How often you visit a " (item-name :well)
+                        " does not change how often it gives " (item-name :water) ]
+                       [:li "Make choices with a single tap. Do not hold keys down."]]])
 
     ;; trigger test/blocking in read-keys
     ;; :key ...
