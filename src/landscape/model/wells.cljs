@@ -28,8 +28,18 @@
   side outside of well b/c used in reduce/update w/keys (dict-add-pos)"
   [side {:keys [step] :as well}]
   (if (:pos well) well (assoc well :pos (well-pos side step))))
+(defn add-active-if-missing "well needs :active-at 0. nil looks like timeout."
+  [side well]
+  (if (:active-at well) well (assoc well :active-at 0)))
+
+(defn add-missing-from-hardcoded
+  "hardcoded trial structure from fixed_timing.cljs does not include repeated but needed initialized fields"
+  [side well]
+  (add-active-if-missing side (add-pos-if-missing side well)))
+
+
 (defn dict-add-pos [{:keys [left right up] :as wells}]
-  (reduce  #(update %1 %2 (partial add-pos-if-missing %2)) wells [:left :up :right]))
+  (reduce  #(update %1 %2 (partial add-missing-from-hardcoded %2)) wells [:left :up :right]))
 (defn list-add-pos
   "update position if missing on list of dicts of wells. eg. fixed-timing MR trial list"
   [list-of-sides] (mapv dict-add-pos list-of-sides))
