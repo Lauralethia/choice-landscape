@@ -58,10 +58,10 @@
     (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
 
 (def items {
-            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry"}
-            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty"}
-            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty"}
-            :ocean {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty"}
+            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry" :carry "carry"}
+            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty" :carry "dig"}
+            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty" :carry "carry"}
+            :ocean {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty" :carry "unlock"}
             })
 (defn item-name [item]
   "use current-settings state to determine what words to use"
@@ -245,20 +245,28 @@
                    [:br]
                    "Pick a " (item-name :well) " by walking to it!"
                    [:br]
-                   "Use the arrow keys on the keyboard: left, up, and right"
+                   (if (contains? #{:mri :eeg}
+                                  (get-in state [:record :settings :where]))
+                     "Use the button box to choose."
+                     "Use the arrow keys on the keyboard: left, up, and right"
+                   )
+
                    ]))}
    {:text (fn[state]
             (html [:div "Make choices with a single tap."
                    [:br]
                    [:b "Do not hold keys down."]
                    [:br] [:br]
-                   "Held keys misrepresent choice timing, leading to study disqualification."]
+                   (when (not(contains? #{:mri :eeg}
+                                        (get-in state [:record :settings :where])))
+                     "Held keys misrepresent choice timing, leading to study disqualification."
+                   )]
                    ))}
    {:text (fn[state]
             (html [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
                    [:br] "when they have a " (item-name :bucket) "."
                    [:br]
-                   [:br] "All three " (item-name :bucket) "s carry"
+                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
                    [:br] "the same amount of " (item-name :water) "."
                    ]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
@@ -306,7 +314,12 @@
             (html [:div "Don't wait too long to choose."
                    [:br]
                    "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
-                   [:b "You will not get paid if you do not respond!"]]))
+                   ;; dont be harsh about payment when participant is in person
+                   ;; (instead RA/RS can give a nice "wake up" reminder
+                   (when (not(contains? #{:mri :eeg}
+                                        (get-in state [:record :settings :where])))
+                    [:b "You will not get paid if you do not respond!"])
+                   ]))
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
     :stop wells/wells-turn-off
@@ -353,7 +366,8 @@
                        (assoc-in [:phase :show-cross] nil)
                        (wells/wells-set-open-or-close [:left :up :right] true)))
     :text (fn[state]
-            (html [:div "This white cross means you have to wait. Watch the cross until it disappears"
+            (html [:div "This white cross means you have to wait."
+                   [:br] "Watch the cross until it disappears"
                    [:br] "When it disappears,"
                    [:br] "you can choose the next " (item-name :well)" to visit"]))}
    {
