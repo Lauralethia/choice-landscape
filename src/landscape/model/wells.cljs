@@ -100,6 +100,7 @@
               :chose (assoc state :wells  (get well-list (dec trial)))
               ;; when waiting close all wells
               :waiting (wells-close state)
+              :catch (wells-close state)
               :timeout (all-empty state)
               ;; :feedback state
               state))))
