@@ -121,7 +121,7 @@ mktiming(){
      -add_timing_class iti 0 -1 8     \
      \
      -add_stim_class good          "$good"          s_choice_w_good  nobreak \
-     -add_stim_class g_fbk         "$good"          s_feedback nobreak       \
+     -add_stim_class g_fbk         "$good"          s_feedback iti       \
      -add_stim_class g_walk        "$good"          s_walk nobreak           \
      -add_stim_class g_catch       "$good_catch"    s_choice_w_good  nobreak     \
      -add_stim_class g_zzz         "$good_catch"    s_zzz iti     \

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Landscape Choice MR timing</title>
+<script src="tweaks.js"> </script>
+<!-- // qs, yyyymmdd, get_anchor, add_timing_choices -->
+
+<script>
+  function make_url(){
+      let id = qs("id");
+      let runnum = qs("runnum");
+      /* important trailing slash */
+      return("/" + id + "/mr_habit/" + yyyymmdd() +"/" + runnum +"/");
+  }
+
+  function inc_to_next_run(){
+      // increment timing settings. when we return from popup, the next run is already setup
+      document.querySelector("input[name='runnum']").value = parseInt(qs("runnum")) + 1;
+      let c = document.querySelector('#timingchoice');
+      //TODO: improve kludge.
+      // requires timing ends in 1 or 2 and that we want to swap between them
+      c.value = c.value.endsWith("1")?c.value.replace("1","2"):c.value.replace("2","1");
+  }
+  function go_url(){
+      let url = make_url() + get_anchor() + "&where=mri"
+      //window.location.assign(url);
+      popup = window.open(url,"Popup",
+                          "toolbar=no,location=no,status=no,menubar=no,"+
+                          "scrollbars=no,width=1024,height=768");//,resizable=no
+      inc_to_next_run();
+      return(false);
+  }
+
+  timing_choices = ['mrA1', 'mrA2', 'mrB1', 'mrB2', 'random', 'debug']
+
+  function add_choices(){
+      add_timing_choices();
+      add_landscape_choices();
+  }
+</script>
+   </head>
+   <body onload="add_choices()">
+     <h1> Task specifications </h1>
+      <form onsubmit="go_url(); return false"> <!-- return false supresses form action -->
+        <table id="task_setting_tweaks">
+      <tr><td><label for="id">ID:</label></td>
+         <td><input name=id type="text" size=5> </td></tr>
+      <tr><td><label for="run">run number:</label></td>
+         <td><input name="runnum" type="text" size=1 value=1> </td></tr>
+
+      </table>
+      <input type="submit" value="Go!">
+   </form>
+
+   <small style="position:absolute; bottom:0px"> redirect to
+     <span id="urltxt">/id/mr_habit/timepoint/run/ </span>
+     <a href="/">more options</a>
+   </small>
+   </body>
+</html>

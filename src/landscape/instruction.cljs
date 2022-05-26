@@ -10,15 +10,17 @@
    [landscape.model.wells :as wells]
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
+   [landscape.model.floater :as floater]
    [landscape.model.phase :as phase]
    [landscape.sound :refer [play-sound]]
    [clojure.string]
+   ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    [sablono.core :as sab :include-macros true :refer-macros [html]]))
 
 (defn find-far-well [{:keys [wells] :as state}]
-  (apply max-key #(:step (val %)) wells))
+  (apply max-key #(:step (val %)) (select-keys wells [:left :up :right])))
 (defn find-close-well [{:keys [wells] :as state}]
-  (apply min-key #(:step (val %)) wells))
+  (apply min-key #(:step (val %)) (select-keys wells [:left :up :right])))
 
 ;; Idea is to present sequential instructions using only 3 or 4 keys
 ;; instruction boxes should be positioned close to the thing they explain
@@ -56,10 +58,10 @@
     (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
 
 (def items {
-            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry"}
-            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty"}
-            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty"}
-            :ocean {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty"}
+            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry" :carry "carry"}
+            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty" :carry "dig"}
+            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty" :carry "carry"}
+            :ocean {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty" :carry "unlock"}
             })
 (defn item-name [item]
   "use current-settings state to determine what words to use"
@@ -243,29 +245,37 @@
                    [:br]
                    "Pick a " (item-name :well) " by walking to it!"
                    [:br]
-                   "Use the arrow keys on the keyboard: left, up, and right"
+                   (if (contains? #{:mri :eeg}
+                                  (get-in state [:record :settings :where]))
+                     "Use the button box to choose."
+                     "Use the arrow keys on the keyboard: left, up, and right"
+                   )
+
                    ]))}
    {:text (fn[state]
             (html [:div "Make choices with a single tap."
                    [:br]
                    [:b "Do not hold keys down."]
                    [:br] [:br]
-                   "Held keys misrepresent choice timing, leading to study disqualification."]
+                   (when (not(contains? #{:mri :eeg}
+                                        (get-in state [:record :settings :where])))
+                     "Held keys misrepresent choice timing, leading to study disqualification."
+                   )]
                    ))}
    {:text (fn[state]
             (html [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
                    [:br] "when they have a " (item-name :bucket) "."
                    [:br]
-                   [:br] "All three " (item-name :bucket) "s carry"
+                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
                    [:br] "the same amount of " (item-name :water) "."
                    ]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[state]
-             (let [well-side (find-close-well state)]
-               (-> state
-                   (assoc-in [:avatar :destination] (-> well-side val :pos))
-                   wells/wells-close
-                   (assoc-in [:wells (key well-side) :open] true))))
+                   (let [well-side (find-close-well state)]
+                     (-> state
+                         (assoc-in [:avatar :destination] (-> well-side val :pos))
+                         wells/wells-close
+                         (assoc-in [:wells (key well-side) :open] true))))
     :stop (fn[state]
             (-> state
                 (wells/wells-set-open-or-close [:left :up :right] true)
@@ -304,10 +314,28 @@
             (html [:div "Don't wait too long to choose."
                    [:br]
                    "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
-                   [:b "You will not get paid if you do not respond!"]]))
+                   ;; dont be harsh about payment when participant is in person
+                   ;; (instead RA/RS can give a nice "wake up" reminder
+                   (when (not(contains? #{:mri :eeg}
+                                        (get-in state [:record :settings :where])))
+                    [:b "You will not get paid if you do not respond!"])
+                   ]))
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
     :stop wells/wells-turn-off
+    }
+   {:text (fn[state]
+            (html [:div "Sometimes you will be too tired to walk." [:br]
+                   "Instead, you will fade out until you are rested." [:br]
+                   "This happens randomly and is not related your choice" [:br]]))
+    :pos (fn[state] {:x 0 :y 100})
+    :start (fn[state]
+             (-> state
+                 (assoc :zzz (floater/zzz-new (avatar/top-center-pos state) 2))
+                 (assoc-in [:phase :fade] true)))
+    :stop (fn[state] (-> state
+                         (assoc-in [:phase :fade] false)
+                         (assoc :zzz [])))
     }
    {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
@@ -338,7 +366,8 @@
                        (assoc-in [:phase :show-cross] nil)
                        (wells/wells-set-open-or-close [:left :up :right] true)))
     :text (fn[state]
-            (html [:div "This white cross means you have to wait. Watch the cross until it disappears"
+            (html [:div "This white cross means you have to wait."
+                   [:br] "Watch the cross until it disappears"
                    [:br] "When it disappears,"
                    [:br] "you can choose the next " (item-name :well)" to visit"]))}
    {
@@ -357,34 +386,48 @@
                    [:br] "You're done when the green bar reaches the end!"
                    ]))}
    {:text (fn[state]
-            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water)
+            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water) "."
                    [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
-   {:text (fn[state] [:div  {:style {:text-align "left"}}
-                   "Ready? "
-                   (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
-                     " Push the right arrow to start!"
-                     [:p " Waiting for scanner."
-                      [:span {:style {:font-size "8px" :padding-left "20px"}}
-                       "= "
-                       [:a {:href "#" :on-click
-                            (fn[_] (-> js/window .-location .reload))} "refresh page"]
-                       ]])
-                   [:ul
-                    [:li "Fill the " (item-name :pond)
-                     " by visiting " (item-name :well) "s that give " (item-name :water)
-                     ". Try to avoid empty " (item-name :well) "s."]
-                    [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
-                    [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
-                    [:li "The amount of " (item-name :water)
-                     " when there is " (item-name :water)
-                     " is the same for all " (item-name :well) "s."]
-                    [:li  [:b "You must respond to be paid"]]
-                    [:li "Respond faster to finish sooner."]
-                    (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
-                      [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
-                    [:li "How often you visit a " (item-name :well)
-                     " does not change how often it gives " (item-name :water) ]
-                    [:li "Make choices with a single tap. Do not hold keys down."]]])
+   {
+    ;; in case we're skipping instructions:
+    ;;  send avatar to actual home (might be off if we're in landscape=ocean
+    ;;also close all wells. might not have happened if we rushed through instructions
+    :start (fn[state]
+             (-> state
+                 wells/wells-close
+                 (assoc-in [:avatar :destination]
+                           (:avatar-home @current-settings))))
+    :text (fn[state] [:div  {:style {:text-align "left"}}
+                      "Ready? "
+                      (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
+                        " Push the right arrow to start!"
+                        [:p " Waiting for scanner."
+                         [:span {:style {:font-size "8px" :padding-left "20px"}}
+                          "= "
+                          [:a {:href "#" :on-click
+                               (fn[_] (-> js/window .-location .reload))} "refresh page"]]])
+                      [:ul
+                       (when (not (contains? #{:ocean}
+                                             (get-in state [:record :settings :vis-type])))
+                         [:li "Fill the " (item-name :pond)
+                          " by visiting " (item-name :well) "s that give "
+                          (item-name :water)
+                          ". Try to avoid empty " (item-name :well) "s."])
+                       [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
+                       [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
+                       [:li "The amount of " (item-name :water)
+                        " when there is " (item-name :water)
+                        " is the same for all " (item-name :well) "s."]
+
+                       (when (not(contains? #{:mri :eeg}
+                                            (get-in state [:record :settings :where])))
+                         [:li  [:b "You must respond to be paid"]])
+                       [:li "Respond faster to finish sooner."]
+                       (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
+                         [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
+                       [:li "How often you visit a " (item-name :well)
+                        " does not change how often it gives " (item-name :water) ]
+                       [:li "Make choices with a single tap. Do not hold keys down."]]])
 
     ;; trigger test/blocking in read-keys
     ;; :key ...
@@ -431,4 +474,5 @@
   (-> state
       water/water-pulse-forever
       avatar/move-avatar
+      floater/update-state
       read-keys))

@@ -5,6 +5,7 @@
             [landscape.http :as http]
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
+            [landscape.model.floater :as floater]
             ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
@@ -71,9 +72,17 @@
       :catch
       (-> state-time
           (assoc-in [:record :events trial0 :picked] picked)
+          ; undo keypress move
+          ;; TODO: still moves avatar toward chosen direction. disable in model/readkeys?
+          (assoc-in [:avatar :destination] (avatar/avatar-dest state :down))
+          (assoc-in [:avatar :pos] (avatar/avatar-dest state :down))
           ;; add picked and avoided
           (update-in [:record :events trial0]
-                     #(merge % (wells/wide-info-picked wells picked))))
+                     #(merge % (wells/wide-info-picked wells picked)))
+          ;; add floating zzz's
+          (update-in [:zzz]
+                     #(floater/zzz-new (-> state :avatar :pos) 6))
+          )
 
       :waiting
       (-> state-time
@@ -146,7 +155,9 @@
                      ;; and as flag for if trial is catch
                      (and (= pname :chose)
                           (> catch-dur 0)
-                          (or (some? picked) (>= time-since rt-max)))
+                          (or (some? picked)
+                              (and (:enforce-timeout @settings/current-settings)
+                                   (>= time-since rt-max))))
                      (assoc phase :name :catch :start-at time-cur :catch-dur catch-dur)
 
                      ;; as soon as we pick, switch to waiting

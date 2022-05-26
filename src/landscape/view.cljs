@@ -72,7 +72,7 @@
    (photodiode state [0 0]))
   ([{:keys [phase] :as state} pos]
      (when (-> state :record :settings :use-photodiode?)
-       (position-at pos (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}])))))
+       (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}]))))
 
 (defn progress-bar
   "show how far along we are in the task."
@@ -105,8 +105,21 @@
   "show all points in points-floating{:pos :points}"
   (html [:div (mapv #'show-point-floating points-floating)]))
 
-;; 
+
+;; catch event sleepy ZZZs
+(defn show-zzz-floating
+  "show a Z floating around"
+  [{:keys [alpha size pos body] :as zzz}]
+  (position-at
+   pos
+   (html [:div.zzz {:style {:opacity alpha :scale (str size "%")}}
+          body])))
 
+(defn show-all-zzz [{:keys[zzz] :as state}]
+  "show all zzzs that could be floating"
+  (html [:div (mapv #'show-zzz-floating zzz)]))
+
+;;
 (defn bucket []
   (let [imgsrc (case (get @current-settings :vis-type)
                            :mountain "imgs/axe.png"
@@ -234,6 +247,7 @@
                    } "download task data"]])
          [:br]]))
 
+
 (defn view-score [score]
   (html [:div#scorebox "Total: " score]))
 
@@ -243,6 +257,10 @@
   [state]
   (console.log (clj->js state)))
 
+(defn maybe-disable [disable? html]
+  (if disable?
+    (sab/html [:div  {:style {:opacity "50%"}}  html])
+    html))
 
 (defn display-state
   "html to render for display. updates for any change in display"
@@ -271,9 +289,16 @@
         ;; cross does not get centered well. off by a few pixels
         (position-at (update avatar-pos :x #(+ % 5))
                      (html [:div.iti "+"]))
-        (position-at avatar-pos (sprite/avatar-disp state avatar)))
+        ;; catch event will show a disabled (opaque) avatar
+        (maybe-disable
+         (or (= (:name phase) :catch)
+             (:fade phase))             ;; fade set in instructions
+         (position-at avatar-pos (sprite/avatar-disp state avatar))))
 
       (show-points-floating state)
+
+      ;; draw ZZZ over avatar during catch trial
+      (show-all-zzz state)
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
@@ -330,25 +355,36 @@
   "step through avatar"
   (fn [state owner]
     (html [:div
-           (utils/wrap-state state (sprite/avatar-disp @state @state))
+           (utils/wrap-state
+            state
+            (maybe-disable
+             (:disabled? @state)
+             (sprite/avatar-disp @state @state)))
            [:button {:on-click (fn [] (swap! state assoc :direction :left))} "left"]
            [:button {:on-click (fn [] (swap! state assoc :direction :right))} "right"]
            [:button {:on-click (fn [] (swap! state assoc :direction :up))} "up"]
            [:button {:on-click (fn [] (swap! state assoc :direction :down))} "down"]
+           [:button {:on-click (fn [] (swap! state assoc :disabled?
+                                             (not (:disabled? @state))))} "catch?"]
            [:br]
            [:select {:on-change #(swap! state assoc :sprite-picked (-> % .-target .-value keyword))}
             (map #(html [:option { :value (name %)} (name %)]) (keys sprite/avatars))]
            [:br]
            (str @state)
            ]))
-  {:time-cur 100 :active-at 100 :direction :left :sprite-picked :astro})
+  {:time-cur 100 :active-at 100 :direction :left :sprite-picked :astro :disabled? false})
 
 (defcard photodiode-card
+  "giant box to trigger event stim. style adjusted to fit here. will be bigger and fixed to top of screen. depending on photo sensor, might only be able to get on or off. currently have 4 levels"
   (fn [state owner] (html
            [:div
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :chose))} "chose"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :waiting))} "waiting"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :feedback))} "feedback"]
             [:button {:on-click (fn [] (swap! state assoc-in [:phase :name] :iti))} "iti"]
-            (photodiode @state)]))
+
+            ;; "relative !important" otherwise fixed to top of page
+            ;; this way it's at least close to the controlling/testing buttons
+            (html [:div {:style {:position "relative !important" :scale "10%"}}
+                   (photodiode @state)])]))
   {:phase {:name :chose} :record {:settings {:use-photodiode? true}}})

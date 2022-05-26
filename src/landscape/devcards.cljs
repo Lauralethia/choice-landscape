@@ -7,6 +7,7 @@
    [landscape.model :as model]
    [landscape.model.avatar :as avatar]
    [landscape.model.points :as points]
+   [landscape.model.floater :as floater]
    [sablono.core :as sab :include-macros true :refer-macros [html]])
   (:require-macros [devcards.core :refer [defcard]]))
 (enable-console-print!)
@@ -66,6 +67,28 @@
           (points/new-point-floating 2 (points/->pos 40 10) (points/->pos 0 0))]}]
     (landscape.view/show-points-floating state)))
 
+
+;; catch trial zzzs
+(defcard floater-one-devcard
+  "single floating z"
+  (fn [state o]
+     (html [:div
+            ;; [:div (str (into {} @state))]
+            [:button {:on-click (fn[] (swap! state floater/move-up ))} "step" ]
+            [:button {:on-click (fn[] (reset! state(floater/->floater 1 100 0 15 "z" (floater/->pos 20 -20))))} "reset" ]
+           
+            (view/show-zzz-floating @state)]))
+   (atom  (floater/->floater 1 100 0 15 "z" (floater/->pos 20 -20))))
+
+(defcard floater-devcard
+  "catch trial 'z's floating and fading"
+  (fn [state o]
+    (html [:div
+           [:button {:on-click (fn[] (swap! state floater/update-state))} "step" ]
+           [:button {:on-click (fn[] (reset! state {:zzz (floater/zzz-new (floater/->pos 0 -30) 3) } ))} "reset" ]
+           (view/show-all-zzz @state)
+           [:div (str @state)]]))
+  (atom {:zzz (floater/zzz-new (floater/->pos 0 0) 3) }))
 ;; moved from survey to avoid warnings
 (defcard survey-forum
   "what does the survey look like. TODO: working forum"

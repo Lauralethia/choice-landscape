@@ -12,6 +12,7 @@
    [landscape.model.water :as water]
    [landscape.model.phase :as phase]
    [landscape.model.points :as points]
+   [landscape.model.floater :as floater]
    [landscape.model.survey :as survey]
    [landscape.http :as http]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
@@ -98,6 +99,8 @@
 
       ;; move points closer to their goal (:pos & :progress). rm if reached :dest
       (points/points-floating-update 10) 
+      ;; catch event. have floating Z's. move them around/remove them
+      (floater/update-state)
       ))
 
 (declare STATE) ; defined below

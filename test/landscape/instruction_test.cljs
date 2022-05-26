@@ -82,3 +82,11 @@
                  (assoc-in [:key :have] (:trigger settings/mri-glove-keys))
                  (assoc-in [:phase :idx] last-instruction)
                  instruction/read-keys :phase :name) :iti)))))
+
+
+;; these functions are less important now all "wells"/choices are equal distant
+;; intetionally leaving :left{:step 1} out. works if some keys are missing
+(deftest test-find-minmax-well 
+  (let [state {:wells { :right{:step 0} :up {:step 2} :iti 2}}]
+    (is (= :right (-> state instruction/find-close-well (nth 0))))
+    (is (= :up    (-> state instruction/find-far-well (nth 0))))))
