@@ -363,7 +363,12 @@
                    "Ready? "
                    (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
                      " Push the right arrow to start!"
-                     " Waiting for scanner.")
+                     [:p " Waiting for scanner."
+                      [:span {:style {:font-size "8px" :padding-left "20px"}}
+                       "= "
+                       [:a {:href "#" :on-click
+                            (fn[_] (-> js/window .-location .reload))} "refresh page"]
+                       ]])
                    [:ul
                     [:li "Fill the " (item-name :pond)
                      " by visiting " (item-name :well) "s that give " (item-name :water)
