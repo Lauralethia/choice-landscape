@@ -3,11 +3,13 @@
    [devcards.core]
    [landscape.utils :as utils]
    [landscape.view :as view]
+   [landscape.http :as http]
    [landscape.model.survey :as survey]
    [landscape.model :as model]
    [landscape.model.avatar :as avatar]
    [landscape.model.points :as points]
    [landscape.model.floater :as floater]
+   [landscape.model.phase :as phase]
    [sablono.core :as sab :include-macros true :refer-macros [html]])
   (:require-macros [devcards.core :refer [defcard]]))
 (enable-console-print!)
@@ -89,6 +91,21 @@
            (view/show-all-zzz @state)
            [:div (str @state)]]))
   (atom {:zzz (floater/zzz-new (floater/->pos 0 0) 3) }))
+
+(defcard ttl-devcard
+  "send ttl test"
+  (fn [state o]
+    (html [:div
+           [:button
+            {:on-click (fn[] (http/send-local-ttl
+                              "http://localhost:8888"
+                              (phase/gen-ttl (:phase @state) (:wells @state)) ))}
+            "trigger" ]
+           (str @state)
+           [:div (str @state)]]))
+  (atom {:phase {:name :chose}
+         :wells {:left {:open true} :up {:open true} :right {:open false}}}))
+
 ;; moved from survey to avoid warnings
 (defcard survey-forum
   "what does the survey look like. TODO: working forum"

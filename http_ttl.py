@@ -23,13 +23,28 @@ from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
 
 GLOBAL_I = 0
+class Hardware():
+    """
+    wrapper for sending ttl
+    """
+    def send(self, ttl):
+        print(f"sending {ttl} @ {datetime.datetime.now()}")
 
-class HelloWorld(RequestHandler):
-    """Print 'Hello, world!' as the response body."""
+class HttpTTL(RequestHandler):
+    """ http server to send TTL  """
+    # https://www.tornadoweb.org/en/stable/web.html
+    def initialize(self, hardware):
+        self.hardware = hardware
 
-    def get(self):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+    def get(self, ttl):
         """Handle a GET request for saying Hello World!."""
-        self.write(f"Hello, world! {GLOBAL_I}")
+        self.write(f"ttl: {ttl} @ global {GLOBAL_I}")
+        self.hardware.send(ttl)
 
 async def rtbox_wait():
     global GLOBAL_I
@@ -39,7 +54,9 @@ async def rtbox_wait():
         await asyncio.sleep(1)
 
 def http_run():
-    app = Application([('/', HelloWorld)])
+    this_hardware=Hardware()
+    this_hardware.send("test start")
+    app = Application([('/(.*)', HttpTTL, dict(hardware=this_hardware))])
     server = HTTPServer(app)
     server.listen(8888)
 

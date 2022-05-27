@@ -34,6 +34,36 @@
   (do (http/send-resp record)
       state))
 
+(defn gen-ttl [wells phase]
+  (let [side (+ (if (get-in wells [:left :open])  1 0)
+                (if (get-in wells [:up :open])    2 0)
+                (if (get-in wells [:right :open]) 3 0))
+        ;; should only exist in feedback. but hangs on into iti?
+        picked (case (:picked phase)
+                 :left 10
+                 :up 11
+                 :right 13
+                 0)
+        ;;                 left up right
+        ;; left+up=3       13   14
+        ;; left+right=4    15       17
+        ;; up+right=5           16  18
+
+        name (case (:name phase)
+               :iti 10
+               :chose 20 ;; side + picked adds up to 18 for all below
+               :catch 50
+               :timeout 70
+               :waiting 150
+               :feedback 200
+               ;; survey, or otherwise unknown
+               230)
+        score (if (get phase :scored) 10 0)
+        ;; feedback+score+left: left+up=213; left+right=215; up+right=216
+        ;; feedback-score: left+up=203; left+right=205; up+right=206
+        ]
+    (+ name side picked score)))
+
 ;; ":record" has per trial vector of useful state info
 ;; [{:trial #
 ;;   :chose-time # :waiting-time # :feedback-time #
@@ -45,10 +75,12 @@
   "update :record for sending state
   send state to server right before feedback"
   [{:keys [trial wells phase] :as state}
-  {:keys [start-at] :as next-phase}
+   {:keys [start-at] :as next-phase}
    ;; NB. not pulling in name so we can use name function
    ]
-  (let [time-key (str (name (:name next-phase)) "-time")     ;chose-time waiting-time feedback-time
+  (if-let [url (:local-ttl-server @settings/current-settings)]
+    (http/send-local-ttl url (gen-ttl (:wells state) phase) ))
+  (let [time-key (str (name (:name next-phase)) "-time") ;chose-time waiting-time feedback-time
         trial0 (dec trial)
         state-time (assoc-in state [:record :events trial0 time-key]  start-at)
         ;; NB. about to change to :feedback when :waiting, so use cur not next
@@ -106,7 +138,7 @@
       state-time
       )))
 
-;; TODO: well-list update also done by 
+;; TODO: well-list update also done by
 ;; wells/wells-update-which-open. not sure which is a better place
 (defn update-next-trial-on-iti
   "when iti, update to the next well info and trial"
@@ -188,8 +220,13 @@
                      (assoc phase
                             :name :iti
                             :start-at time-cur
+                            ;; 20220527 - clear trial info. untested change
+                            ;; but nothing should depend on these being held over
+                            :hit nil
+                            :scored false
+                            :picked nil
                             :iti-dur iti-dur)
-                     
+
                      ;; restart at chose when iti is over
                      (and (= pname :iti)
                           (>= time-since (:iti-dur phase)))

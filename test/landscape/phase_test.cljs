@@ -81,3 +81,13 @@
     (is (= (-> state-mri phase/phase-done-or-next-trial :name) :done))
     ;; next trial
     (is (= (-> state-unf phase/phase-done-or-next-trial :name) :chose))))
+
+(deftest ttl-examples-test
+"ttl for events"
+  (let [
+        wells_rc {:left {:open true}  :up {:open true}  :right {:open false}}
+        wells_uc {:left {:open true}  :up {:open false} :right {:open true}}
+        wells_lc {:left {:open false} :up {:open true}  :right {:open true}}]
+    (is (= 23 (phase/gen-ttl wells_rc {:name :chose :scored nil})))
+    (is (= 63 (phase/gen-ttl wells_rc {:name :catch :picked :left :scored nil})))
+    (is (= 223 (phase/gen-ttl wells_rc {:name :feedback :scored true :picked :left})))))
