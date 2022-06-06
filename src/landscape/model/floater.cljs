@@ -1,6 +1,5 @@
 (ns landscape.model.floater
   (:require
-   [landscape.settings :refer current-settings]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    ))
 
@@ -75,17 +74,24 @@
   (floater-new pos 15 (html [:img {:style {:scale "20%"} :src "imgs/starcoin.png"} ])))
 
 (defn coin-addto-state
-  "update state with a new floating coin. only add a new coin if there is a destination for it"
-  [{:keys [coins] :as state}]
-  (if (not (:pile-y @current-settings))
-    state
-    (update-in state [:coins :floating] #(concat % [(coin-new {:x 600 :y 0})]))))
+  "update state with a new floating coin. only add a new coin if there is a destination for it (defined in settings)"
+  [{:keys [coins] :as state}
+   & {:keys [pos] :or
+            {pos {:x 300 :y 0}}}]
+  (let [y-pos (get-in state [:record :settings :pile-y])]
+    (if (not y-pos)
+      state
+      (update-in
+       state
+       [:coins :floating]
+       #(concat % [(coin-new pos)])))))
 
 (defn coin-update-state
-        "move coins down. add to pile if done"
-        [{:keys [coins] :as state}]
-  (let [new-pos (map #(move-down % (:pile-y @current-settings)) (:floating coins))
-        coins-reached (group-by #'reached? new-pos)]
+  "move coins down. add to pile if done"
+  [{:keys [coins] :as state}]
+  (let [y-pos (get-in state [:record :settings :pile-y] 0)
+        new-pos (map #(move-down % y-pos) (:floating coins))
+        coins-reached (group-by #(reached? % y-pos) new-pos)]
     (-> state
         (assoc-in [:coins :floating] (get coins-reached false))
         (update-in [:coins :pile]   #(concat (get coins-reached true) %)))))
