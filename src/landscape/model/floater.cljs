@@ -23,6 +23,7 @@
       (update-in [:pos :y] #(+ % (rand-int 15) -7))
       (assoc :alpha (+ .5 (/ (rand-int 15) 30)))
       (assoc :size (* 100 (+ .5 (/ (rand-int 15) 30))))))
+
 (defn move-up
   "move closer to top of screen. reduce alpha and random horz jitter"
   [^floater f]
@@ -32,6 +33,14 @@
       (update :step-cur inc)
       (update :alpha #(- % (/ 1 (:step-off f))))
       (update :size #(- % (/ 100 (:step-off f))))))
+
+(defn down-up
+  "intended for coin/water drops. move them down to the"
+  [^floater f y-dest & {:keys [step-sz] :or {step-sz 10}}]
+  (-> f
+       (update-in [:pos :x] #(+ % (rand-int 5) -2.5))
+       (update-in [:pos :y] #(+ % step-sz))
+       (update :step-cur inc)))
 
 (defn keep?
   "should remove when has more steps than asked for"
