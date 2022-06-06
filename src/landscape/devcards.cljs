@@ -133,6 +133,13 @@
   {:inspect-data false}
   )
 
+(defcard pile2-quil "making the pile with quil"
+  (fn [state _] 
+    (let [{:keys [w h g]} @state]
+      (html [:div [:canvas {:id "q-pile-dc" :height h :width w
+                            :style {:border "solid 1px black"}}]])) )
+  (atom {:w 200 :h 500 :g (pile/grid-make 200 300 0) }))
+
 ;; moved card from survey.cljs to avoid warnings
 (defcard survey-forum
   "what does the survey look like. TODO: working forum"

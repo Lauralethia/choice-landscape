@@ -5,21 +5,11 @@ http://langintro.com/cljsbook/canvas.html
 https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
 
   "
-  (:require [quil :as q]))
-
-;; (q/defsketch my-sketch-definition
-;;   :host "canvas-id"
-;;   :draw draw
-;;   :size [300 300])
-
-(defn ^:export clean-sketch [id]
-  (q/with-sketch (q/get-sketch-by-id id)
-    (q/background 255)))
-
+  (:require [quil.core :as q :include-macros true]))
 (defn grid-make
   "create 'grid' as a 2d vector. likley intialize with empty (0 0 0 0)"
-  [w h v]
-  (to-array (repeatedly w #(to-array (take h (repeat v))))))
+  [w h v & {:keys [func] :or {func to-array}}]
+  (func (repeatedly w #(func (take h (repeat v))))))
 
 (defn grid-add-box [g v x y & {:keys [w h] :or {w 10 h 10}}]
   (print x y w h)
@@ -82,3 +72,57 @@ https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manip
     (doall (for [i (range (alength (. obj -data)))]
              (aset (. obj -data) i (aget img i))))
      (.putImageData ctx obj 0 0)))
+
+(defn quil-empty-grid []
+  (grid-make (/ (q/width) 5)
+             (/ (q/height) 5)
+             0
+             :func vec))
+(defn quil-reset [] (swap! (q/state-atom) assoc :g (quil-empty-grid)))
+
+(defn quil-setup []
+  (q/frame-rate 10)
+  (q/background (q/color 255 0 0 255))
+  (q/set-state! :sz 50
+                :g (quil-empty-grid)))
+
+(defn quil-new []
+  (let [color 255 ;; (rand-int 255)
+        ]
+   (swap! (q/state-atom) assoc-in [:g 0 0] color)))
+
+(defn quil-draw [{:keys [sz g]:as state}]
+  (q/background (q/color 0 0 0 0))
+  ;; (q/create-image (q/width) (q/height) :rgb)
+  ;; (dotimes [x (/ (q/width) sz)]
+  ;;   (dotimes [y (/ (q/height) sz)]
+  ;;     (if-let [color (get-in g [x y])]
+  ;;       (let [xc (* x sz)
+  ;;             yc (* y sz)]
+  ;;         (q/rect xc yc (+ xc sz) (+ yc sz))))))
+
+  ;; (for [x (range (/  (q/width) sz))
+  ;;       y (range (/  (q/height) sz))
+  ;;       :let [c (get-in g [x y])
+  ;;             xc (* sz x)
+  ;;             yc (* sz x)]
+  ;;       :when (not(= 0 c))]
+  ;;   (do (q/rect xc yc (+ xc sz) (+ yc sz) c)
+  ;;       [x y xc yc]))
+  (q/rect 0 0 50 50))
+
+(defn quil-gravity [grid] grid)
+
+
+(q/defsketch pile-sketch
+  :host "q-pile"
+  :draw quil-draw
+  :setup quil-setup
+  ;; :update quil-gravity
+  :size [50 100])
+
+
+
+(defn ^:export clean-canvas [id]
+  (q/with-sketch (q/get-sketch-by-id id)
+    (q/background 255)))
