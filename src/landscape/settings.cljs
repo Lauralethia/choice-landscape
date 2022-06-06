@@ -27,6 +27,8 @@
    ;; 20220527 - location to send ttl for placing event info in recorded data
    ;; NB. timing will probably be terrible
    :local-ttl-server nil
+   ;; 20220606 where coins/water will accumulate
+   :pile-y nil
    })
 (def mri-glove-keys
   "button glove at MR uses 1-thumb 2-index .... 5-pinky

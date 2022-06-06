@@ -119,6 +119,12 @@
   "show all zzzs that could be floating"
   (html [:div (mapv #'show-zzz-floating zzz)]))
 
+(defn show-all-floating-coins [{:keys[coins] :as state}]
+  "show all coins that could be floating or resting in the pile"
+  (html [:div
+         [:div.coins_floating (mapv #'show-zzz-floating (:floating coins))]
+         [:div.coins_pile (mapv #'show-zzz-floating (:pile coins))]]))
+
 ;;
 (defn bucket []
   (let [imgsrc (case (get @current-settings :vis-type)
@@ -299,6 +305,9 @@
 
       ;; draw ZZZ over avatar during catch trial
       (show-all-zzz state)
+
+      ;; coin pile and floating coins
+      (show-all-floating-coins state)
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
