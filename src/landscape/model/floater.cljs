@@ -1,5 +1,6 @@
 (ns landscape.model.floater
   (:require
+   [landscape.settings :refer current-settings]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    ))
 
@@ -69,19 +70,22 @@
    (>= (get-in f [:pos :y]) y-end)
    (>= (:step-cur f) (:step-off f))))
 
+;; TODO: this could maybe be water too. not just a coin
 (defn coin-new [^pos pos]
-  (floater-new pos 50 (html [:p {:style {:font-size "32px" :font-weight "bold"}} "COIN"])))
+  (floater-new pos 15 (html [:img {:style {:scale "20%"} :src "imgs/starcoin.png"} ])))
 
 (defn coin-addto-state
-  "update state with a new floating coin"
+  "update state with a new floating coin. only add a new coin if there is a destination for it"
   [{:keys [coins] :as state}]
-  (update-in state [:coins :floating] #(concat % [(coin-new {:x 600 :y 0})])))
+  (if (not (:pile-y @current-settings))
+    state
+    (update-in state [:coins :floating] #(concat % [(coin-new {:x 600 :y 0})]))))
 
 (defn coin-update-state
         "move coins down. add to pile if done"
         [{:keys [coins] :as state}]
-  (let [new-pos (map #(move-down % 200) (:floating coins))
+  (let [new-pos (map #(move-down % (:pile-y @current-settings)) (:floating coins))
         coins-reached (group-by #'reached? new-pos)]
     (-> state
         (assoc-in [:coins :floating] (get coins-reached false))
-        (update-in [:coins :pile]   #(concat % (get coins-reached true))))))
+        (update-in [:coins :pile]   #(concat (get coins-reached true) %)))))
