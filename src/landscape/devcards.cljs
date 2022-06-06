@@ -93,7 +93,7 @@
            [:div (str @state)]]))
   (atom {:zzz (floater/zzz-new (floater/->pos 0 0) 3) }))
 
-(def coin-empty-state {:coins {} :record{:settings{:pile-y 30}}})
+(def coin-empty-state {:coins {} :record{:settings{:pile {:y 30 :x 0}}}})
 (defcard coin-pile-floaters
   "coins floater into pile"
   (fn [state o]

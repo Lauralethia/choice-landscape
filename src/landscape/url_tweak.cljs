@@ -88,4 +88,5 @@
        (update-settings u #"landscape=ocean"  [:avatar-home :y] 300)
        (update-settings u #"landscape=ocean"  [:bar-pos :y] 400)
        (update-settings u #"landscape=ocean"  [:step-sizes] [140 0]) ;orig 70
-       (update-settings u #"landscape=ocean"  [:avatar-step-size] 15))))
+       (update-settings u #"landscape=ocean"  [:avatar-step-size] 15)
+       (update-settings u #"landscape=ocean"  [:pile] {:x 200 :y 150}))))
