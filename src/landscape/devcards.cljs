@@ -93,6 +93,17 @@
            [:div (str @state)]]))
   (atom {:zzz (floater/zzz-new (floater/->pos 0 0) 3) }))
 
+(defcard coin-pile-floaters
+  "coins floater into pile"
+  (fn [state o]
+    (html [:div
+           [:button {:on-click (fn[] (swap! state floater/coin-addto-state))} "new" ]
+           [:button {:on-click (fn[] (swap! state floater/coin-update-state))} "step" ]
+           [:button {:on-click (fn[] (reset! state {:coins {}} ))} "reset" ]
+           (view/show-all-floating-coins @state)]))
+  (atom {:coins {} })
+  {:inspect-data true})
+
 (defcard ttl-devcard
   "send ttl test"
   (fn [state o]

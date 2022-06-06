@@ -49,7 +49,8 @@
                        (points/->pos 590 0))]
         (-> score-state
             (update :points-floating #(conj % new-point))
-            (update-in [:water] #(water/water-inc % time-cur step-size))))
+            (update-in [:water] #(water/water-inc % time-cur step-size))
+            (floater/coin-addto-state)))
       score-state)))
 
 
@@ -101,6 +102,8 @@
       (points/points-floating-update 10) 
       ;; catch event. have floating Z's. move them around/remove them
       (floater/update-state)
+      ;; move floating coins down
+      (floater/coin-update-state)
       ))
 
 (declare STATE) ; defined below
@@ -161,6 +164,8 @@
    :phase (phase/set-phase-fresh :chose nil)
    :sprite-picked :astro
    :record (records/record-init)
+   :coins {:floating [] :pile []}
+   :zzz {}
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down

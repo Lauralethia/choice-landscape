@@ -7,7 +7,7 @@
 (defrecord floater [alpha size step-cur step-off body ^pos pos])
 (defn floater-new
   "defaults for a floater. probably 'z' text with 20 steps"
-  ([start-pos]
+  ([^pos start-pos]
    (floater-new
     start-pos 50
     (html [:p {:style {:font-size "32px" :font-weight "bold"}} "z"])))
@@ -34,20 +34,12 @@
       (update :alpha #(- % (/ 1 (:step-off f))))
       (update :size #(- % (/ 100 (:step-off f))))))
 
-(defn down-up
-  "intended for coin/water drops. move them down to the"
-  [^floater f y-dest & {:keys [step-sz] :or {step-sz 10}}]
-  (-> f
-       (update-in [:pos :x] #(+ % (rand-int 5) -2.5))
-       (update-in [:pos :y] #(+ % step-sz))
-       (update :step-cur inc)))
-
 (defn keep?
   "should remove when has more steps than asked for"
   [^floater f]
   (<= (:step-cur f) (:step-off f)))
 
-(defn zzz-new [pos num]
+(defn zzz-new [^pos pos num]
   (map #(rand-init (floater-new pos)) (range num)))
 
 (defn update-state
@@ -57,3 +49,39 @@
                (->> (map #(move-up %) zzz)
                     (filter #'keep?))))
 
+
+
+;; coins
+(defn move-down
+  "intended for coin/water drops. move them down to the"
+  [^floater f y-dest & {:keys [step-sz] :or {step-sz 10}}]
+  (-> f
+       (update-in [:pos :x] #(+ % (rand-int 5) -2.5))
+       ;; move down on average step-sz but jitter by .5
+       ;; useful so everything doesn't end up in the same place
+       (update-in [:pos :y] #(+ % (- (* 1.5 step-sz) (rand-int step-sz))))
+       (update :step-cur inc)))
+
+(defn reached?
+  "reached bottom OR ran out of time to get there"
+  [^floater f y-end]
+  (or
+   (>= (get-in f [:pos :y]) y-end)
+   (>= (:step-cur f) (:step-off f))))
+
+(defn coin-new [^pos pos]
+  (floater-new pos 50 (html [:p {:style {:font-size "32px" :font-weight "bold"}} "COIN"])))
+
+(defn coin-addto-state
+  "update state with a new floating coin"
+  [{:keys [coins] :as state}]
+  (update-in state [:coins :floating] #(concat % [(coin-new {:x 600 :y 0})])))
+
+(defn coin-update-state
+        "move coins down. add to pile if done"
+        [{:keys [coins] :as state}]
+  (let [new-pos (map #(move-down % 200) (:floating coins))
+        coins-reached (group-by #'reached? new-pos)]
+    (-> state
+        (assoc-in [:coins :floating] (get coins-reached false))
+        (update-in [:coins :pile]   #(concat % (get coins-reached true))))))
