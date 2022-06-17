@@ -21,6 +21,7 @@ import datetime
 from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
+from pynput.keyboard import Controller
 
 GLOBAL_I = 0
 class Hardware():
@@ -32,10 +33,11 @@ class Hardware():
 
 class Cedrus():
     """ cedrus response box (RB-x40) """
-    def __init__(self, hardware):
+    def __init__(self, hw, kb):
         import pyxid2
         self.run = True
-        self.hardware = hardware
+        self.hw = hw
+        self.kb = kb
         self.dev = pyxid2.get_xid_devices()[0]
         self.dev.reset_base_timer()
         self.dev.reset_rt_timer()
@@ -50,7 +52,10 @@ class Cedrus():
         # {'port': 2, 'key': 3, 'pressed': True, 'time': 3880}
 
         if response['pressed'] == True:
-            self.hardware.send(f"{response}")
+            self.hw.send(f"{response}")
+            if self.kb and response['port'] == 0:
+                # TODO: figure out keys to push
+                self.kb.push("a")
 
     async def watch(self):
         while self.run:
@@ -59,6 +64,14 @@ class Cedrus():
             response = self.dev.get_next_response()
             self.trigger(response)
 
+class KB():
+    def __init__(self):
+        keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
+        self._kb = Controller() # make key press and release
+
+    def push(self, k):
+        self._kb.press(k)
+        self._kb.release(k)
 
 class HttpTTL(RequestHandler):
     """ http server (tornado request handler)
@@ -92,7 +105,8 @@ def http_run(this_hardware):
 
 async def main():
     hw = Hardware()
-    rb = Cedrus(hw)
+    kb = KB()
+    rb = Cedrus(hw, kb)
     http_run(hw)
     await asyncio.create_task(rb.watch())
     #await asyncio.create_task(rtbox_wait())
