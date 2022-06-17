@@ -148,8 +148,8 @@ mktiming(){
 
   add_glt decon.tcsh \
      'good +nogood -g_fbk -ng_fbk' 'choice-fbk' \
-     '.6*good -.3*g_catch'    'good_and_catch' \
-     '.6*nogood -.3*ng_catch' 'nogood_and_catch' \
+     '2*good +g_catch'    'good_and_catch' \
+     '2*nogood +ng_catch' 'nogood_and_catch' \
      'nogood +nogood +g_catch +ng_catch' 'choice'
 
   tcsh decon.tcsh > decon.log
