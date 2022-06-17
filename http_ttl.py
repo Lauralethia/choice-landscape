@@ -25,13 +25,44 @@ from tornado.ioloop import IOLoop
 GLOBAL_I = 0
 class Hardware():
     """
-    wrapper for sending ttl
+    wrapper for sending ttl. DAQ or psycyhopy.parallel
     """
     def send(self, ttl):
         print(f"sending {ttl} @ {datetime.datetime.now()}")
 
+class Cedrus():
+    """ cedrus response box (RB-x40) """
+    def __init__(self, hardware):
+        import pyxid2
+        self.run = True
+        self.hardware = hardware
+        self.dev = pyxid2.get_xid_devices()[0]
+        self.dev.reset_base_timer()
+        self.dev.reset_rt_timer()
+        # <XidDevice "Cedrus RB-840">
+            
+    def trigger(self, response):
+        """ todo response number to ttl value translation
+        port 0 is button box
+        port 2 is photodiode/light sensor. always release. only when bright from dark
+        """
+        # {'port': 0, 'key': 7, 'pressed': True, 'time': 13594}
+        # {'port': 2, 'key': 3, 'pressed': True, 'time': 3880}
+
+        if response['pressed'] == True:
+            self.hardware.send(f"{response}")
+
+    async def watch(self):
+        while self.run:
+            while not self.dev.has_response():
+                self.dev.poll_for_response()
+            response = self.dev.get_next_response()
+            self.trigger(response)
+
+
 class HttpTTL(RequestHandler):
-    """ http server to send TTL  """
+    """ http server (tornado request handler)
+    recieve CORS get from task and translate to TTL to record in stim channel"""
     # https://www.tornadoweb.org/en/stable/web.html
     def initialize(self, hardware):
         self.hardware = hardware
@@ -53,15 +84,17 @@ async def rtbox_wait():
         GLOBAL_I=GLOBAL_I+1
         await asyncio.sleep(1)
 
-def http_run():
-    this_hardware=Hardware()
+def http_run(this_hardware):
     this_hardware.send("test start")
     app = Application([('/(.*)', HttpTTL, dict(hardware=this_hardware))])
     server = HTTPServer(app)
     server.listen(8888)
 
 async def main():
-    http_run()
-    await asyncio.create_task(rtbox_wait())
+    hw = Hardware()
+    rb = Cedrus(hw)
+    http_run(hw)
+    await asyncio.create_task(rb.watch())
+    #await asyncio.create_task(rtbox_wait())
 
 asyncio.run(main())
