@@ -20,6 +20,11 @@ FBK_TIME=1        # always 1 second of feedback
 ZZZ_TIME=1        # hardcode as one second always
 #ZZZ_TIME="0.5 1 3 dist=decay" between .5 and 3 with mean of 1. exp distributed
 
+# would like 6s but b/c we're combining all into one
+# dont model this extra time
+PRE_TIME=.5
+POST_TIME=.5
+
 # save directory prefix incase we update e.g. GLT SYMS or timings
 # but want to hold onto old
 # will already be organized by total runtime and include total_trials
@@ -109,7 +114,7 @@ mktiming(){
   make_random_timing.py \
      -tr $TR \
      -num_runs 1 -run_time $total_runtime        \
-     -pre_stim_rest 6 -post_stim_rest 6           \
+     -pre_stim_rest $PRE_TIME -post_stim_rest $POST_TIME \
      -rand_post_stim_rest no                      \
      -add_timing_class s_choice_w_good  "$MEAN_RT"  \
      -add_timing_class s_choice_wo_good "$MEAN_RT"  \
@@ -118,7 +123,7 @@ mktiming(){
      -add_timing_class s_zzz            $ZZZ_TIME \
      \
      -add_timing_class nobreak 0 0 0 dist=INSTANT \
-     -add_timing_class iti 0 -1 8     \
+     -add_timing_class iti 0.25 -1 8     \
      \
      -add_stim_class good          "$good"          s_choice_w_good  nobreak \
      -add_stim_class g_fbk         "$good"          s_feedback iti       \
