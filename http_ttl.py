@@ -26,7 +26,6 @@ from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
 from pynput.keyboard import Controller
 
-GLOBAL_I = 0
 class Hardware():
     """
     wrapper for sending ttl. DAQ or psycyhopy.parallel
@@ -163,15 +162,9 @@ class HttpTTL(RequestHandler):
 
     def get(self, ttl):
         """Handle a GET request for saying Hello World!."""
-        self.write(f"ttl: {ttl} @ global {GLOBAL_I}")
         self.hardware.send(ttl)
-
-async def rtbox_wait():
-    global GLOBAL_I
-    while True:
-        print(datetime.datetime.now())
-        GLOBAL_I=GLOBAL_I+1
-        await asyncio.sleep(1)
+        # TODO: return string. no need to do interpolation
+        self.write(f"ttl: {ttl} @ global {datetime.datetime.now()}")
 
 def http_run(this_hardware):
     this_hardware.send("test start")
@@ -185,6 +178,5 @@ async def main():
     rb = Cedrus(hw, kb)
     http_run(hw)
     await asyncio.create_task(rb.watch())
-    #await asyncio.create_task(rtbox_wait())
 
 asyncio.run(main())
