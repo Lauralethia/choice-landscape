@@ -9,4 +9,4 @@ set PYTHON=C:\Program Files\PsychoPy\python.exe
 
 start %RUNTOKEN%  cmd /c psiclj
 start "" "%PYTHON%" http_ttl.py
-start "" http://127.0.0.1:3001/loefeeg.html
+start "" http://127.0.0.1:3001/loeffeeg.html
