@@ -25,7 +25,7 @@ import datetime
 from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
-from pynput.keyboard import Controller
+from pynput.keyboard import Controller, Key
 
 class Hardware():
     """
@@ -82,7 +82,8 @@ class FakeButton():
             self.trigger("5 sec trigger")
 
 class Cedrus():
-    """ cedrus response box (RB-x40) """
+    """ cedrus response box (RB-x40)
+    top 3 right buttons are 5, 6, 7 (0-2 left, 3,4 thumb 5-7 right)"""
     def __init__(self, hw, kb):
         import pyxid2
         self.run = True
@@ -91,8 +92,11 @@ class Cedrus():
         self.dev = pyxid2.get_xid_devices()[0]
         self.dev.reset_base_timer()
         self.dev.reset_rt_timer()
+        self.resp_to_key = {5: Key.left, 6: Key.up, 7: Key.right, 4: Key.down}
+        self.light_ttl = 1
+        self.resp_to_ttl = {5: 2, 6: 3, 7: 4}
         # <XidDevice "Cedrus RB-840">
-            
+
     def trigger(self, response):
         """ todo response number to ttl value translation
         port 0 is button box
@@ -102,13 +106,18 @@ class Cedrus():
         # {'port': 2, 'key': 3, 'pressed': True, 'time': 3880}
 
         if response['pressed'] == True:
-            ttl = response.get("key")
-            print(f"pushed {ttl}; TODO: translate key to ttl")
-            sys.stdout.flush()
-            self.hw.send(ttl)
+            if response['port'] == 2:
+                self.hw.send(self.light_ttl)
             if self.kb and response['port'] == 0:
-                # TODO: figure out keys to push
-                self.kb.push("a")
+                rk = response.get("key")
+                ttl = self.resp_to_ttl.get(rk)
+                key = self.resp_to_key.get(rk)
+                if ttl:
+                    self.hw.send(ttl)
+                if key:
+                    self.kb.push(key)
+                print(f"pushed ttl: {ttl}; key: {key}; resp: {response}")
+                sys.stdout.flush()
 
     async def watch(self):
         while self.run:
