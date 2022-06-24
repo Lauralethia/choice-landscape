@@ -19,6 +19,7 @@ unknowns:
 #  https://www.tornadoweb.org/en/stable/httpserver.html#http-server
 # https://stackoverflow.com/questions/60471268/run-tornado-alongside-another-asyncio-long-running-task
 
+import sys
 import asyncio
 import datetime
 from tornado.httpserver import HTTPServer
@@ -49,7 +50,7 @@ class LPT(Hardware):
         import time
         self.port = parallel.ParallelPort(address=address)
 
-    def send_todo(ttl):
+    def send(self, ttl):
         self.port.setData(ttl)
         # TODO: needed?
         # self.wait_and_zero()
@@ -101,7 +102,10 @@ class Cedrus():
         # {'port': 2, 'key': 3, 'pressed': True, 'time': 3880}
 
         if response['pressed'] == True:
-            self.hw.send(f"{response}")
+            ttl = response.get("key")
+            print(f"pushed {ttl}; TODO: translate key to ttl")
+            sys.stdout.flush()
+            self.hw.send(ttl)
             if self.kb and response['port'] == 0:
                 # TODO: figure out keys to push
                 self.kb.push("a")
@@ -181,17 +185,25 @@ class HttpTTL(RequestHandler):
         self.write(f"ttl: {ttl} @ global {datetime.datetime.now()}")
 
 def http_run(this_hardware):
-    this_hardware.send("test start")
+    this_hardware.send(128)
     app = Application([('/(.*)', HttpTTL, dict(hardware=this_hardware))])
     server = HTTPServer(app)
     server.listen(8888)
 
-async def main():
-    hw = Hardware()
+async def loeffeeg():
+    hw = LPT(address=0xD010)
     kb = KB()
     rb = Cedrus(hw, kb)
-    #rb = FakeButton(hw,kb)
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
-asyncio.run(main())
+async def fakeeeg():
+    hw = Hardware()
+    kb = KB()
+    rb = FakeButton(hw,kb)
+    http_run(hw)
+    await asyncio.create_task(rb.watch())
+
+if __name__ == "__main__":
+    # TODO: host type: seeg loefeeg testing
+    asyncio.run(loeffeeg())
