@@ -110,8 +110,10 @@ class Cedrus():
         while self.run:
             while not self.dev.has_response():
                 self.dev.poll_for_response()
-            response = self.dev.get_next_response()
-            self.trigger(response)
+                await asyncio.sleep(.0001)
+            resp = self.dev.get_next_response()
+            self.trigger(resp)
+
 
 class RTBox():
     def __init__(self, hw):
@@ -187,8 +189,8 @@ def http_run(this_hardware):
 async def main():
     hw = Hardware()
     kb = KB()
-    #rb = Cedrus(hw, kb)
-    rb = FakeButton(hw,kb)
+    rb = Cedrus(hw, kb)
+    #rb = FakeButton(hw,kb)
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
