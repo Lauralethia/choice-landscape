@@ -67,6 +67,18 @@ class DAQ(Hardware):
 
 
 ### BUTTON BOXES
+class FakeButton():
+    def __init__(self, hw, kb):
+        self.hw = hw
+        self.kb = kb
+    def trigger(self, msg):
+        self.kb.push("a")
+        self.hw.send(msg)
+
+    async def watch(self):
+        while True:
+            await asyncio.sleep(5)
+            self.trigger("5 sec trigger")
 
 class Cedrus():
     """ cedrus response box (RB-x40) """
@@ -175,7 +187,8 @@ def http_run(this_hardware):
 async def main():
     hw = Hardware()
     kb = KB()
-    rb = Cedrus(hw, kb)
+    #rb = Cedrus(hw, kb)
+    rb = FakeButton(hw,kb)
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
