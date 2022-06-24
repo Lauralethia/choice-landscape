@@ -52,27 +52,42 @@
     (water-fill fill)))
 
 ;; TODO: should this be in phase.cljs?
-(defn photodiode-color
-  "define colors for each phase.
-  Paging between instructions can be used to test hardware (color based on instruction idx)"
+(defn photodiode-instructions
+  "Paging between instructions can be used to test hardware (color based on instruction idx)"
+  [phase]
+  (if (even? (or 0 (:idx phase))) "white" "black"))
+(defn photodiode-white-on
+  "white at onset of new phase. cleared after 20ms (is it ms?)"
+  [{:keys [start-at] :as phase} time-cur]
+  (if (< (- time-cur start-at) 20) "white" "black"))
+(defn photodiode-color [{:keys [phase time-cur] :as state}]
+  (if (= (:name phase) :instruction)
+    (photodiode-instructions phase)
+    (photodiode-white-on phase time-cur)))
+
+(defn photodiode-color-steps
+  "define colors for each phase. DEPRICATED 20220624. but keeping incase RTBox can use"
   [{:keys [name] :as phase}]
-  (cond 
+  (cond
+     ; RTBox maybe on any step (untested 20220624)
      (= name :waiting)     "white"
      (= name :chose)       "#333"
      (= name :iti)         "#666"
      (= name :feedback)    "black"
+
      ;; switch every other instruction
-     (= name :instruction) (if (even? (or 0 (:idx phase))) "#ccc" "#333")
+     (= name :instruction) (photodiode-instructions phase)
      (= name :survey)      "#999"
      :else                 "black"))
 
 (defn photodiode
-  "display block to position photodiode over. for percision timing"
-  ([state]
-   (photodiode state [0 0]))
+  "display block to position photodiode over. for percision timing.
+  multidisbatch: default position is top left. uses photodiode-color to set.
+  likely white for a brief period"
+  ([state] (photodiode state [0 0]))
   ([{:keys [phase] :as state} pos]
      (when (-> state :record :settings :use-photodiode?)
-       (html [:div#photodiode {:style {:background-color (photodiode-color phase)}}]))))
+       (html [:div#photodiode {:style {:background-color (photodiode-color state)}}]))))
 
 (defn progress-bar
   "show how far along we are in the task."
@@ -274,7 +289,7 @@
       (if DEBUG [:div {:style {:color "white"}}
                  [:br] (str (:key state))
                  [:button {:on-click (fn [] (popup-state state))} "show"]])
-      
+
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
       (if (contains? #{:mountain :desert :wellcoin} (get @current-settings :vis-type))
