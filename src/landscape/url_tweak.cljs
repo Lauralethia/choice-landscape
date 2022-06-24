@@ -79,7 +79,7 @@
        ;; (update-settings u #"timing=mra1" [:timing-method] :mrA2)
        ;; (update-settings u #"timing=mra1" [:timing-method] :mrB1)
        ;; (update-settings u #"timing=mra1" [:timing-method] :mrB2)
-       (update-settings u #"ttl=local" [:local-ttl-server] "http://0.0.0.0:8888")
+       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
