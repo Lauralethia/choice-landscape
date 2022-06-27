@@ -5,7 +5,7 @@ http://langintro.com/cljsbook/canvas.html
 https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
 
   "
-  (:require [quil :as q]))
+  (:require [quil.core :as q]))
 
 ;; (q/defsketch my-sketch-definition
 ;;   :host "canvas-id"
