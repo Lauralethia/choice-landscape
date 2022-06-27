@@ -57,9 +57,9 @@
   [phase]
   (if (even? (or 0 (:idx phase))) "white" "black"))
 (defn photodiode-white-on
-  "white at onset of new phase. cleared after 20ms (is it ms?)"
+  "white at onset of new phase. cleared after 100ms (is it ms? feels like it)"
   [{:keys [start-at] :as phase} time-cur]
-  (if (< (- time-cur start-at) 20) "white" "black"))
+  (if (< (- time-cur start-at) 100) "white" "black"))
 (defn photodiode-color [{:keys [phase time-cur] :as state}]
   (if (= (:name phase) :instruction)
     (photodiode-instructions phase)
