@@ -2,18 +2,18 @@
 suppressPackageStartupMessages(library(dplyr))
 
 
-prob_blocks  <- list(c(50,20,100),
+PROB_BLOCKS  <- list(c(50,20,100),
                 c(20,50,100),
                 c(100,100,100))
-block_rat <- c(1/3, 1/3, 1/3)
+BLOCK_RAT <- c(1/3, 1/3, 1/3)
 
 # default order has "right" as the "good" choice/side/well/mine/chest
 # use rev(choice_order) to swap. (NB. up is never good b/c it feels different)
-choice_order <- c("left","up","right") 
+CHOICE_ORDER <- c("left","up","right")
 
-glist <- list(c("true","true","false"),
+GLIST <- list(c("true","true","false"),
               c("true","false","true"))
-nglist <-list(c("true","false","true"))
+NGLIST <-list(c("true","false","true"))
 
 ISIDUR <- 1000
 
@@ -34,44 +34,62 @@ build_trial <- function(probs, open, iti,
     return(x)
 }
 
-# file used
-fname <- 'out/500s/v1_102_31234/events.txt'
-d <- read.table(text=system(intern=T,glue::glue("./show_times.bash {fname}")))
-names(d) <- c("event", "iti")
-d$catch <- 0
-# fixied isi duration
-d$catch[grepl('catch', d$event)] <- ISIDUR
-
-
-d_tally <- d %>% group_by(event) %>% tally 
-n_events <- t(d_tally %>% select(n)) %>% as.list() %>% `names<-`(d_tally$event)
-# event    |  n
-#----------+---
-# good       44
-# nogood     23
-# ng_catch   11
-# g_catch    23
-
-opens <- list(good    =sample(rep(glist, ceiling(n_events$good/2))),
-              g_catch =sample(rep(glist, ceiling(n_events$g_catch/2))),
-              nogood  =rep(nglist, n_events$nogood),
-              ng_catch=rep(nglist, n_events$ng_catch))
-
-# repeat for each
-trials_per_block <- ceiling(block_rat*nrow(d))
-trial_probs <- mapply(function(prob,n) rep(prob,each=n), prob_blocks, trials_per_block)
-
-res <- c() 
-cnts <- sapply(unique(d$event),function(x) 0)
-for(i in 1:nrow(d)){
-    # update count
-    event <- d$event[i]
-    j <- cnts[event] + 1 ; cnts[event] <- j
-    this_open <- opens[[event]][[j]]
-    res[i] <- build_trial(trial_probs[i,],
-                          this_open, d$iti[i], d$catch[i], choices=choice_order)
+read_events <- function(fname='out/500s/v1_102_31234/events.txt'){
+  d <- read.table(text=system(intern=T,glue::glue("./show_times.bash {fname}")))
+  names(d) <- c("event", "iti")
+  d$catch <- 0
+  # fixied isi duration
+  d$catch[grepl('catch', d$event)] <- ISIDUR
+  return(d)
 }
 
-# final output
-# NB. in EDN, commas are optional/equivlant-to-whitespace
-cat("[", paste0(collapse=",\n", res),"]" )
+gen_edn <- function(files, leftgood=FALSE){
+  # read in each file, and combine. could shuffle but not done here
+  d <- lapply(files, read_events) %>% bind_rows
+
+  d_tally <- d %>% group_by(event) %>% tally
+  n_events <- t(d_tally %>% select(n)) %>% as.list() %>% `names<-`(d_tally$event)
+  # event    |  n
+  #----------+---
+  # good       44
+  # nogood     23
+  # ng_catch   11
+  # g_catch    23
+
+  opens <- list(good    =sample(rep(GLIST, ceiling(n_events$good/2))),
+                g_catch =sample(rep(GLIST, ceiling(n_events$g_catch/2))),
+                nogood  =rep(NGLIST, n_events$nogood),
+                ng_catch=rep(NGLIST, n_events$ng_catch))
+
+  # order is: left, up, right. unless reversed. up never "good"
+  choice_order <- CHOICE_ORDER
+  if(leftgood) choice_order <- rev(CHOICE_ORDER)
+
+  # repeat for each
+  trials_per_block <- ceiling(BLOCK_RAT*nrow(d))
+  trial_probs <- mapply(function(prob,n) rep(prob,each=n), PROB_BLOCKS, trials_per_block)
+
+  res <- c()
+  cnts <- sapply(unique(d$event),function(x) 0)
+  for(i in 1:nrow(d)){
+      # update count
+      event <- d$event[i]
+      j <- cnts[event] + 1 ; cnts[event] <- j
+      this_open <- opens[[event]][[j]]
+      res[i] <- build_trial(trial_probs[i,],
+                            this_open, d$iti[i], d$catch[i], choices=choice_order)
+  }
+
+  # final output
+  # NB. in EDN, commas are optional/equivlant-to-whitespace
+  cat("[", paste0(collapse=",\n", res),"]" )
+}
+
+if (sys.nframe() == 0) {
+    args <- commandArgs(trailingOnly = TRUE)
+    if(length(args)==0L) {
+        cat("want input files to be combined after ./show_times.bash and turned into edn string for clojure\n like out/240s/v1_53_17/events.txt\n")
+        quit(status=1,save="no")
+    }
+    gen_edn(args)
+}

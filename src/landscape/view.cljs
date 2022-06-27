@@ -122,8 +122,8 @@
 (defn show-all-floating-coins [{:keys[coins] :as state}]
   "show all coins that could be floating or resting in the pile"
   (html [:div
-         [:div.coins_floating (mapv #'show-zzz-floating (:floating coins))]
-         [:div.coins_pile (mapv #'show-zzz-floating (:pile coins))]]))
+         [:div.coins_pile (mapv #'show-zzz-floating (:pile coins))]
+         [:div.coins_floating (mapv #'show-zzz-floating (:floating coins))]]))
 
 ;;
 (defn bucket []

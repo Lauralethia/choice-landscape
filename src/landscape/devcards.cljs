@@ -93,15 +93,16 @@
            [:div (str @state)]]))
   (atom {:zzz (floater/zzz-new (floater/->pos 0 0) 3) }))
 
+(def coin-empty-state {:coins {} :record{:settings{:pile {:y 30 :x 0}}}})
 (defcard coin-pile-floaters
   "coins floater into pile"
   (fn [state o]
     (html [:div
            [:button {:on-click (fn[] (swap! state floater/coin-addto-state))} "new" ]
            [:button {:on-click (fn[] (swap! state floater/coin-update-state))} "step" ]
-           [:button {:on-click (fn[] (reset! state {:coins {}} ))} "reset" ]
+           [:button {:on-click (fn[] (reset! state coin-empty-state))} "reset" ]
            (view/show-all-floating-coins @state)]))
-  (atom {:coins {} })
+  (atom coin-empty-state)
   {:inspect-data true})
 
 (defcard ttl-devcard
@@ -143,6 +144,13 @@
   (atom {:w 20 :h 50 :g (pile/grid-make 200 300 0) })
   {:inspect-data false}
   )
+
+(defcard pile2-quil "making the pile with quil"
+  (fn [state _] 
+    (let [{:keys [w h g]} @state]
+      (html [:div [:canvas {:id "q-pile-dc" :height h :width w
+                            :style {:border "solid 1px black"}}]])) )
+  (atom {:w 200 :h 500 :g (pile/grid-make 200 300 0) }))
 
 ;; moved card from survey.cljs to avoid warnings
 (defcard survey-forum
