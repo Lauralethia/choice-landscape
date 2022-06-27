@@ -25,11 +25,13 @@ ZZZ_TIME=1        # hardcode as one second always
 PRE_TIME=.5
 POST_TIME=.5
 
+MINITI=1.5
+
 # save directory prefix incase we update e.g. GLT SYMS or timings
 # but want to hold onto old
 # will already be organized by total runtime and include total_trials
 #   outdir=${total_runtime}s/${PREFIX}_${total}_$seed
-PREFIX=v1
+PREFIX=v$MINITI
 
 # average trial time is 2.1 seconds
 # mean iti should be ~3 (exp disp)
@@ -101,6 +103,10 @@ add_glt(){
 mktiming(){
   total="$1"; shift         # expecting
   total_runtime="$1"; shift # something like 540
+  if [ $# -eq 1 ]; then
+     MINITI="$1"; shift
+     PREFIX="v$MINITI"
+  fi
   eval $MACRO_TRIAL_COUNTS # set good good_catch ...
 
   # second arg should be seed. can use random if not provided
@@ -123,7 +129,7 @@ mktiming(){
      -add_timing_class s_zzz            $ZZZ_TIME \
      \
      -add_timing_class nobreak 0 0 0 dist=INSTANT \
-     -add_timing_class iti 0.25 -1 8     \
+     -add_timing_class iti $MINITI -1 8     \
      \
      -add_stim_class good          "$good"          s_choice_w_good  nobreak \
      -add_stim_class g_fbk         "$good"          s_feedback iti       \
@@ -167,7 +173,7 @@ mktiming(){
 if ! [[ "$(caller)" != "0 "* ]]; then
   set -euo pipefail
   trap 'e=$?; [ $e -ne 0 ] && echo "$0 exited in error $e"' EXIT
-  [ $# -eq 0 ] && warn "USAGE: $0 ntrails total_dur # e.g. 100 500 " && exit 1
+  [ $# -eq 0 ] && warn "USAGE: $0 ntrails total_dur [miniti] # e.g. 100 500 " && exit 1
 
   # potentially man output directories. collect in one place
   [ ! -d out ] && mkdir out

@@ -7,4 +7,6 @@
 # but too many catches in a row
 
 # hand picked from 01_collect.R and visualize_timing.R
-./afni_to_task.R out/240s/v1_53_{6156,23263,1599}/events.txt
+#./afni_to_task.R out/240s/v1_53_{6156,23263,1599}/events.txt
+./afni_to_task.R out/280s/v1.5_53_{10987,32226,24271}/events.txt
+

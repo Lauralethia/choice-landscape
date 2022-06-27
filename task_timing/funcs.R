@@ -1,3 +1,6 @@
+# "v1_53_1012" to "v1-240-53-1012"
+cname <- function(f, tt="240",v="v1") paste(sep="-", v, tt, gsub("_","-", gsub(paste0("^",v,"_"),"",basename(dirname(f)))))
+
 cumsum_reset <- function(x, zero_if_false=TRUE) {
     cnt <- rep(0, length(x))
     for(i in seq(2,length(x))) {
