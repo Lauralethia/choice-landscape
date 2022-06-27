@@ -12,6 +12,7 @@
    [landscape.model.avatar :as avatar]
    [landscape.model.floater :as floater]
    [landscape.model.phase :as phase]
+   [landscape.http :as http]
    [landscape.sound :refer [play-sound]]
    [clojure.string]
    ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
@@ -124,6 +125,9 @@
 
 
 (defn instruction-finished [state time-cur]
+  ; send start trigger
+  (if-let [url (:local-ttl-server @settings/current-settings)]
+    (http/send-local-ttl url 128))
   (-> state
       ;; NB. maybe bug?
       ;; we move to "home" at start and dont want to intercept any
