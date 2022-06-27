@@ -1,7 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 http server to send ttls
 task javascript -> POST /123 -> hardware ttl
+
+run task with with url_tweak:
+    http://localhost:9500/#landscape=ocean&timing=debug&noinstruction&ttl=local
+    file:///home/foranw/src/tasks/choice-landscape/out/index.html#noinstructions&landscape=ocean&ttl=local
 
 also polls for button boxes, sends ttl on push
 and forwards as keypush
@@ -22,6 +26,7 @@ unknowns:
 import sys
 import asyncio
 import datetime
+import time
 from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
@@ -31,13 +36,15 @@ class Hardware():
     """
     wrapper for sending ttl. DAQ or psycyhopy.parallel
     """
-    def send(self, ttl):
+    def send(self, ttl, zero=True):
         print(f"sending {ttl} @ {datetime.datetime.now()}")
+        if zero:
+            self.wait_and_zero()
 
     def wait_and_zero(self):
         # TODO: more percise sleeping psychopy.core.wait(.005) or psychtoolbox.WaitSecs(.005)
-        time.sleep(.005)  # wait 5ms and send zero. not precise enough?
-        self.send(0)
+        time.sleep(.002)  # wait 2ms and send zero. not precise enough?
+        self.send(0, False)
         #  if we're lucky setData zero's pins that aren't used
         # self.port.setData(0)
 
@@ -50,20 +57,22 @@ class LPT(Hardware):
         import time
         self.port = parallel.ParallelPort(address=address)
 
-    def send(self, ttl):
+    def send(self, ttl, zero=True):
         self.port.setData(ttl)
-        # TODO: needed?
-        # self.wait_and_zero()
+        # without this, mne_python has a hard time finding values
+        if zero:
+            self.wait_and_zero()
 
 
 class DAQ(Hardware):
     def __init__():
         import usb1208FS
         pass
-    def send_todo(ttl):
+    def send_todo(ttl, zero=True):
         usb1208FS.DOut(usb1208FS.DIO_PORTA, ttl)
         # TODO: do we need to zero?
-        # self.wait_and_zero()
+        if zero:
+            self.wait_and_zero()
 
 
 
@@ -206,13 +215,34 @@ async def loeffeeg():
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
-async def fakeeeg():
+async def fakeeeg(usekeyboard=False):
     hw = Hardware()
     kb = KB()
-    rb = FakeButton(hw,kb)
     http_run(hw)
+    rb = FakeButton(hw,kb)
+    # kludge. disable trigger function so we dont send the 'a' key every 5 seconds
+    if not usekeyboard:
+        rb.trigger = lambda a: 1
+    # need this await or we'll exit as soon as we send the first trigger
     await asyncio.create_task(rb.watch())
 
+def parser(args):
+    import argparse
+    p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
+    p.add_argument('place', help='one of: "loeff","test","seeg"')
+    p.add_argument('-k','--keyboard', help='use keyboard (only for testing)', action='store_true', dest="usekeyboard")
+    return p.parse_args(args)
+
+
 if __name__ == "__main__":
-    # TODO: host type: seeg loefeeg testing
-    asyncio.run(loeffeeg())
+    args = parser(sys.argv[1:])
+    print(args.place)
+    if args.place == "loeff":
+        asyncio.run(loeffeeg())
+    elif args.place == "seeg":
+        print("NOT IMPLEMENTED!")
+    elif args.place == "test":
+        asyncio.run(fakeeeg(args.usekeyboard))
+    else:
+        print(f"unkown place '{args.place}'!")
+
