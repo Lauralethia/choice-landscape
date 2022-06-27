@@ -5,7 +5,17 @@ http://langintro.com/cljsbook/canvas.html
 https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
 
   "
-  (:require [quil.core :as q :include-macros true]))
+  (:require [quil.core :as q]))
+
+;; (q/defsketch my-sketch-definition
+;;   :host "canvas-id"
+;;   :draw draw
+;;   :size [300 300])
+
+(defn ^:export clean-sketch [id]
+  (q/with-sketch (q/get-sketch-by-id id)
+    (q/background 255)))
+
 (defn grid-make
   "create 'grid' as a 2d vector. likley intialize with empty (0 0 0 0)"
   [w h v & {:keys [func] :or {func to-array}}]
