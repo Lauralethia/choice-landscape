@@ -203,7 +203,11 @@ class HttpTTL(RequestHandler):
         self.write(f"ttl: {ttl} @ global {datetime.datetime.now()}")
 
 def http_run(this_hardware):
-    this_hardware.send(128)
+
+    # 128 starts recording in loeff eeg
+    # this should be done by task?
+    #this_hardware.send(128)
+
     app = Application([('/(.*)', HttpTTL, dict(hardware=this_hardware))])
     server = HTTPServer(app)
     server.listen(8888)
