@@ -6,6 +6,12 @@ body{
 body.desert{
    background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
 }
+body.wellcoin{
+   background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
+}
+body.ocean{
+   background: #fee3b4 url("imgs/ocean_border.jpg") repeat-x;
+}
 body.mountain{
    background: #0d5419 url("imgs/mountain_border.jpg") repeat-x;
 }
@@ -33,6 +39,10 @@ body.mountain{
 #background.mountain {
    background: url("imgs/green_mountain.png");
 }
+#background.ocean {
+   background: url("imgs/ocean_bottom.png");
+}
+
 img#water {
    bottom: 30px;
    left: 50px;
@@ -105,7 +115,7 @@ ul#pick>li.picked { background: lightblue;}
 #progressbar_trials.mountain {  background: #efc75e;}
 
 /* for precision timing (iEEG/EEG). background color will change */
-#photodiode {height: 20px; width: 20px; display: block}
+#photodiode {height: 200px; width: 200px; display: block; position: fixed; top:0; left:0}
 
 /* score a point */
 .pointfloating { color: blue; font-weight: bold; }

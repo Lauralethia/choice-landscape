@@ -60,21 +60,20 @@
    <body onload="update_tasks(); add_tweaks();">
      <h1> Task specifications </h1>
       <form onsubmit="go_url(); return false"> <!-- return false supresses form action -->
-      <label for="id">id:</label> <input name=id type="text" size=5> <br>
-      <label for="task">task:</label>
-      <select id="task">
-         <option name=task>task-unset</option>
-      </select>  <br>
-      <label for="timepoint">timepoint:</label> <input name=timepoint type="text" value=1 size=1> <br>
-      <label for="run">run:</label> <input name=run type="text" value=1 size=1> <br>
+      <table id="task_setting_tweaks">
+      <tr><td><label for="id">id:</label></td>
+          <td><input name=id type="text" size=5></td></tr>
+      <tr><td><label for="task">task:</label></td>
+          <td><select id="task">
+                <option name=task>task-unset</option>
+              </select></td></tr>
+      <tr><td> <label for="timepoint">timepoint:</label></td>
+          <td><input name=timepoint type="text" value=1 size=1> </td></tr>
+      <tr><td><label for="run">run:</label></td>
+          <td><input name=run type="text" value=1 size=1> </td></tr>
 
-      <label for="">landscape type:</label>
-      <select id="landscape">
-         <option name=landscape selected>desert</option>
-         <option name=landscape>mountains</option>
-      </select>  <br>
 
-      <div id="task_setting_tweaks"></div>
+      </table>
 
       <input type="submit" value="open">
    </form>

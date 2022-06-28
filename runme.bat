@@ -5,7 +5,9 @@ Rem     out/imgs/ out/audio/ out/style.css
 Rem shouldn't need to set password, server is open if running on localhost
 set HTTPDBPASS=""
 set RUNTOKEN="psiclj_%RANDOM%"
+set FIREFOX="C:\Users\Luna\FirefoxPortable\FirefoxPortable.exe"
 
-Rem consider setting task name and getting eg "#where=mri" from db (permutation:anchors)
 start %RUNTOKEN%  cmd /c psiclj
-start "" http://0.0.0.0:3001
+Rem launching into mr page. will set #where=mri anchor
+Rem TODO: check if 0.0.0.0 or 127.0.0.1 is better
+start "" "%FIREFOX%" http://127.0.0.1:3001/mr.html

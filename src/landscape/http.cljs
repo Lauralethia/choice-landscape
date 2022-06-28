@@ -19,6 +19,14 @@
        "")
    rest))
 
+(defn send-local-ttl
+  "Want indicator of trial and event in recorded output of s/EEG.
+  But the browser doesn't have access to hardware and libaries are mostly python.
+  So send TTLs to separate python http server.
+  When there's not local-ttl-server, nothing will happen"
+  [local-ttl-server ttl]
+  (when local-ttl-server
+    (GET (str local-ttl-server "/" ttl))))
 
 (defn send-info
   []

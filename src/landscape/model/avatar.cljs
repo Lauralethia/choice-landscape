@@ -1,6 +1,8 @@
 (ns landscape.model.avatar
   (:require [landscape.model.wells :as wells]
             [landscape.utils :as utils]
+            [landscape.sprite :as sprite]
+            ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             [landscape.settings :refer [current-settings]]))
 
 ;;avatar
@@ -31,7 +33,7 @@
             true 0))
 
 (defn move-avatar [{:keys [avatar time-cur] :as state}]
-  (let [step-size 10
+  (let [step-size (get @current-settings :avatar-step-size 10)
         time-step 30
         time-delta (- time-cur (:last-move avatar))
         cur (:pos avatar)
@@ -44,6 +46,16 @@
         (update-in [:avatar :direction] #(if (= :none dir) % dir))
         (update-in [:avatar :active-at]
                   (partial move-active-time dest moved time-cur)))))
+
+(defn top-center-pos
+  "use state to get top of avatar. created for making putting Zs for isi/catch"
+  [{:keys [sprite-picked avatar] :as state}]
+  (let [pos (:pos avatar)
+              h (get-in landscape.sprite/avatars [sprite-picked :height] 0)
+              w (get-in landscape.sprite/avatars [sprite-picked :width] 0)]
+          (-> pos
+              (update :y #(- % h))
+              (update :x #(+ % (/ w 2))))))
 
 (defn avatar-dest
   "set new avatar destitionation. used by readkeys on keypush"

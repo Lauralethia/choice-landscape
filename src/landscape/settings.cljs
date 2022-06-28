@@ -4,10 +4,13 @@
   {:center-x 250
    :bottom-y 400
    :avatar-home {:x 250 :y 400}
+   :avatar-step-size 10 ; 20220428 - add here instead of hardcoded in avatar/move-avatar
    :step-sizes [70 0] ; 20211005 70 0; originally 70 150. see nofar/yesfar url tweaks
    :top-scale .66 ; perspective makes up seem farther away. scale move and disntace by this much
    :bar-pos {:x 50 :y 500} ; where to position the progress bar
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
+   ;; 20220519 - if not random, should be in fixed_timing.cljs
+   :timing-method :random  ;; :debug :mrA1 :mrB2
    ;; 20220314 - 4th devalue block gets its own probalbities
    ;; initiall either 75/75/75 or 100/100/80 (see url_tweaks)
    :prob {:low 20 :mid 50 :high 100 :devalue-good {:good 75 :other 75}}
@@ -21,6 +24,9 @@
                 :up     38
                 :right  39
                 :down   40}
+   ;; 20220527 - location to send ttl for placing event info in recorded data
+   ;; NB. timing will probably be terrible
+   :local-ttl-server nil
    })
 (def mri-glove-keys
   "button glove at MR uses 1-thumb 2-index .... 5-pinky

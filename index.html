@@ -15,7 +15,7 @@
    // TODO: could launch in fullscreen here a la psiturk
    // NB. would require actual button push to work in modern browsers. we have that here
    function go_url(){
-         window.location.replace(make_url());
+         window.location.assign(make_url());
    }
 </script>
   </head>
@@ -26,13 +26,8 @@
      </ul>
 <h2> task parameters </h2>
 <form onsubmit="go_url(); return false" >
-      <label for="">landscape type:</label>
-      <select id="landscape">
-         <option name=landscape selected>desert</option>
-         <option name=landscape>mountains</option>
-      </select>  <br>
-      <!-- see "tweaks" above -->
-      <div id="task_setting_tweaks"></div>
+      <!-- see "tweaks.js" above: adds dropdown and checkboxes to task_setting_tweaks -->
+      <table id="task_setting_tweaks"></table>
   <input type="submit" value="open">
 </form>
 

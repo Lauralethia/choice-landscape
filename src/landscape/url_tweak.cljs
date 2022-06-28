@@ -8,8 +8,13 @@
 
 (defn vis-type-from-url [u]
   "desert or mountain from url :anchor. default to desert"
-  (let [anchor (get u :anchor "desert")]
-    (if (re-find #"mountain" (or anchor "desert")) :mountain :desert)))
+  (let [anchor (or (get u :anchor) "desert")]
+    (cond
+      (re-find #"desert" anchor) :desert
+      (re-find #"mountain" anchor) :mountain
+      (re-find #"wellcoin" anchor) :wellcoin
+      (re-find #"ocean" anchor) :ocean
+      :else    :desert)))
 
 (defn pattern-in-url
   "do either url map's path or anchor contain a pattern.
@@ -68,6 +73,19 @@
        ;; MRI settings
        (update-settings u #"where=mr" [:where] :mri)
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
+       ;; fixed timing
+       (update-settings u #"timing=debug" [:timing-method] :debug)
+       (update-settings u #"timing=mra1" [:timing-method] :mrA1)
+       ;; (update-settings u #"timing=mra1" [:timing-method] :mrA2)
+       ;; (update-settings u #"timing=mra1" [:timing-method] :mrB1)
+       ;; (update-settings u #"timing=mra1" [:timing-method] :mrB2)
+       (update-settings u #"ttl=local" [:local-ttl-server] "http://0.0.0.0:8888")
 
        ;; always have one forced deval so 0 is actually 1
-       (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1}))))
+       (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
+       ;; ocean doesn't have water/gold pile
+       (update-settings u #"landscape=ocean"  [:bottom-y] 300)
+       (update-settings u #"landscape=ocean"  [:avatar-home :y] 300)
+       (update-settings u #"landscape=ocean"  [:bar-pos :y] 400)
+       (update-settings u #"landscape=ocean"  [:step-sizes] [140 0]) ;orig 70
+       (update-settings u #"landscape=ocean"  [:avatar-step-size] 15))))

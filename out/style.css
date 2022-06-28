@@ -1,1 +1,111 @@
-../resources/public/style.css
+body{
+   text-align: center;
+   width:  558px;
+   margin: auto;
+}
+body.desert{
+   background: #e28c39 url("imgs/desert_border.jpg") repeat-x;
+}
+body.mountain{
+   background: #0d5419 url("imgs/mountain_border.jpg") repeat-x;
+}
+.orange {
+   background: url("imgs/orange1x1.png");
+}
+#background {
+   width:  558px;
+   height:  299px;
+   position: absolute;
+}
+#scorebox {
+   border-radius: 15px;
+   width: 100px;
+   padding: 5px;
+   right: -10px;
+   top: 10px;
+   position:absolute;
+   background-color: white;
+   color: black;
+}
+#background.desert {
+   background: url("imgs/desert_nowater.jpg");
+}
+#background.mountain {
+   background: url("imgs/green_mountain.png");
+}
+img#water {
+   bottom: 30px;
+   left: 50px;
+   position: absolute;
+   transform: scale(.05);
+}
+
+#debug{
+   position: absolute;
+   bottom: 10px;
+   margin: 0;
+}
+
+#instruction{ background: white;
+min-height: 60px;
+*min-width: 100px;*/
+margin: auto;
+padding: 20px;
+padding-bottom: 50px;
+text-align: center;
+border: 2px solid black;
+opacity: .85;
+border-radius: 25px;
+font-size: larger;
+}
+#instruction > .top {
+    position:absolute;
+    font-size: 10px;
+    text-align: right;
+    width: 90%;
+    top: 2px;
+    padding-top:10px;
+}
+
+#instruction > .bottom {
+    position:absolute;
+    text-align: center;
+    bottom: 2px;
+    left:10px;
+    padding:10px;
+    width: 90%;
+    height: 35px;
+}
+
+.bottom > .arrow {
+    width: 20%;
+    margin-left: 3%;
+    padding-top: 10px;
+    /*height: 30px;*/
+    font-size: larger;
+}
+.rot_up { transform: rotate(90deg);}
+.rot_down { transform: rotate(-90deg);}
+.rot_lr { transform: rotate(180deg);}
+
+.iti {color:white; font-size: 60px;}
+
+/* .avatar { display: inline-block} */
+
+ul#pick>li { display: block; list-style:none; }
+ul#pick>li.picked { background: lightblue;}
+
+
+/* bar positioned at left:50 and want centered
+ so take 100 off total width. see settings.cljs */
+#fullbar { width: 458px; background: #e28c39; border: 1px solid black; height: 10px;}
+#progressbar_score {  background: blue}
+#progressbar_trials { background: green}
+#fullbar.mountain { width: 458px; background: #0d5419;}
+#progressbar_trials.mountain {  background: #efc75e;}
+
+/* for precision timing (iEEG/EEG). background color will change */
+#photodiode {height: 20px; width: 20px; display: block}
+
+/* score a point */
+.pointfloating { color: blue; font-weight: bold; }

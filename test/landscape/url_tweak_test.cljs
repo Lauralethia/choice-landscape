@@ -9,6 +9,7 @@
 
 (deftest vis-type 
   (is (= :mountain (vis-type-from-url {:anchor "mountain-anything" }) ))
+  (is (= :wellcoin (vis-type-from-url {:anchor "wellcoin" }) ))
   (is (= :desert (vis-type-from-url {:anchor "anything" }) ))
   (is (= :desert (vis-type-from-url {})))
   (is (= :desert (vis-type-from-url {:anchor nil})))
@@ -29,6 +30,10 @@
   (is (= 12 (get-in (task-parameters-url {} {:anchor "devalue2=75"}) [:nTrials :devalue-good])))
   (is (= 80 (get-in (task-parameters-url {} {:anchor "devalue2=100_80"}) [:prob :devalue-good :good])))
   (is (= 75 (get-in (task-parameters-url {} {:anchor "devalue2=75"}) [:prob :devalue-good :good]))))
+
+(deftest timing-tweak-test
+  "pull out timing methods"
+  (is (= :debug (get (task-parameters-url {} {:anchor "timing=debug"}) :timing-method))))
 
 (deftest url-path-info-test
   (is (= (url-path-info (url/url "domain.path/id/task/timepoint/run/?junk"))

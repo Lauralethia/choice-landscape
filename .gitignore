@@ -4,6 +4,8 @@
 .nrepl-port
 target/
 resources/public/imgs/extra
+resources/
+src/
 
 out/*
 !out/*.js
@@ -13,10 +15,4 @@ out/*
 !out/*css
 !out/extra/*
 out/cljs_deps.js
-
-
-results/.heroku-dburl
-results/*json
-results/*tsv
-results/*.csv
-results/data_id-hidden.tsv
+results/

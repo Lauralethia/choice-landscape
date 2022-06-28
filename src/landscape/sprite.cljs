@@ -12,6 +12,14 @@
                           :frame-size 53 :frames 7
                           :dur-ms 500
                           :url "imgs/well_sprites.png"}))
+(def wellcoin (sprite-create {:width 52 :height 47
+                          :frame-size 52 :frames 7
+                          :dur-ms 500
+                          :url "imgs/wellcoin_sprites.png"}))
+(def chest (sprite-create {:width 54 :height 48
+                          :frame-size 57 :frames 6
+                          :dur-ms 500
+                          :url "imgs/chest_sprites.png"}))
 (def mine (sprite-create {:width 53 :height 47
                           :frame-size 53 :frames 7
                           :dur-ms 500
