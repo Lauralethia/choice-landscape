@@ -8,5 +8,11 @@
 
 # hand picked from 01_collect.R and visualize_timing.R
 #./afni_to_task.R out/240s/v1_53_{6156,23263,1599}/events.txt
-./afni_to_task.R out/280s/v1.5_53_{10987,32226,24271}/events.txt
+test -d edn || mkdir "$_"
+./afni_to_task.R out/280s/v1.5_53_{10987,32226,24271}/events.txt > edn/mra1.edn
+./afni_to_task.R out/280s/v1.5_53_{23960,28898,25862}/events.txt > edn/mra2.edn
+# TODO: use different seeds?
+./afni_to_task.R --left out/280s/v1.5_53_{10987,32226,24271}/events.txt > edn/mrb1.edn
+./afni_to_task.R --left out/280s/v1.5_53_{23960,28898,25862}/events.txt > edn/mrb2.edn
+
 

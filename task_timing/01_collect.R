@@ -31,14 +31,16 @@ simplify_lc <- function(d, max_rep_catch=2) {
 
 rank_LC <- function(d, sort_col) {
  d %>%
-    simplify_lc() %>% select(-sum_LC) %>%
+    simplify_lc() %>%
+    select(-sum_LC) %>%
     mutate(across(matches("_LC"), rank)) %>%
     #mutate(across(matches("_LC"), function(x) scale(x-min(x), center=F))) %>%
     rowwise() %>% mutate(overall = sum(c_across(-name)))
 }
 
 ### pick
-d_rank <- read_all(gen_ver="v1", total_dur=280) %>%  rank_LC()
+d_lc <- read_all(gen_ver="v1.5", total_dur=280)
+d_rank <- d_lc %>%  rank_LC()
 # show
 #d_rank %>% arrange(choice.fbk_LC)  %>%  head %>% print
 d_rank %>% arrange(overall) %>% head %>% print.data.frame(row.names=F)
@@ -62,8 +64,8 @@ rbind(head_miniti("v025",.25),
    ggtitle("min(iti) LCs")+
    facet_wrap(~totaldur)
 
-rbind(head_miniti("v1",1.0, 280),
-      head_miniti("v1.5",1.5, 280)) %>%
-  mutate(miniti=as.factor(miniti)) %>%
-  ggplot() + aes(x=choice_LC, y=choice.fbk_LC, size=sum_LC, color=miniti) + geom_point(alpha=.5) +
-  ggtitle("min(iti) LCs (280s)")
+#rbind(head_miniti("v1",1.0, 280),
+#      head_miniti("v1.5",1.5, 280)) %>%
+#  mutate(miniti=as.factor(miniti)) %>%
+#  ggplot() + aes(x=choice_LC, y=choice.fbk_LC, size=sum_LC, color=miniti) + geom_point(alpha=.5) +
+#  ggtitle("min(iti) LCs (280s)")

@@ -86,10 +86,18 @@ gen_edn <- function(files, leftgood=FALSE){
 }
 
 if (sys.nframe() == 0) {
-    args <- commandArgs(trailingOnly = TRUE)
+    argv <- commandArgs(trailingOnly = TRUE)
     if(length(args)==0L) {
         cat("want input files to be combined after ./show_times.bash and turned into edn string for clojure\n like out/240s/v1_53_17/events.txt\n")
+        cat("use --left to set left as the first good well\n")
         quit(status=1,save="no")
     }
-    gen_edn(args)
+    leftgood_i <-grep("--left",argv)
+    leftgood <- length(leftgood_i)>=1L
+    print(argv)
+    print(leftgood)
+    if(leftgood) argv <- argv[-leftgood_i]
+    print(argv)
+
+    gen_edn(argv, leftgood=leftgood)
 }

@@ -9,7 +9,8 @@ theme_set(theme_cowplot())
 #           "out/240s/v1_53_19352/events.txt")
 # seeds <- c(6156,23263,1599) # 20220623 - v025 seeds. min iti was 0.25
 #seeds <- c(25647,10141,12240); GEN_VER<-"v1.5"; TIME<-240  # 20220623
-seeds <- c(10987, 32226, 24271);GEN_VER<-"v1.5"; TIME<-280  # 20220627
+seeds <- c(10987,32226,24271);GEN_VER<-"v1.5"; TIME<-280  # 20220627 A1
+seeds <- c(23960,28898,25862);GEN_VER<-"v1.5"; TIME<-280  # 20220628 A2
 files <- paste0("out/", TIME, "s/",GEN_VER,"_53_",seeds,"/events.txt")
 timing <- read_timing(files) #%>% mutate(iti=as.numeric(iti))
 tmat <- timing_mat(timing)
