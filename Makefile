@@ -22,3 +22,6 @@ test:
 
 results/summary.csv: .ALWAYS
 	cd results && make
+
+sync:
+	./sync_usb.bash
