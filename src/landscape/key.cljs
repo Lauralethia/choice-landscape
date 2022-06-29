@@ -89,7 +89,6 @@
   []
   {:until nil :want [] :next nil :have nil :time nil :touch nil :all-pushes [] })
 
-
 (defn side-from-keynum
   "invert map to get up/down/left/right from keypush
 TOOD: invert map might be expensive to do every keypush?"
@@ -97,6 +96,14 @@ TOOD: invert map might be expensive to do every keypush?"
   (get
    (map-invert (:keycodes @landscape.settings/current-settings))
    keynum))
+
+(defn side-from-keynum-instructions
+  "use defined keys but also default keys. 
+  hard for RA to advance using button glove keys
+  esp. because glove stats with 2=left instead of 1"
+ [keynum]
+ (or (side-from-keynum keynum)
+     (get (map-invert landscape.settings/arrow-keycodes) keynum)))
 ;; 20211007 - just assoc w/key-state-fresh
 ;; (defn remove-key
 ;;   "remove any keypress from state"

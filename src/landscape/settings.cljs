@@ -1,5 +1,23 @@
 (ns landscape.settings)
 
+(def arrow-keycodes
+  "keycodes for arrow keys. default responses.
+  but also used for instructions even if using MRI glove"
+  {:left  37
+   :up    38
+   :right 39
+   :down  40})
+
+(def mri-glove-keys
+  "button glove at MR uses 1-thumb 2-index .... 5-pinky
+  key to num: ! is 16 where as 1 is 49"
+  {:left   50  ; index
+   :up     51  ; middle
+   :right  52  ; ring
+   :down   49  ; thumb
+   :trigger 187  ; '=' is 187; '6' is 54. cant get '^'?
+})
+
 (def BOARD "bounds and properties of the background board"
   {:center-x 250
    :bottom-y 400
@@ -20,25 +38,14 @@
       :devalue-good 12 ; 20220314=10 (init) devalue good well
       }
 
-     :keycodes {:left  37
-                :up     38
-                :right  39
-                :down   40}
+     :keycodes arrow-keycodes
    ;; 20220527 - location to send ttl for placing event info in recorded data
    ;; NB. timing will probably be terrible
    :local-ttl-server nil
    ;; 20220606 where coins/water will accumulate
    :pile-y nil
    })
-(def mri-glove-keys
-  "button glove at MR uses 1-thumb 2-index .... 5-pinky
-  key to num: ! is 16 where as 1 is 49"
-  {:left   50  ; index
-   :up     51  ; middle
-   :right  52  ; ring
-   :down   49  ; thumb
-   :trigger 187  ; '=' is 187; '6' is 54. cant get '^'?
-})
+
 
 ; set by anchor of url. eg http://localhost:9500/#mountain
 ; see url_tweak.cljs

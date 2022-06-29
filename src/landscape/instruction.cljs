@@ -435,7 +435,7 @@
 
 
 (defn read-keys [{:keys [key phase time-cur] :as state}]
-  (let [dir (key/side-from-keynum (:have key))
+  (let [dir (key/side-from-keynum-instructions (:have key))
         last-instruction (dec(count INSTRUCTION))
         i-cur (:idx phase)
         i-keyfn (get-in INSTRUCTION [i-cur :key dir])
