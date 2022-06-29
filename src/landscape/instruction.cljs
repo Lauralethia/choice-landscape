@@ -164,7 +164,7 @@
                  [:br]
                  [:br]
                  "Use your " [:b {:class "ringfinger"} "ring finger" ]
-                 " get the next instruction."
+                 " to get the next instruction."
                  ]
                 [:div 
                  "Push the keyboard's " [:b "right arrow key"]
