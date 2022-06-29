@@ -125,13 +125,14 @@
   []
    (let [need [:age :fun :feedback :understand]
          form-map @forum-atom
+         age (get form-map :age 0)
          have (vals (select-keys form-map need))]
-     (if (not-any? empty? have)
-       (swap! forum-atom assoc :done true)
-       (js/alert (str "Survey responses are essential for improving our game! Please fill out all the fields."
-                      ;; (if (or (nil? (:age @forum-atom)) (empty? (:age @forum-atom)))
-                      ;;   "\n\n If you are unable to share your age, enter 0.")
-                      ))))
+     (cond
+       (< age 7) (js/alert (str "Please enter a reasonable age!"))
+       (not-any? empty? have) (swap! forum-atom assoc :done true)
+       :else (js/alert (str
+                        "Survey responses are essential for improving our game!"
+                        " Please fill out all the fields."))))
    @forum-atom)
 
 (defn view-questions []
