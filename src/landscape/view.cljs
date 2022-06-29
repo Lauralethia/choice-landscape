@@ -173,19 +173,19 @@
          (well-side state :right)]))
 
 (defn button-keys [] (html [:div.bottom
-                               [:button {:on-click #(key/sim-key :left)
-                                         :class "arrow"}
-                                [:img {:src "imgs/arrow_l.png"}]]
-                               [:button {:on-click #(key/sim-key :up)
-                                         :class "arrow"}
-                                [:img {:src "imgs/arrow_l.png"
-                                       :class "rot_up"}]]
                                [:button {:on-click #(key/sim-key :down)
                                          :class "arrow"}
                                 [:img {:src "imgs/arrow_l.png"
                                        :class "rot_down"}]]
+                               [:button {:on-click #(key/sim-key :left)
+                                         :class "arrow indexfinger"}
+                                [:img {:src "imgs/arrow_l.png"}]]
+                               [:button {:on-click #(key/sim-key :up)
+                                         :class "arrow middlefinger"}
+                                [:img {:src "imgs/arrow_l.png"
+                                       :class "rot_up"}]]
                                [:button {:on-click #(key/sim-key :right)
-                                         :class "arrow"}
+                                         :class "arrow ringfinger"}
                                 [:img {:src "imgs/arrow_l.png"
                                        :class "rot_lr"}]]]))
 (defn instruction-view [{:keys [phase] :as state}]

@@ -142,6 +142,9 @@
       (wells/wells-close)
       (assoc :key (key/key-state-fresh))))
 
+(defn buttonbox? [state]
+  (contains? #{:mri :eeg}
+             (get-in state [:record :settings :where])))
 
 (def INSTRUCTION
   [
@@ -149,10 +152,25 @@
             (html
              [:div [:h1  "Welcome to our game!"]
               [:br]
-              "Push the keyboard's " [:b "right arrow key"] " to get to the next instruction. "
-              [:br] [:br]
-              "You can also click the \"->\" button below"
-              ]))
+
+              (if (buttonbox? state) 
+                [:div
+                 [:img {:src "imgs/fingers.png"}]
+                 [:br]
+                 "You will use buttons to push "
+                 [:b {:class "indexfinger"} "left"] ", "
+                 [:b {:class "middlefinger"} "up"] ", and "
+                 [:b {:class "ringfinger"} "right."]
+                 [:br]
+                 [:br]
+                 "Use your " [:b {:class "ringfinger"} "ring finger" ]
+                 " get the next instruction."
+                 ]
+                [:div 
+                 "Push the keyboard's " [:b "right arrow key"]
+                 " to get to the next instruction. "
+                 [:br] [:br]
+                 "You can also click the \"->\" button below"])]))
     :start identity
     ;; NB. fullscreen in firefox removes background and centering
     ;;  on either .-body "main-container"
@@ -205,9 +223,16 @@
               [:br]
               "In the game, all characters are equal"
               [:ul
-               [:li "Use the " [:b "up arrow"] " to " [:u "change"] " your selection."]
-               [:li "Use the " [:b "right arrow"] " to continue " [:br]
-                " when done choosing"]]
+               [:li "Use "
+                (if (buttonbox? state)
+                      [:span  "your " [:b {:class "middlefinger"} "middle finger"]]
+                      "the up arrow")
+                " to " [:u "change"] " your selection."]
+               [:li "Use "
+                (if (buttonbox? state)
+                  [:span  "your " [:b {:class "ringfinger"} "ring finger"]]
+                  [:span "the " [:b "right arrow"]])
+                " to choose and continue"]]
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
