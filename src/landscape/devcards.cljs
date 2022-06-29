@@ -10,7 +10,6 @@
    [landscape.model.points :as points]
    [landscape.model.floater :as floater]
    [landscape.model.phase :as phase]
-   [landscape.model.pile :as pile]
    [sablono.core :as sab :include-macros true :refer-macros [html]])
   (:require-macros [devcards.core :refer [defcard]]))
 (enable-console-print!)
@@ -119,38 +118,7 @@
   (atom {:phase {:name :chose}
          :wells {:left {:open true} :up {:open true} :right {:open false}}}))
 
-;; 
-(defcard pile-card
-  "show sand pile advancing"
-  (fn [state o]
-    (let [{:keys [g w h]} @state]
-      (html [:div
-             [:canvas {:id "pile-example" :width w :height h :style {:border "solid black 5px"}}]
-             [:br]
-             [:button {:onClick (fn [_]
-                                  (pile/grid-add-box g (pile/val-to-color) 0 0)
-                                  (swap! state assoc :g g))}
-              "add"]
-             [:button {:onClick (fn [_]
-                                  (pile/grid-gravity g w h)
-                                  (swap! state assoc :g g)
-                                  )}
-              "inc"]
-             [:button {:onClick (fn[_]
-                                  (pile/image-draw (pile/get-ctx "pile-example") g w h))}
-              "draw"]
-             [:button {:onClick (fn[_] (swap! state assoc :g (pile/grid-make w h 0)))}
-              "reset"]])))
-  (atom {:w 20 :h 50 :g (pile/grid-make 200 300 0) })
-  {:inspect-data false}
-  )
 
-(defcard pile2-quil "making the pile with quil"
-  (fn [state _] 
-    (let [{:keys [w h g]} @state]
-      (html [:div [:canvas {:id "q-pile-dc" :height h :width w
-                            :style {:border "solid 1px black"}}]])) )
-  (atom {:w 200 :h 500 :g (pile/grid-make 200 300 0) }))
 
 ;; moved card from survey.cljs to avoid warnings
 (defcard survey-forum
