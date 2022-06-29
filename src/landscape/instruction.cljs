@@ -256,7 +256,7 @@
              (assoc-in state [:water :level] 100))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))}
-   {:text (fn[_] (html [:div "You want to get as much " (item-name :water) " as possible as quicly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]))
+   {:text (fn[_] (html [:div "You want to get as much " (item-name :water) " as possible as quickly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]))
     :skip (fn[state] (not (contains? #{:ocean} (get-in state [:record :settings :vis-type]))))
     }
 
