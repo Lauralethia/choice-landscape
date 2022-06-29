@@ -352,7 +352,8 @@
    {:text (fn[state]
             (html [:div "Sometimes you will be too tired to walk." [:br]
                    "Instead, you will fade out until you are rested." [:br]
-                   "This happens randomly and is not related your choice" [:br]]))
+                   "This happens randomly and is "
+                   [:b "not related"] " to your choice" [:br]]))
     :pos (fn[state] {:x 0 :y 100})
     :start (fn[state]
              (-> state
