@@ -77,7 +77,7 @@
 (defn progress-bar
   "show how far along we are in the task."
   [{:keys [trial well-list water] :as  state}]
-  (let [ntrials (count well-list)
+  (let [ntrials (inc (count well-list))
         score (/ (:score water) ntrials)
         progress (/ trial ntrials)
         vis-class (-> @current-settings :vis-type name)]

@@ -21,7 +21,7 @@
   [{:keys [trial time-cur well-list] :as state}]
   (let [where (get-in state [:record :settings :where])
         next (cond
-               (< trial (count well-list)) :chose  ; next trail
+               (<= trial (count well-list)) :chose  ; next trail
                ;; :survey okay forced, but w/:iti->:survey, not responsive to keys
                (contains? #{:mri} where) :done     ; TODO: :survey (buttonbox Qs)
                (contains? #{:online} where) :forum ; freeform text w/full keyboard

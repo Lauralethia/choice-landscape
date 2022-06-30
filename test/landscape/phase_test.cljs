@@ -71,7 +71,7 @@
 
 (deftest next-phase-test 
   "check end is advanced to approprate section"
-  (let [state-onl {:phase {:name :none} :trial 2 :well-list [1 2]
+  (let [state-onl {:phase {:name :none} :trial 3 :well-list [1 2]
                    :record {:settings {:where :online}}}
         state-mri (assoc-in state-onl [:record :settings :where] :mri)
         state-unf (assoc-in state-onl [:trial] 1)]
