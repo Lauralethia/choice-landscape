@@ -73,6 +73,10 @@
        ;; MRI settings
        (update-settings u #"where=mr" [:where] :mri)
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
+       (update-settings u #"where=mr" [:skip-captcha] true)
+
+       (update-settings u #"where=eeg" [:where] :eeg)
+       (update-settings u #"where=eeg" [:skip-captcha] true)
        ;; fixed timing
        (update-settings u #"timing=debug" [:timing-method] :debug)
        (update-settings u #"timing=mra1" [:timing-method] :mrA1)

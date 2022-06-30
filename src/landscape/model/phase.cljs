@@ -23,7 +23,7 @@
         next (cond
                (<= trial (count well-list)) :chose  ; next trail
                ;; :survey okay forced, but w/:iti->:survey, not responsive to keys
-               (contains? #{:mri} where) :done     ; TODO: :survey (buttonbox Qs)
+               (contains? #{:mri :eeg} where) :done     ; TODO: :survey (buttonbox Qs)
                (contains? #{:online} where) :forum ; freeform text w/full keyboard
                :else :forum)]
     (set-phase-fresh next time-cur)))
@@ -252,8 +252,6 @@ nil if catch trial or other weirdness"
                             :hit nil
                             :scored false
                             :picked nil
-                            ;; TODO: for MR. RT-EXPECTED
-                            ;;  add/rm remaining RT if not catch
                             :iti-dur (adjust-iti-time (get-rt state) iti-dur))
 
                      ;; restart at chose when iti is over
