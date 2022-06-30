@@ -1,6 +1,6 @@
 (ns landscape.key
   (:require
-   [landscape.settings :refer [current-settings]]
+   [landscape.settings :refer [current-settings arrow-keycodes]]
    [clojure.set :refer [map-invert]]))
 (defn keypress-init [] {:key nil
                         :first nil
@@ -71,7 +71,10 @@
 (defn sim-key
   "simulate keypress using keyCode"
   [keysym]
-  (let [keycode (keysym (:keycodes @current-settings))
+  (let [;; keycode always arrow keys.
+        ;; see (:keycodes @current-settings) for current
+        ;; BUT then button push wont advance instructions when where=mri
+        keycode (keysym arrow-keycodes)
         jskey (clj->js {:keyCode keycode})
         el js/document
         event-down (new js/KeyboardEvent "keydown" jskey)
