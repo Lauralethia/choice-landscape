@@ -250,7 +250,12 @@
                                   (:time-cur state)
                                   ".json")
                    :href (-> state :record create-json-url)
-                   } "download task data"]])
+                   } "download task data"]
+            [:br]
+            ;; might be blocked:
+            ;;   Scripts may not close windows that were not opened by script.
+            ;; about:config -> dom.allow_scripts_to_close_windows
+            [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]])
          [:br]]))
 
 
