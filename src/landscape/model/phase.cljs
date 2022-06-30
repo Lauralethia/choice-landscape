@@ -95,8 +95,9 @@
       :chose
       (-> state-time
           (update-in [:record :events trial0] #(merge % (wells/wide-info wells)))
-          ;; iti time set in transtion to iti, so we dont see it for first phone home
-          (assoc-in [:record :events trial0 :iti-dur] (get phase :iti-dur)))
+          ;; dont see iti when it happens. need to go backwards
+          ;; first iti is lost (not part of a trial. avail in settings)
+          (assoc-in [:record :events (max (dec trial0) 0) :iti-dur] (get phase :iti-dur)))
 
       ;; :timeout just resturn state-time
 
@@ -206,7 +207,12 @@ nil if catch trial or other weirdness"
         hit (get phase :hit)
         picked (get phase :picked)
         time-since (- time-cur (:start-at phase))
-        iti-dur (get-in state [:well-list trial0 :iti-dur] settings/ITIDUR)
+        ;; iti-dur for first trial0==-1
+        iti-dur (or (if (< trial0 0)
+                      (get @settings/current-settings :iti-first)
+                      (get-in state [:well-list trial0 :iti-dur]))
+                    settings/ITIDUR
+                    )
         catch-dur (get-in state [:well-list trial0 :catch-dur] 0)
         rt-max (get-in @settings/current-settings [:times :choice-timeout])
         phase-next (cond
@@ -258,7 +264,11 @@ nil if catch trial or other weirdness"
 
                      ;; restart at chose when iti is over
                      (and (= pname :iti)
-                          (>= time-since (:iti-dur phase)))
+                          (>= time-since (+ (:iti-dur phase)
+                                            ;; if last iti, add a iti+end
+                                            (if (> trial (count (:well-list state)))
+                                              (get-in state [:record :settings :iti+end])
+                                              0))))
                      (phase-done-or-next-trial state)
 
                      ;; no change if none needed

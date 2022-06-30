@@ -74,6 +74,8 @@
        (update-settings u #"where=mr" [:where] :mri)
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
        (update-settings u #"where=mr" [:skip-captcha] true)
+       (update-settings u #"where=mr" [:iti-first] settings/MR-FIRST-ITI)
+       (update-settings u #"where=mr" [:iti+end] settings/MR-END-ITI)
 
        (update-settings u #"where=eeg" [:where] :eeg)
        (update-settings u #"where=eeg" [:skip-captcha] true)

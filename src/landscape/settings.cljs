@@ -12,6 +12,10 @@
   "average reaction time (ms) measured from mtruk w/o MR timing.
 used by MR to adjust ITI dur"
   580)
+
+(def ITIDUR 1000)
+(def MR-FIRST-ITI "enough time to get a stable hrf" 3000)
+(def MR-END-ITI "enough time to get a stable hrf" 6000)
 (def mri-glove-keys
   "button glove at MR uses 1-thumb 2-index .... 5-pinky
   key to num: ! is 16 where as 1 is 49"
@@ -64,9 +68,10 @@ used by MR to adjust ITI dur"
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal
     :where :online          ;; :mri :eeg :seeg
+    :iti-first ITIDUR       ;; will be different for MRI
+    :iti+end   0            ;; probably want e.g. 6000 for MRI
 })
 
-(def ITIDUR 1000)
 
 (def TIMES "settings for time constraints"
   {
