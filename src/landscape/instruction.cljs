@@ -401,7 +401,7 @@
                        (update :y #(- % 200))))
     :start (fn[state] (-> state
                         (assoc-in [:water :score] 10)
-                        (assoc-in [:trial] 20)))
+                        (assoc-in [:trial] (* 0.25 (count (get state :well-list ))))))
     :stop (fn[state] (-> state
                         (assoc-in [:water :score] 0)
                         (assoc-in [:trial] 0)))
