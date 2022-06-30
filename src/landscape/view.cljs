@@ -255,7 +255,14 @@
             ;; might be blocked:
             ;;   Scripts may not close windows that were not opened by script.
             ;; about:config -> dom.allow_scripts_to_close_windows
-            [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]])
+            [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]
+            [:br]
+            (let [cnt (-> state (get-in [:record :events]) count dec)]
+              [:p {:style {:font-size "10px"} }
+               cnt " trials in "
+               (/ (- (get-in state [:record :events cnt "done-time"])
+                     (get-in state [:record :events 0 "iti-time"] ))
+                  (* 1000 60)) " minutes"])])
          [:br]]))
 
 

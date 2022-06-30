@@ -94,7 +94,9 @@
 
       :chose
       (-> state-time
-          (update-in [:record :events trial0] #(merge % (wells/wide-info wells))))
+          (update-in [:record :events trial0] #(merge % (wells/wide-info wells)))
+          ;; iti time set in transtion to iti, so we dont see it for first phone home
+          (assoc-in [:record :events trial0 :iti-dur] (get phase :iti-dur)))
 
       ;; :timeout just resturn state-time
 
