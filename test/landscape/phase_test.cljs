@@ -91,3 +91,34 @@
     (is (= 23 (phase/gen-ttl wells_rc {:name :chose :scored nil})))
     (is (= 63 (phase/gen-ttl wells_rc {:name :catch :picked :left :scored nil})))
     (is (= 223 (phase/gen-ttl wells_rc {:name :feedback :scored true :picked :left})))))
+
+(deftest iti-dur-adjust-test
+  "mr itertrial interval duration modified by reaction time"
+  (with-redefs
+    [landscape.settings/RT-EXPECTED 580 ; current value in 20220630
+     landscape.settings/current-settings
+      (atom (-> @landscape.settings/current-settings
+                (assoc-in [:where] :mri)
+                (assoc-in [:times :choice-dur] 2000)
+                (assoc-in [:enforce-timeout] true)))]
+    (is (= 1000 (phase/adjust-iti-time 580 1000)))
+    (is (= 999  (phase/adjust-iti-time 581 1000)))
+    ;; worst case: no response on shortest iti
+    (is (= 80 ;; (- landscape.settings/RT-EXPECTED=580 500)
+           (phase/adjust-iti-time 2000 1500)))
+    ;; no rt means catch means keep
+    (is (= 1500 (phase/adjust-iti-time nil 1500)))))
+
+(deftest iti-dur-adjust-no-mr-test
+  "no iti change when not MR"
+  (with-redefs
+    [landscape.settings/current-settings
+      (atom (-> @landscape.settings/current-settings
+                (assoc-in [:where] :eeg)))]
+    (is (= 1000 (phase/adjust-iti-time  580 1000)))
+    (is (= 1000 (phase/adjust-iti-time  581 1000)))
+    (is (= 1500 (phase/adjust-iti-time 2000 1500)))))
+
+(deftest get-rt-test
+  "more demonstration of where values are stored than actual test"
+  (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} }))))

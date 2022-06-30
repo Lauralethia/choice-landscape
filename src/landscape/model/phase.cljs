@@ -6,7 +6,7 @@
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
             [landscape.model.floater :as floater]
-            ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+            [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
 
@@ -160,6 +160,33 @@
      (assoc state :key (key/key-state-fresh))
     state))
 
+(defn adjust-iti-time
+  "for mr, we modeled variable iti w/mean RT of .58
+  when rt is not that, modify iti-dur"
+  [rt iti-dur]
+  (let [mr?  ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
+             (contains? #{:mri} (get-in @settings/current-settings [:where]))
+        tmax (get-in @settings/current-settings [:times :choice-dur])
+        timeout? (:enforce-timeout @settings/current-settings)
+        texp settings/RT-EXPECTED]
+    ;; no adjustment when not mr
+    (if (and mr? (> rt 0))
+      (- iti-dur (- rt texp))
+      iti-dur)))
+
+(defn get-rt [{:keys [trial record] :as state}]
+        "current trials waiting-time - chose-time.
+nil if catch trial or other weirdness"
+        ;; [:record :events trial0 time-key]
+        (let [t0 (dec trial)            ; zero based trial index
+              trial (get-in record [:events t0])
+              wait (get-in trial ["waiting-time"] 0)
+              chose (get-in trial ["chose-time"] 0)
+              catch (get-in trial ["catch-time"] 0)]
+          (if (and (<= catch 0) (> wait 0) (> chose 0))
+            (- wait chose)
+            nil)))
+
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task
   and by instruction on last instruction).
@@ -225,7 +252,9 @@
                             :hit nil
                             :scored false
                             :picked nil
-                            :iti-dur iti-dur)
+                            ;; TODO: for MR. RT-EXPECTED
+                            ;;  add/rm remaining RT if not catch
+                            :iti-dur (adjust-iti-time (get-rt state) iti-dur))
 
                      ;; restart at chose when iti is over
                      (and (= pname :iti)

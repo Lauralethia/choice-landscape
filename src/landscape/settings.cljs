@@ -8,6 +8,10 @@
    :right 39
    :down  40})
 
+(def RT-EXPECTED
+  "average reaction time (ms) measured from mtruk w/o MR timing.
+used by MR to adjust ITI dur"
+  580)
 (def mri-glove-keys
   "button glove at MR uses 1-thumb 2-index .... 5-pinky
   key to num: ! is 16 where as 1 is 49"
