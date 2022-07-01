@@ -257,12 +257,17 @@
             ;; about:config -> dom.allow_scripts_to_close_windows
             [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]
             [:br]
-            (let [cnt (-> state (get-in [:record :events]) count dec)]
+            (let [events (get-in state [:record :events])
+                  cnt (-> events count dec)
+                  rts (filter #(not(nil? %)) (map #(:rt %) events))]
               [:p {:style {:font-size "10px"} }
                cnt " trials in "
-               (/ (- (get-in state [:record :events cnt "done-time"])
-                     (get-in state [:record :events 0 "iti-time"] ))
-                  (* 1000 60)) " minutes"])])
+               (/ (- (get-in state [:record :end-time :browser])
+                     (get-in state [:record :start-time :browser] ))
+                  (* 1000 60)) " minutes"
+               [:br]
+               "average rt:" (/ (reduce #'+ rts) (count rts)) "ms"
+               ])])
          [:br]]))
 
 

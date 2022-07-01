@@ -154,21 +154,32 @@ nil if timout"
       :waiting
       (-> state-time
           (assoc-in [:record :events trial0 :picked] picked)
+          (assoc-in [:record :events trial0 :rt] (get-rt state-time))
           ;; add picked and avoided
           (update-in [:record :events trial0]
                      #(merge % (wells/wide-info-picked wells picked))))
 
       :feedback
-      (-> (assoc-in state-time [:record :events trial0 :score] (get phase :scored))
+      (-> state-time
+          (assoc-in [:record :events trial0 :score] (get phase :scored))
           (assoc-in [:record :events trial0 :all-keys]
                     (-> state :key :all-pushes))
           (send-identity))
 
-      ;;  TODO!
-      ;; NB. :done is it's own state. using :forum for text based questions
+      ;; mr and eeg see :done. online goes to forum
+      :done
+      (-> state-time
+          (assoc-in [:record :end-time] (records/make-start-time time-cur)))
+      :forum
+      (-> state-time
+          (assoc-in [:record :end-time] (records/make-start-time time-cur)))
+
       ;;     survey would work w/ buttonbox (20220331)
+      ;; 20220701 - survey is not used
       :survey                       ; finished survey about to be done
-      (-> state-time (println "TODO:  SHOULD PHONE HOME ABOUT DONE. also upload survey results"))
+      (-> state-time
+          (assoc-in [:record :end-time] (records/make-start-time time-cur))
+          (println "TODO:  SHOULD PHONE HOME ABOUT DONE. also upload survey results"))
       ;; if no match, default to doing nothing
       state-time
       )))
