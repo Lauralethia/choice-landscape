@@ -81,6 +81,7 @@
        (update-settings u #"where=eeg" [:skip-captcha] true)
        ;; fixed timing
        (update-settings u #"timing=debug" [:timing-method] :debug)
+       (update-settings u #"timing=practice" [:timing-method] :practice)
        (update-settings u #"timing=mra1" [:timing-method] :mrA1)
        (update-settings u #"timing=mra2" [:timing-method] :mrA2)
        (update-settings u #"timing=mrb1" [:timing-method] :mrB1)

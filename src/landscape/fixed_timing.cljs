@@ -28,6 +28,24 @@ see core/gen-well-list")
    :up   {:step 1, :open true, :prob 75},
    :right{:step 2, :open true, :prob 75},
    :iti-dur 1000}],
+:practice
+ [{:left {:step 1, :open true, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open false, :prob 100},
+   :iti-dur 2000}
+  {:left {:step 1, :open true, :prob 100},
+   :up   {:step 1, :open false, :prob 100},
+   :right{:step 2, :open true, :prob 100},
+   :catch-dur 1000,
+   :iti-dur 1500}
+  {:left {:step 1, :open false, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open true, :prob 100},
+   :iti-dur 1500}
+  {:left {:step 1, :open false, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open true, :prob 100},
+   :iti-dur 1500}],
 
  ; 20220627 min iti 1.5, block dur 280; seeds 10987,32226,24271
 :mrA1 [
