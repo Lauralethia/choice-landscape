@@ -16,12 +16,13 @@
   [rt iti-dur]
   (let [mr?  ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
              (contains? #{:mri} (get-in @settings/current-settings [:where]))
-        tmax (get-in @settings/current-settings [:times :choice-dur])
+        tmax (get-in @settings/current-settings [:times :choice-timeout])
         timeout? (:enforce-timeout @settings/current-settings)
         rt (or rt tmax)
         texp settings/RT-EXPECTED]
     ;; no adjustment when not mr
-    (if (and mr? (> rt 0) timeout?)
+    (println "rt: " rt " orig dur:" iti-dur "will be" (- iti-dur (- rt texp)))
+    (if (and mr? rt timeout?)
       (- iti-dur (- rt texp))
       iti-dur)))
 
@@ -127,7 +128,7 @@ nil if timout"
       (-> state-time
           (update-in [:record :events trial0] #(merge % (wells/wide-info wells)))
           ;; dont see iti when it happens. need to go backwards
-          ;; first iti is lost (not part of a trial. avail in settings)
+          ;; first iti is lost (not part of a trial. avail in settings as :iti-first)
           (assoc-in [:record :events (max (dec trial0) 0) :iti-dur] (get phase :iti-dur)))
 
       ;; :timeout just resturn state-time

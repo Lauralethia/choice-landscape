@@ -99,7 +99,7 @@
      landscape.settings/current-settings
       (atom (-> @landscape.settings/current-settings
                 (assoc-in [:where] :mri)
-                (assoc-in [:times :choice-dur] 2000)
+                (assoc-in [:times :choice-timeout] 2000)
                 (assoc-in [:enforce-timeout] true)))]
     (is (= 1000 (phase/adjust-iti-time 580 1000)))
     (is (= 999  (phase/adjust-iti-time 581 1000)))
