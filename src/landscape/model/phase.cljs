@@ -6,9 +6,40 @@
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
             [landscape.model.floater :as floater]
+            [landscape.model.records :as records]
             [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
+(defn adjust-iti-time
+  "for mr, we modeled variable iti w/mean RT of .58
+  when rt is not that, modify iti-dur"
+  [rt iti-dur]
+  (let [mr?  ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
+             (contains? #{:mri} (get-in @settings/current-settings [:where]))
+        tmax (get-in @settings/current-settings [:times :choice-dur])
+        timeout? (:enforce-timeout @settings/current-settings)
+        rt (or rt tmax)
+        texp settings/RT-EXPECTED]
+    ;; no adjustment when not mr
+    (if (and mr? (> rt 0) timeout?)
+      (- iti-dur (- rt texp))
+      iti-dur)))
+
+(defn get-rt [{:keys [trial record] :as state}]
+  "current trials waiting-time - chose-time.
+nil if missing chose or any of the next events (waiting, catch)
+nil if timout"
+  ;; [:record :events trial0 time-key]
+  (let [t0 (dec trial)                  ; zero based trial index
+        trial (get-in record [:events t0])
+        chose (get-in trial ["chose-time"])
+        wait (get-in trial ["waiting-time"])
+        catch (get-in trial ["catch-time"])
+        ;; timeout (get-in trial ["timeout-time"])
+        next (or wait catch)]
+    (if (and next chose)
+      (- next chose)
+      nil)))
 
 ;; 20211007 current phases
 ;; :instruction :chose :waiting :feedback :iti
@@ -74,7 +105,7 @@
 (defn phone-home
   "update :record for sending state
   send state to server right before feedback"
-  [{:keys [trial wells phase] :as state}
+  [{:keys [trial wells phase time-cur] :as state}
    {:keys [start-at] :as next-phase}
    ;; NB. not pulling in name so we can use name function
    ]
@@ -108,6 +139,7 @@
       (-> state-time
           (assoc-in [:record :events trial0 :picked] picked)
           ; undo keypress move
+          (assoc-in [:record :events trial0 :rt] (get-rt state-time))
           ;; TODO: still moves avatar toward chosen direction. disable in model/readkeys?
           (assoc-in [:avatar :destination] (avatar/avatar-dest state :down))
           (assoc-in [:avatar :pos] (avatar/avatar-dest state :down))
@@ -162,33 +194,6 @@
   (if (= next :chose) ;; (= (:name phase) :iti)
      (assoc state :key (key/key-state-fresh))
     state))
-
-(defn adjust-iti-time
-  "for mr, we modeled variable iti w/mean RT of .58
-  when rt is not that, modify iti-dur"
-  [rt iti-dur]
-  (let [mr?  ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
-             (contains? #{:mri} (get-in @settings/current-settings [:where]))
-        tmax (get-in @settings/current-settings [:times :choice-dur])
-        timeout? (:enforce-timeout @settings/current-settings)
-        texp settings/RT-EXPECTED]
-    ;; no adjustment when not mr
-    (if (and mr? (> rt 0))
-      (- iti-dur (- rt texp))
-      iti-dur)))
-
-(defn get-rt [{:keys [trial record] :as state}]
-        "current trials waiting-time - chose-time.
-nil if catch trial or other weirdness"
-        ;; [:record :events trial0 time-key]
-        (let [t0 (dec trial)            ; zero based trial index
-              trial (get-in record [:events t0])
-              wait (get-in trial ["waiting-time"] 0)
-              chose (get-in trial ["chose-time"] 0)
-              catch (get-in trial ["catch-time"] 0)]
-          (if (and (<= catch 0) (> wait 0) (> chose 0))
-            (- wait chose)
-            nil)))
 
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task

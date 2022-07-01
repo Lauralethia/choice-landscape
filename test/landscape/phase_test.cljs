@@ -106,8 +106,8 @@
     ;; worst case: no response on shortest iti
     (is (= 80 ;; (- landscape.settings/RT-EXPECTED=580 500)
            (phase/adjust-iti-time 2000 1500)))
-    ;; no rt means catch means keep
-    (is (= 1500 (phase/adjust-iti-time nil 1500)))))
+    ;; no rt means timeout. use max
+    (is (= 80 (phase/adjust-iti-time nil 1500)))))
 
 (deftest iti-dur-adjust-no-mr-test
   "no iti change when not MR"
@@ -117,8 +117,11 @@
                 (assoc-in [:where] :eeg)))]
     (is (= 1000 (phase/adjust-iti-time  580 1000)))
     (is (= 1000 (phase/adjust-iti-time  581 1000)))
-    (is (= 1500 (phase/adjust-iti-time 2000 1500)))))
+    (is (= 1500 (phase/adjust-iti-time 2000 1500)))
+    (is (= 1500 (phase/adjust-iti-time  nil 1500)))))
 
 (deftest get-rt-test
   "more demonstration of where values are stored than actual test"
-  (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} }))))
+  (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
+  (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "catch-time" 1100}]} })))
+  (is (nil? (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "timeout-time" 1100}]} }))))
