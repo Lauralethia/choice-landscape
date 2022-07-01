@@ -257,9 +257,13 @@
             ;; about:config -> dom.allow_scripts_to_close_windows
             [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]
             [:br]
+
+            ;; 'dec' b/c one extra trial = "done" screen
             (let [events (get-in state [:record :events])
                   cnt (-> events count dec)
-                  rts (filter #(not(nil? %)) (map #(:rt %) events))]
+                  rt_all (map #(:rt %) events)
+                  rts (filter #(not(nil? %)) rt_all)
+                  missed (dec (count (filter #(nil? %) rt_all)))]
               [:p {:style {:font-size "10px"} }
                cnt " trials in "
                (/ (- (get-in state [:record :end-time :browser])
@@ -267,6 +271,7 @@
                   (* 1000 60)) " minutes"
                [:br]
                "average rt:" (/ (reduce #'+ rts) (count rts)) "ms"
+               [:br] "# no resp: " missed
                ])])
          [:br]]))
 
