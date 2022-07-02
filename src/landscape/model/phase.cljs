@@ -286,7 +286,19 @@ nil if timout"
                                             (if (> trial (count (:well-list state)))
                                               (get-in state [:record :settings :iti+end])
                                               0))))
-                     (phase-done-or-next-trial state)
+                     (do (println "waited for iti:" (:iti-dur phase)
+                                  "total time:" (- time-cur (get-in state [:record :start-time :animation])))
+                         (when (> trial0 0)
+                           (println "actual diff:"
+                            ( - time-cur (or
+                              (get-in state [:record :events trial0 "waiting-time"])
+                              (get-in state [:record :events trial0 "catch-time"])
+                              (get-in state [:record :events trial0 "timeout-time"]))
+                             )
+                            "expected:"
+                            (get-in state [:well-list trial0 :iti-dur ])))
+
+                         (phase-done-or-next-trial state))
 
                      ;; no change if none needed
                      :else phase)
