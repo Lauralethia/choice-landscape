@@ -267,7 +267,7 @@
               [:p {:style {:font-size "10px"} }
                cnt " trials in "
                (/ (- (get-in state [:record :end-time :browser])
-                     (get-in state [:record :start-time :browser] ))
+                     (get-in state [:record :start-time :browser]))
                   (* 1000 60)) " minutes"
                [:br]
                "average rt:" (/ (reduce #'+ rts) (count rts)) "ms"

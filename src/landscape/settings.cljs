@@ -13,6 +13,13 @@
 used by MR to adjust ITI dur"
   580)
 
+(def WALKTIME
+  "ms to walk to choice before given feedback. not seen if timeout.
+   should calculate this based on distance and animation ticks
+  but have hardcoded value for MR timing.
+  needed to calculate ideal iti onset"
+  534)
+
 (def ITIDUR 1000)
 (def MR-FIRST-ITI "enough time to get a stable hrf" 3000)
 (def MR-END-ITI "enough time to get a stable hrf" 6000)

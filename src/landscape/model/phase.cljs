@@ -3,28 +3,43 @@
             [landscape.settings :as settings]
             [landscape.key :as key]
             [landscape.http :as http]
+            [landscape.utils :as utils]
             [landscape.sound :as sound]
             [landscape.model.wells :as wells]
             [landscape.model.floater :as floater]
             [landscape.model.records :as records]
-            [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
+            ;[debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
+
+(def is-time [ideal-time first-onset]
+  (and ideal start-at ( >= (- (utils/now) first-onset) ideal-time))
 
 (defn adjust-iti-time
   "for mr, we modeled variable iti w/mean RT of .58
-  when rt is not that, modify iti-dur"
+  when rt is not that, modify iti-dur
+TODO: subtract settings/WALKTIME vs timeout time if did timeout"
   [rt iti-dur]
   (let [mr?  ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
              (contains? #{:mri} (get-in @settings/current-settings [:where]))
         tmax (get-in @settings/current-settings [:times :choice-timeout])
-        timeout? (:enforce-timeout @settings/current-settings)
+        can-timeout? (:enforce-timeout @settings/current-settings)
         rt (or rt tmax)
         texp settings/RT-EXPECTED]
     ;; no adjustment when not mr
     (println "rt: " rt " orig dur:" iti-dur "will be" (- iti-dur (- rt texp)))
-    (if (and mr? rt timeout?)
+    (if (and mr? can-timeout?)
       (- iti-dur (- rt texp))
       iti-dur)))
+
+(defn time-of-response
+  "get the timestamp of event after a button push"
+  [{:keys [trial] :as state}]
+  (let [trial0 (dec trial)
+         trial-record (get-in state [:record :events trial0])]
+     (or
+      (get trial-record "waiting-time")
+      (get trial-record "catch-time")
+      (get trial-record "timeout-time"))))
 
 (defn get-rt [{:keys [trial record] :as state}]
   "current trials waiting-time - chose-time.
@@ -207,6 +222,38 @@ nil if timout"
      (assoc state :key (key/key-state-fresh))
     state))
 
+(defn adjust-over-iti
+  "can be 30ms over when flipping for iti.
+  pretend that didn't happen by adjusting the time-cur used by phase swap.
+  might cause other issues that look to see if time-start is time-cur.
+  if we update choice start time after actual display, RT will be wrong!
+  20220713 - this just prints. does not change any values"
+  [{:keys [trial time-cur] :as state}]
+  (let [trial0 (dec trial)
+        iti-time (get-in state [:record :events trial0 "iti-time"])
+        this-iti (- time-cur iti-time)
+        iti-exp (or (get-in state [:well-list trial0 :iti-dur ]) settings/ITIDUR )
+        iti-over (- this-iti iti-exp)
+        adjust (if (>= trial0 0) iti-over 0)]
+    ;; (let [rt-at (time-of-response state)
+    ;;                            iti (get-in state [:record :events trial0 "iti-time"])
+    ;;                            this-iti (- time-cur fbk) 
+    ;;                            exp (or (get-in state [:well-list trial0 :iti-dur ]) settings/ITIDUR )]
+    ;;                        (println "iti" trial0
+    ;;                                 "\n _to_now(have)\t" this-iti
+    ;;                                 "\n recorded_as\t" exp
+    ;;                                 "\n orig_wanted\t" iti-dur
+    ;;                                 "\n diff_have-rec\t" (- this-iti exp)))
+          
+    (println "iti" trial0
+             "\n iti_to_now(have)\t" this-iti
+             "\n orig_wanted\t" iti-exp
+             "\n adjust\t" adjust)
+    ;; (assoc  state :time-cur (- time-cur adjust))
+    state
+    ))
+   
+
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task
   and by instruction on last instruction).
@@ -280,25 +327,19 @@ nil if timout"
                             :iti-dur (adjust-iti-time (get-rt state) iti-dur))
 
                      ;; restart at chose when iti is over
-                     (and (= pname :iti)
-                          (>= time-since (+ (:iti-dur phase)
+                     (or 
+                      (is-time (get-in state [:well-list trial0 :iti-ideal-end])
+                               (get-in state [:record :start-time :browser]))
+                      ;; TODO: do we want to skip dur check below if we have iti-ideal-end time?
+                      ;;       dur check might be true before iti ideal
+                      (and (= pname :iti)
+                           (>= time-since (+ (:iti-dur phase)
+                                            ;; TODO: if timeout and MR, append walktime
                                             ;; if last iti, add a iti+end
                                             (if (> trial (count (:well-list state)))
                                               (get-in state [:record :settings :iti+end])
-                                              0))))
-                     (do (println "waited for iti:" (:iti-dur phase)
-                                  "total time:" (- time-cur (get-in state [:record :start-time :animation])))
-                         (when (> trial0 0)
-                           (println "actual diff:"
-                            ( - time-cur (or
-                              (get-in state [:record :events trial0 "waiting-time"])
-                              (get-in state [:record :events trial0 "catch-time"])
-                              (get-in state [:record :events trial0 "timeout-time"]))
-                             )
-                            "expected:"
-                            (get-in state [:well-list trial0 :iti-dur ])))
-
-                         (phase-done-or-next-trial state))
+                                              0)))))
+                     (phase-done-or-next-trial (adjust-over-iti state))
 
                      ;; no change if none needed
                      :else phase)
