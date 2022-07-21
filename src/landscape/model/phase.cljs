@@ -11,8 +11,8 @@
             ;[debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
             ))
 
-(def is-time [ideal-time first-onset]
-  (and ideal start-at ( >= (- (utils/now) first-onset) ideal-time))
+(defn is-time [ideal-time first-onset]
+  (and ideal-time first-onset ( >= (- (utils/now) first-onset) ideal-time)))
 
 (defn adjust-iti-time
   "for mr, we modeled variable iti w/mean RT of .58

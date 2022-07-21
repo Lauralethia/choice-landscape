@@ -11,7 +11,6 @@
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
    [landscape.model.floater :as floater]
-   [landscape.model.phase :as phase]
    [landscape.sound :refer [play-sound]]
    [clojure.string]
    ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]

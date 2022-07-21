@@ -1,4 +1,4 @@
-(ns landscape.key-test
+(ns landscape.fixed-timing-test
   (:require [landscape.fixed-timing :as ft]
             [clojure.test :refer [is deftest]]))
 (deftest ideal-trial-time-test

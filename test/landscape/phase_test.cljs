@@ -125,3 +125,14 @@
   (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
   (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "catch-time" 1100}]} })))
   (is (nil? (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "timeout-time" 1100}]} }))))
+
+
+(deftest is-time-test
+  (let [step 30
+        now (utils/now)
+        early (- now step)
+        next (+ now step)]
+    (is (phase/is-time step early))
+    (is (not (phase/is-time step next)))
+    (is (not (phase/is-time step nil)))
+    (is (not (phase/is-time nil early)))))
