@@ -1,15 +1,54 @@
 (ns landscape.phase-test
   (:require
    [landscape.model.phase :as phase]
+   [landscape.utils :as utils]
    [landscape.model.timeline :refer [gen-wells]]
+   [landscape.fixed-timing :refer [iti-ideal-end]]
+   [landscape.instruction :refer [instruction-finished]]
+   [landscape.model :as model]
    [clojure.test :refer [is deftest]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    )
   )
 ;; TODO: check phase-update between instruction and first trial
 ;; are we sending twice?
+(def  global-time (atom 50000))
+(defn step-state
+  "collect transition times. could use phone home"
+  [state & {:keys [step key] :or {step 1000 key nil}}]
+  (println "step-state" step key)
+  (with-redefs [global-time (atom 50000)
+                landscape.utils/now (fn[] (swap! global-time update #(+ % step)) )]
+     (while (>= 2 (:trial @state))
+       ;; let [state-key (if key (model/add-key-to-state @state key) @state)]
+         (reset! state
+                 ;; (phase/phase-update (update @state :time-cur (partial #'+ step)))
+                 (phase/phase-update (update @state :time-cur #(+ % step)))
+                 ;; (model/step-task @state (+ step (:time-cur @state)))
+                 )
+       )
+     (:record @state)))
 
-(deftest update-phase
+(deftest iti-phase-test
+  (let [phase_start {:name :instruction :idx 99 }
+        ;; 6 wells with 1 second iti-dur
+        wells (gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left})
+        ;;                   first trial wells default-iti
+        wells (iti-ideal-end 1000 2000 wells 2000)
+        state (atom (instruction-finished {:trial 0 :time-cur 0 :phase phase_start :well-list wells} 0))]
+    ;; how we start (for documentation more than testing)
+    (is (= :iti (-> @state :phase :name)))
+    (is (= 1000 (-> @state :phase :iti-dur))) ;; this is not accounting for hard coded wait at start
+    (is (= 0 (-> @state :phase :start-at)))
+    ;; ideal trial time (2000) + first wait time (1000) + iti duration of 1000
+    (is (= 4000 (-> @state :well-list first :iti-ideal-end)))
+    ;; go through phases until we get to next trail. (timeout)
+    (is (= 4000 (let [record (:events (step-state state))]         (get-in record [1 "iti-time"]))))
+    ;; pushed key
+    (is (= 4000 (let [record (:events (step-state state :key 38 :step 500))] record ;; (get-in record [2 "iti-time"])
+                     )))))
+
+(deftest phase-update-test
   (let [phase_iti (assoc (phase/set-phase-fresh :iti 10) :iti-dur 100)
         ;; 6 wells
         wells (gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left})
