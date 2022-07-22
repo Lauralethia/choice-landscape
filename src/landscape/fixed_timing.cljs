@@ -16,7 +16,8 @@ see core/gen-well-list")
   (map :iti-ideal-end (iti-ideal-end 4 2 [{:iti-dur 1} {:iti-dur 2} {}] 1))
   (7 11 14)
   TODO: if :catch-dur, ideal-trial-time will be different (no feedback or walk)
-  TODO: need to add iti+end to last ideal-end"
+  TODO: need to add iti+end to last ideal-end
+  NB. iti is first event of trial. but we modeled as if it's the last. first trials iti should be 0?"
   [first-iti ideal-trial-time well-list default-iti-time]
   (let
       [iti-durs  (map #(or (:iti-dur %) default-iti-time) well-list)

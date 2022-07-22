@@ -6,36 +6,43 @@
    [landscape.fixed-timing :refer [iti-ideal-end]]
    [landscape.instruction :refer [instruction-finished]]
    [landscape.model :as model]
+   [landscape.loop :as loop]
    [clojure.test :refer [is deftest]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
    )
   )
 ;; TODO: check phase-update between instruction and first trial
 ;; are we sending twice?
+(def initial-state
+  (let [phase_start {:name :instruction :idx 99 }
+        wells (gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left})
+        ;;                   first trial wells default-iti
+        wells (iti-ideal-end 1000 2000 wells 2000)]
+    (instruction-finished {:trial 0 :start-time 0 :flip-time 0 :time-cur 0
+                           :phase phase_start :well-list wells} 0)))
 (def  global-time (atom 50000))
 (defn step-state
   "collect transition times. could use phone home"
   [state & {:keys [step key] :or {step 1000 key nil}}]
-  (println "step-state" step key)
   (with-redefs [global-time (atom 50000)
                 landscape.utils/now (fn[] (swap! global-time update #(+ % step)) )]
      (while (>= 2 (:trial @state))
-       ;; let [state-key (if key (model/add-key-to-state @state key) @state)]
+       (let [time (:time-cur @state)
+             state-key (if (and key
+                                (not (get-in @state [:key :all-pushes 0]))
+                                (= :chose (get-in @state [:phase :name])))
+                         (model/add-key-to-state @state #js{:keyCode key})
+                         @state)]
          (reset! state
                  ;; (phase/phase-update (update @state :time-cur (partial #'+ step)))
-                 (phase/phase-update (update @state :time-cur #(+ % step)))
-                 ;; (model/step-task @state (+ step (:time-cur @state)))
-                 )
+                 (loop/time-update (+ time step) state-key)
+                 ))
        )
      (:record @state)))
+;; (loop [state initial-state] (let [t (:time-cur state)] (println (select-keys state [:wells :trial :phase :events :time-cur])) (if (< t 1000) (recur (landscape.loop/time-update (+ t 30) state)) state))))
 
 (deftest iti-phase-test
-  (let [phase_start {:name :instruction :idx 99 }
-        ;; 6 wells with 1 second iti-dur
-        wells (gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left})
-        ;;                   first trial wells default-iti
-        wells (iti-ideal-end 1000 2000 wells 2000)
-        state (atom (instruction-finished {:trial 0 :time-cur 0 :phase phase_start :well-list wells} 0))]
+  (let [state (atom initial-state)]
     ;; how we start (for documentation more than testing)
     (is (= :iti (-> @state :phase :name)))
     (is (= 1000 (-> @state :phase :iti-dur))) ;; this is not accounting for hard coded wait at start
@@ -45,7 +52,7 @@
     ;; go through phases until we get to next trail. (timeout)
     (is (= 4000 (let [record (:events (step-state state))]         (get-in record [1 "iti-time"]))))
     ;; pushed key
-    (is (= 4000 (let [record (:events (step-state state :key 38 :step 500))] record ;; (get-in record [2 "iti-time"])
+    (is (= 4000 (let [record (:events (step-state state :key 38 :step 30))] record ;; (get-in record [2 "iti-time"])
                      )))))
 
 (deftest phase-update-test
