@@ -1,11 +1,11 @@
 (ns landscape.phase-test
   (:require
+   [landscape.model :as model :refer [add-key-to-state]]
    [landscape.model.phase :as phase]
-   [landscape.utils :as utils]
    [landscape.model.timeline :refer [gen-wells]]
+   [landscape.utils :as utils]
    [landscape.fixed-timing :refer [iti-ideal-end]]
    [landscape.instruction :refer [instruction-finished]]
-   [landscape.model :as model]
    [landscape.loop :as loop]
    [clojure.test :refer [is deftest]]
    [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
@@ -20,25 +20,33 @@
         wells (iti-ideal-end 1000 2000 wells 2000)]
     (instruction-finished {:trial 0 :start-time 0 :flip-time 0 :time-cur 0
                            :phase phase_start :well-list wells} 0)))
-(def  global-time (atom 50000))
+(def  global-time (atom 5000))
+(defn in-global-time [step] (swap! global-time #(+ % step)))
+
+(defn add-key-once
+  "add a key push only if there aren't any on this trial"
+  [state key]
+  (let [cur-key (get-in state [:key :all-pushes 0 :key])
+        phase   (get-in state [:phase :name])]
+    (if (and key (not cur-key) (= phase :chose ))
+      (model/add-key-to-state state #js{:keyCode key})
+      state)))
+
 (defn step-state
-  "collect transition times. could use phone home"
-  [state & {:keys [step key] :or {step 1000 key nil}}]
-  (with-redefs [global-time (atom 50000)
-                landscape.utils/now (fn[] (swap! global-time update #(+ % step)) )]
-     (while (>= 2 (:trial @state))
-       (let [time (:time-cur @state)
-             state-key (if (and key
-                                (not (get-in @state [:key :all-pushes 0]))
-                                (= :chose (get-in @state [:phase :name])))
-                         (model/add-key-to-state @state #js{:keyCode key})
-                         @state)]
-         (reset! state
-                 ;; (phase/phase-update (update @state :time-cur (partial #'+ step)))
-                 (loop/time-update (+ time step) state-key)
-                 ))
-       )
-     (:record @state)))
+    "collect transition times. could use phone home"
+    [state & {:keys [step simkey] :or {simkey nil step 1000 }}]
+    (with-redefs [global-time (atom step)
+                 landscape.utils/now  #(in-global-time step)]
+      (while (>= 2 (:trial @state))
+        (let [time (:time-cur @state)
+              state-key  (add-key-once @state simkey)]
+          (println "state-key: " (select-keys state-key [:time-cur :phase :key]))
+          ;;  time-update calls phase-update
+          ;; (phase/phase-update (update @state :time-cur (partial #'+ step)))
+          (reset! state
+                  (loop/time-update (+ time step) state-key))))
+      (:record @state)))
+
 ;; (loop [state initial-state] (let [t (:time-cur state)] (println (select-keys state [:wells :trial :phase :events :time-cur])) (if (< t 1000) (recur (landscape.loop/time-update (+ t 30) state)) state))))
 
 (deftest iti-phase-test
