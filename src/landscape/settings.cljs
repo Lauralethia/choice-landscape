@@ -13,6 +13,8 @@
 used by MR to adjust ITI dur"
   580)
 
+(def SAMPLERATE "how often to animate a new frame (ms)" 30)
+
 (def WALKTIME
   "ms to walk to choice before given feedback. not seen if timeout.
    should calculate this based on distance and animation ticks
