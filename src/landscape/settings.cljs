@@ -85,7 +85,9 @@ used by MR to adjust ITI dur"
 (def TIMES "settings for time constraints"
   {
    :choice-timeout 2000 ; ms allowed to make a choice
-   :timeout-dur    1000 ; ms how long to show timeout
+
+   ;; prev 1000 (1sec). should match walktime for consitant timing
+   :timeout-dur    WALKTIME ; ms how long to show timeout
    :iti-dur        ITIDUR ; ms - show white cross. used by gen-wells. MR will be different
 })
 
