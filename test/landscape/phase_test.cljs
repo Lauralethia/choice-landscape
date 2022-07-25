@@ -3,6 +3,7 @@
    [landscape.model :as model :refer [add-key-to-state]]
    [landscape.model.phase :as phase]
    [landscape.model.timeline :refer [gen-wells]]
+   [landscape.fixed_timing :as fixed]
    [landscape.utils :as utils]
    [landscape.fixed-timing :refer [iti-ideal-end]]
    [landscape.instruction :refer [instruction-finished]]
@@ -14,21 +15,45 @@
 ;; TODO: check phase-update between instruction and first trial
 ;; are we sending twice?
 (def initial-state
-  (let [phase_start {:name :instruction :idx 99 }
-        wells (gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left})
+  (let [phase_start {:name :instruction :idx 99}
+        wells (:practice fixed/trials)
         ;;                   first trial wells default-iti
-        wells (iti-ideal-end 1000 2000 wells 2000)]
-    (instruction-finished {:trial 0 :start-time 0 :flip-time 0 :time-cur 0
-                           :phase phase_start :well-list wells} 0)))
-(def  global-time (atom 5000))
+        wells (iti-ideal-end 1000 2000 wells 2000)
+        state {:trial 0 :start-time 0 :flip-time 0 :time-cur 0
+               :phase phase_start :well-list wells}
+        state (instruction-finished state 0)
+        ;; TODO: what is suppose to open the first well?!
+        state (assoc state :wells (first wells))
+        state (assoc-in state [:wells :left :open] true)]
+    state))
+
+(defn print-state [{:keys [time-cur phase key avatar wells well-list] :as state}]
+  (let [t0 (dec (:trial state))]
+    (println "t" t0 time-cur "@" (:name phase) "/" (:start-at phase)
+             " = "  "x,y:" (:pos avatar) "->"  (:destination avatar) "\n"
+              "\t" (select-keys phase [:score :hit :picked :iti-dur]) "\n"
+             "\t" (select-keys key [:have :time]) "\n"
+             "\t" (select-keys wells [:left]) "\n"
+             ;; "\t" (:left (nth well-list t0))
+             )))
+
+(def  global-time (atom 5000)) 
 (defn in-global-time [step] (swap! global-time #(+ % step)))
 
 (defn add-key-once
   "add a key push only if there aren't any on this trial"
+  ;[{:keys [time-cur phase key] :as state} key]
   [state key]
   (let [cur-key (get-in state [:key :all-pushes 0 :key])
-        phase   (get-in state [:phase :name])]
-    (if (and key (not cur-key) (= phase :chose ))
+        phase   (get-in state [:phase :name])
+        start? (> (:time-cur state) (get-in state [:phase :start-at]))
+        ]
+
+  ;(let [cur-key (get-in key [:all-pushes 0 :key])
+  ;     phase   (get-in phase [:name])
+  ;     past-start? ;; (> time-cur (get-in phase [:start-at]))
+  ;     ]
+    (if (and key start? (not cur-key) (= phase :chose ))
       (model/add-key-to-state state #js{:keyCode key})
       state)))
 
@@ -37,11 +62,11 @@
     [state & {:keys [step simkey] :or {simkey nil step 1000 }}]
     (with-redefs [global-time (atom step)
                  landscape.utils/now  #(in-global-time step)]
-      (while (>= 2 (:trial @state))
+      (while (>= 1 (:trial @state))
         (let [time (:time-cur @state)
               state-key  (add-key-once @state simkey)]
-          (println "state-key: " (select-keys state-key [:time-cur :phase :key]))
-          ;;  time-update calls phase-update
+          (print-state state-key)
+          ;;  time-update->next-step->step-task->(read-keys, phase-update, etc)
           ;; (phase/phase-update (update @state :time-cur (partial #'+ step)))
           (reset! state
                   (loop/time-update (+ time step) state-key))))

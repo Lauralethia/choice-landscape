@@ -139,6 +139,10 @@
       ;; wells normally turned off on :chose->:waiting flip
       ;; here we skip right over that into the first :iti so explicitly close
       (wells/wells-close)
+      ;; might have been walking down still. jump ahead so we start as expect
+      ;; only noticebly with 'noinstructions' and when testing
+      (assoc-in  [:avatar :pos] (:avatar-home @current-settings))
+      (assoc-in  [:avatar :destination] (:avatar-home @current-settings))
       (assoc :key (key/key-state-fresh))))
 
 (defn buttonbox? [state]
