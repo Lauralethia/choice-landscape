@@ -88,9 +88,10 @@
 
 (defn key-state-fresh
   "clean slate for keys.
-  20211007 - currently not using util, want, or next"
+  20211007 - currently not using until, want, or next
+  20220725 - remove until want and next"
   []
-  {:until nil :want [] :next nil :have nil :time nil :touch nil :all-pushes [] })
+  {:have nil :time nil :touch nil :all-pushes [] })
 
 (defn side-from-keynum
   "invert map to get up/down/left/right from keypush

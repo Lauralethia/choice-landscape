@@ -55,7 +55,7 @@
 
 
 
-;; :key {:until nil :want [] :next nil :have nil}
+;; :key {:have nil :time nil :touch :all-pushes []}
 (defn read-keys
   "read any keypush, clear, and translate to avatar motion"
   [{:keys [key wells] :as state}]
