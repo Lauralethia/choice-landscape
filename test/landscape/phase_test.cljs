@@ -2,6 +2,7 @@
   (:require
    [landscape.model :as model :refer [add-key-to-state]]
    [landscape.model.phase :as phase]
+   [landscape.model.wells :as wells]
    [landscape.model.timeline :refer [gen-wells]]
    [landscape.fixed_timing :as fixed]
    [landscape.utils :as utils]
@@ -15,27 +16,28 @@
 ;; TODO: check phase-update between instruction and first trial
 ;; are we sending twice?
 (def initial-state
-  (let [phase_start {:name :instruction :idx 99}
+  (let [
+        state  (model/state-fresh)
         wells (:practice fixed/trials)
         ;;                   first trial wells default-iti
         wells (iti-ideal-end 1000 2000 wells 2000)
-        state {:trial 0 :start-time 0 :flip-time 0 :time-cur 0
-               :phase phase_start :well-list wells}
+        state (assoc state :well-list (wells/list-add-pos wells))
+        state (assoc state :phase {:name :instruction :idx 99})
         state (instruction-finished state 0)
         ;; TODO: what is suppose to open the first well?!
-        state (assoc state :wells (first wells))
-        state (assoc-in state [:wells :left :open] true)]
+        ;state (assoc state :wells (first wells))
+        ;; state (assoc-in state [:wells :left :open] true)
+        ]
     state))
 
-(defn print-state [{:keys [time-cur phase key avatar wells well-list] :as state}]
-  (let [t0 (dec (:trial state))]
-    (println "t" t0 time-cur "@" (:name phase) "/" (:start-at phase)
+(defn print-state [{:keys [time-cur trial phase key avatar wells well-list] :as state}]
+    (println trial time-cur "@" (:name phase) "/" (:start-at phase)
              " = "  "x,y:" (:pos avatar) "->"  (:destination avatar) "\n"
               "\t" (select-keys phase [:score :hit :picked :iti-dur]) "\n"
              "\t" (select-keys key [:have :time]) "\n"
              "\t" (select-keys wells [:left]) "\n"
              ;; "\t" (:left (nth well-list t0))
-             )))
+             ))
 
 (def  global-time (atom 5000)) 
 (defn in-global-time [step] (swap! global-time #(+ % step)))
@@ -62,7 +64,7 @@
     [state & {:keys [step simkey] :or {simkey nil step 1000 }}]
     (with-redefs [global-time (atom step)
                  landscape.utils/now  #(in-global-time step)]
-      (while (>= 1 (:trial @state))
+      (while (and (>= 1 (:trial @state)) (< (:time-cur @state) 10000))
         (let [time (:time-cur @state)
               state-key  (add-key-once @state simkey)]
           (print-state state-key)

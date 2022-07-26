@@ -22,7 +22,7 @@ see core/gen-well-list")
   (let
       [iti-durs  (map #(or (:iti-dur %) default-iti-time) well-list)
        end-times (map #(+ first-iti %) (cumsum (map #(+ % ideal-trial-time) iti-durs)))]
-      (map #(merge %1 {:iti-ideal-end %2}) well-list end-times)))
+      (vec (map #(merge %1 {:iti-ideal-end %2}) well-list end-times))))
 
 (def trials
   "fixed timing list of trials. timing for isi and iti can be specified
