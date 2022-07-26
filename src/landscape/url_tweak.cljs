@@ -38,6 +38,18 @@
   (if id
     (str id "_" task "_" timepoint "_" run)
     "unlabeled_run"))
+
+(defn update-walktime
+  "url_tweaks might update step-size and step-sizes.
+  should adjust expect walk time to match"
+  [s]
+  (let [first-well-step (get-in s [:step-sizes 0], 70)
+        avatar-step-size (get-in s [:avatar-step-size], 10)
+        new-walktime (* 2 settings/SAMPLERATE (/ first-well-step avatar-step-size))]
+    (-> s
+        (assoc-in [:times :timeout-dur] new-walktime)
+        (assoc-in [:times :walk-dur] new-walktime))))
+
 (defn task-parameters-url
   "setup parameterization of task settings based on text in the url"
   ([settings] (task-parameters-url settings (get-url-map)))
@@ -96,5 +108,9 @@
        (update-settings u #"landscape=ocean"  [:avatar-home :y] 300)
        (update-settings u #"landscape=ocean"  [:bar-pos :y] 400)
        (update-settings u #"landscape=ocean"  [:step-sizes] [140 0]) ;orig 70
-       (update-settings u #"landscape=ocean"  [:avatar-step-size] 15)
-       (update-settings u #"landscape=ocean"  [:pile] {:x 200 :y 150}))))
+       ; deprecated in favor of walk-rate 20220726
+       (update-settings u #"landscape=ocean"  [:avatar-step-size] 15) 
+       (update-settings u #"landscape=ocean"  [:pile] {:x 200 :y 150})
+       ;; update iti and walk dur based on new avatar and well step-sizes
+       (update-walktime)
+)))

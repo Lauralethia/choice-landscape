@@ -34,8 +34,8 @@
 
 (defn move-avatar [{:keys [avatar time-cur] :as state}]
   (let [step-size (get @current-settings :avatar-step-size 10)
-        time-step 30
-        time-delta (- time-cur (:last-move avatar))
+        ;; time-step 30 ;; settings/SAMPLERATE
+        ;; time-delta (- time-cur (get avatar :last-move (- time-cur SAMPLERATE)))
         cur (:pos avatar)
         dest (:destination avatar)
         dir (which-dir cur dest)

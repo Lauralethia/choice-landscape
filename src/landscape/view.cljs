@@ -10,6 +10,7 @@
    [landscape.key :as key]
    [cljsjs.react]
    [cljsjs.react.dom]
+   [goog.string :as gstring]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
@@ -266,11 +267,12 @@
                   missed (dec (count (filter #(nil? %) rt_all)))]
               [:p {:style {:font-size "10px"} }
                cnt " trials in "
-               (/ (- (get-in state [:record :end-time :browser])
-                     (get-in state [:record :start-time :browser]))
-                  (* 1000 60)) " minutes"
+               (let [ttime (- (get-in state [:record :end-time :browser])
+                              (get-in state [:record :start-time :browser]))
+                     secs (/ ttime 1000)
+                     mins (/ secs  60)] (str (gstring/format "%.3f" mins) "min " secs "secs") )
                [:br]
-               "average rt:" (/ (reduce #'+ rts) (count rts)) "ms"
+               "average rt:" (gstring/format "%0.1f" (/ (reduce #'+ rts) (count rts))) "ms"
                [:br] "# no resp: " missed
                ])])
          [:br]]))

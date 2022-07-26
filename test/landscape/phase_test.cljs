@@ -3,6 +3,7 @@
    [landscape.model :as model :refer [add-key-to-state]]
    [landscape.model.phase :as phase]
    [landscape.model.wells :as wells]
+   [landscape.model.records :as records]
    [landscape.model.timeline :refer [gen-wells]]
    [landscape.fixed_timing :as fixed]
    [landscape.utils :as utils]
@@ -18,6 +19,7 @@
 (def initial-state
   (let [
         state  (model/state-fresh)
+        ;; :left on first trial is open and 100%
         wells (:practice fixed/trials)
         ;;                   first trial wells default-iti
         wells (iti-ideal-end 1000 2000 wells 2000)
@@ -61,10 +63,16 @@
 
 (defn step-state
     "collect transition times. could use phone home"
-    [state & {:keys [step simkey] :or {simkey nil step 1000 }}]
+    [state & {:keys [step simkey ntrials] :or {simkey nil step 1000 ntrials 2}}]
     (with-redefs [global-time (atom step)
                  landscape.utils/now  #(in-global-time step)]
-      (while (and (>= 1 (:trial @state)) (< (:time-cur @state) 10000))
+
+      ;; use redef utils/now to update :browser start-time
+      ;; needed for absolute time.
+      ;; done by instruction-finish but for inintial-state before 'now' is redefeind
+      (swap! state assoc-in [:record :start-time] (records/make-start-time (:time-cur state)))
+
+      (while (and (>= ntrials  (:trial @state)) (< (:time-cur @state) 90000))
         (let [time (:time-cur @state)
               state-key  (add-key-once @state simkey)]
           (print-state state-key)
@@ -83,12 +91,27 @@
     (is (= 1000 (-> @state :phase :iti-dur))) ;; this is not accounting for hard coded wait at start
     (is (= 0 (-> @state :phase :start-at)))
     ;; ideal trial time (2000) + first wait time (1000) + iti duration of 1000
-    (is (= 4000 (-> @state :well-list first :iti-ideal-end)))
-    ;; go through phases until we get to next trail. (timeout)
-    (is (= 4000 (let [record (:events (step-state state))]         (get-in record [1 "iti-time"]))))
-    ;; pushed key
-    (is (= 4000 (let [record (:events (step-state state :key 38 :step 30))] record ;; (get-in record [2 "iti-time"])
-                     )))))
+    (is (= 5000 (-> @state :well-list first :iti-ideal-end)))
+    ;; go through phases until we get to next trail (iti-time 1 is start of 2nd trial)
+    ;; 1. timeout
+    (is (= 4000 (let [record (:events (step-state state))]
+                  (get-in record [1 "iti-time"]))))
+    ;; 2. pushed key
+    (is (= 4000 (let [record (:events (step-state state :simkey 37 :step 30))]
+                  (get-in record [1 "iti-time"]))))
+
+    ;;  check out second trial
+    ;; 1. timeout
+    (is (= 8500 (get-in @state [:well-list 1 :iti-ideal-end])))
+    (is (= 9000 (let [record (:events (step-state state :ntrials 2 :step 43))]
+                  (get-in record [2 "iti-time"]))))
+    ;; 2. pushed key
+    (is (= 9000 (let [record (:events (step-state state :simkey 37 :step 43 :ntrials 2))]
+                  (get-in record [2 "iti-time"]))))
+    ;; third
+    ;; 13085
+    (is (= 9000 (let [record (:events (step-state state :simkey 37 :step 43 :ntrials 3))]
+                  (get-in record [3 "iti-time"]))))))
 
 (deftest phase-update-test
   (let [phase_iti (assoc (phase/set-phase-fresh :iti 10) :iti-dur 100)
