@@ -292,11 +292,16 @@
     (sab/html [:div  {:style {:opacity "50%"}}  html])
     html))
 
-
+(defn fmt-ms-s [ms] (gstring/format "%.2f" (/ ms 1000)))
 (defn show-events [initial keys times]
   [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
-   (map #(html [:td (gstring/format "%.2f" (/ (- (get times (str % "-time"), initial) initial) 1000))])
-         keys)])
+   (html [(map #(html [:td (fmt-ms-s (- (get times (str % "-time"), initial) initial))])
+               keys)
+          [:td (fmt-ms-s (- (get times "waiting-time") (get times "chose-time")))]
+          [:td (fmt-ms-s (:iti-dur times))]
+          [:td (fmt-ms-s (:iti-orig times))]
+          [:td (fmt-ms-s (:iti-ideal-end times))]
+          ])])
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -312,9 +317,10 @@
                  [:br] (str "have key: " (select-keys (:key state) [:have :time]))
                  [:br] [:button {:on-click (fn [] (popup-state state))} "show"]
                  (let [time-keys ["iti" "chose" "waiting" "timeout" "feedback"]
-                       start-time (get-in state [:record :start-times :animation])]
+                       start-time (get-in state [:record :start-time :animation])
+                       iti-dur 0]
                    [:table {:border "1px" :style {:background "white"}}
-                    [:tr (map #(html [:td %]) time-keys)]
+                    [:tr (map #(html [:td %]) (concat time-keys ["rt" "itidur" "itiorig" "itiend"])) ]
                     (map  (partial show-events start-time time-keys)
                           (get-in state [:record :events]))])])
       
