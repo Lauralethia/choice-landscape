@@ -3,7 +3,7 @@
             [landscape.utils :as utils]
             [landscape.sprite :as sprite]
             ;; [debux.cs.core :as d :refer-macros [clog clogn dbg dbgn dbg-last break]]
-            [landscape.settings :refer [current-settings]]))
+            [landscape.settings :refer [current-settings SAMPLERATE]]))
 
 ;;avatar
 (defn which-dir [cur dest]
@@ -34,12 +34,18 @@
 
 (defn move-avatar [{:keys [avatar time-cur] :as state}]
   (let [step-size (get @current-settings :avatar-step-size 10)
-        ;; time-step 30 ;; settings/SAMPLERATE
-        ;; time-delta (- time-cur (get avatar :last-move (- time-cur SAMPLERATE)))
+        ;; adjust step size by how clsoe we are to ideal flip
+        ;; freq ~5ms off. but effect is not cummulative. TODO: should be based on total duration
+        time-delta (- time-cur (get avatar :last-move, (- time-cur SAMPLERATE)))
+        step-size (* step-size (/ time-delta SAMPLERATE))
+
         cur (:pos avatar)
         dest (:destination avatar)
         dir (which-dir cur dest)
         moved (move-closer cur dest step-size dir)]
+
+    ;; freq ~5ms off.
+    ;; (when (not(= time-delta SAMPLERATE)) (println "WARNING: time delta not samplerate" time-delta))
       (-> state
         (assoc-in [:avatar :pos] moved)
         (assoc-in [:avatar :last-move] time-cur)
