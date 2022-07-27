@@ -292,6 +292,11 @@
     (sab/html [:div  {:style {:opacity "50%"}}  html])
     html))
 
+
+(defn show-events [initial keys times]
+  [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
+   (map #(html [:td (gstring/format "%.2f" (/ (- (get times (str % "-time"), initial) initial) 1000))])
+         keys)])
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -301,9 +306,17 @@
      [:div#background {:class vis-class}
       (progress-bar state)
 
-      (if DEBUG [:div {:style {:color "white"}}
-                 [:br] (str (:key state))
-                 [:button {:on-click (fn [] (popup-state state))} "show"]])
+      (if DEBUG [:div {:style {:color "white" :background-color "black" :position "absolute" :top "500px"}}
+                 [:br] (str "trial: " (:trial state))
+                 [:br] (str "phase:" (select-keys phase [:name :score :iti-dur :iti-ideal-end :picked]))
+                 [:br] (str "have key: " (select-keys (:key state) [:have :time]))
+                 [:br] [:button {:on-click (fn [] (popup-state state))} "show"]
+                 (let [time-keys ["iti" "chose" "waiting" "timeout" "feedback"]
+                       start-time (get-in state [:record :start-times :animation])]
+                   [:table {:border "1px" :style {:background "white"}}
+                    [:tr (map #(html [:td %]) time-keys)]
+                    (map  (partial show-events start-time time-keys)
+                          (get-in state [:record :events]))])])
       
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
