@@ -139,10 +139,15 @@
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
 
-  ; start with instructions
-  ; where lp/time-update will call into model/next-step and disbatch to
-  ; instruction/step (and when phase name changes, will redirect to model/step-task)
-  ; phase name change handled by phase/set-phase-fresh
+  (let [time-trial (+ settings/RT-EXPECTED (get @settings/current-settings [:times :walk-dur]))
+        time-iti   (get @settings/current-settings [:times :iti-dur])
+        well-ideal-end (utils/iti-ideal-end time-trial (:well-list @STATE) time-iti)]
+     (swap! STATE assoc :well-list well-ideal-end))
+
+  ;; start with instructions
+  ;; where lp/time-update will call into model/next-step and disbatch to
+  ;; instruction/step (and when phase name changes, will redirect to model/step-task)
+  ;; phase name change handled by phase/set-phase-fresh
   (swap! STATE assoc-in [:phase :name] :instruction)
 
   ;; jump to ready screen if no instructions

@@ -12,23 +12,32 @@
             ))
 
 (defn is-time [ideal-time first-onset]
-  (and ideal-time first-onset ( >= (- (utils/now) first-onset) ideal-time)))
+  (let [total-dur (- (utils/now) first-onset)
+        time? (and ideal-time first-onset ( >= total-dur ideal-time))]
+       (when time? (println "\tovertime @" total-dur " (ideal:" ideal-time ", now  "(utils/now)")"))
+       time?))
 
 (defn adjust-iti-time
   "for mr, we modeled variable iti w/mean RT of .58
   when rt is not that, modify iti-dur
-TODO: subtract settings/WALKTIME vs timeout time if did timeout"
-  [rt iti-dur]
-  (let [mr?  ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
-             (contains? #{:mri} (get-in @settings/current-settings [:where]))
+
+  this competes with iti-ideal-end. only one is needed.
+  iti-ideal-end will also compensate for slow display
+
+  also see adjust-over-iti -- used just for printing (20220727)"
+  [rt-prev iti-dur]
+  (let [mr? ;(re-find #"^:mr" (str (get @settings/current-settings :timing-method)))
+        (contains? #{:mri} (get-in @settings/current-settings [:where]))
         tmax (get-in @settings/current-settings [:times :choice-timeout])
         can-timeout? (:enforce-timeout @settings/current-settings)
-        rt (or rt tmax)
+        rt (or rt-prev tmax)
         texp settings/RT-EXPECTED]
     ;; no adjustment when not mr
-    (println "rt: " rt " orig dur:" iti-dur "will be" (- iti-dur (- rt texp)))
     (if (and mr? can-timeout?)
-      (- iti-dur (- rt texp))
+      (do
+        (let [adjust (- iti-dur (- rt texp))]
+          (println "rt: " rt "orig dur:" iti-dur "will be" adjust)
+          adjust))
       iti-dur)))
 
 (defn time-of-response
@@ -47,7 +56,9 @@ nil if missing chose or any of the next events (waiting, catch)
 nil if timout"
   ;; [:record :events trial0 time-key]
   (let [t0 (dec trial)                  ; zero based trial index
-        trial (get-in record [:events t0])
+        ;first trial has no prev RT. fake as expected for rt-adjust calc
+        trial (if (or (< t0 0) (= :instruction (get-in state [:phase :name]))) {"chose-time" 0 "waiting-time" settings/RT-EXPECTED}
+                (get-in record [:events t0]))
         chose (get-in trial ["chose-time"])
         wait (get-in trial ["waiting-time"])
         catch (get-in trial ["catch-time"])
@@ -137,14 +148,19 @@ nil if timout"
       ;; iti is start of trial and task (prev will be :instruction)
       :iti
       (-> state-time
-          (assoc-in [:record :events trial0 :trial] trial))
+          (assoc-in [:record :events trial0 :trial] trial)
+          (assoc-in [:record :events trial0 :iti-orig]
+                    (get-in state [:well-list trial0 :iti-dur], settings/ITIDUR))
+          (assoc-in [:record :events trial0 :iti-ideal-end]
+                    (get-in state [:well-list trial0 :iti-ideal-end]))
+          )
 
       :chose
       (-> state-time
           (update-in [:record :events trial0] #(merge % (wells/wide-info wells)))
-          ;; dont see iti when it happens. need to go backwards
-          ;; first iti is lost (not part of a trial. avail in settings as :iti-first)
-          (assoc-in [:record :events (max (dec trial0) 0) :iti-dur] (get phase :iti-dur)))
+          ;; iti-dur is in phase after switch to iti
+          (assoc-in [:record :events trial0 :iti-dur] (get phase :iti-dur))
+          )
 
       ;; :timeout just resturn state-time
 
@@ -203,12 +219,14 @@ nil if timout"
 ;; TODO: well-list update also done by
 ;; wells/wells-update-which-open. not sure which is a better place
 (defn update-next-trial-on-iti
-  "when iti, update to the next well info and trial"
+  "iti is start of new trial: update to the next well info and trial.
+  dont need to update to next trial if coming from instructions"
   [{:keys [trial well-list] :as state} next-name ]
   (let [ntrials (count well-list)
-        trial (max 1 (inc trial))       ; if we are updating, its at iti and moving to next trial
+        trial (max 1 (inc trial)) ; if we are updating, its at iti and moving to next trial
         trial0 (dec (min trial ntrials))]
-    (if (= next-name :iti)
+    (if (and (= next-name :iti)
+             (not (= :instruction (get-in state [:phase :name]))))
       (-> state
           ;; (assoc state :wells (get (dec trial) well-list))
           (assoc :trial trial))
@@ -235,25 +253,15 @@ nil if timout"
         iti-exp (or (get-in state [:well-list trial0 :iti-dur ]) settings/ITIDUR )
         iti-over (- this-iti iti-exp)
         adjust (if (>= trial0 0) iti-over 0)]
-    ;; (let [rt-at (time-of-response state)
-    ;;                            iti (get-in state [:record :events trial0 "iti-time"])
-    ;;                            this-iti (- time-cur fbk) 
-    ;;                            exp (or (get-in state [:well-list trial0 :iti-dur ]) settings/ITIDUR )]
-    ;;                        (println "iti" trial0
-    ;;                                 "\n _to_now(have)\t" this-iti
-    ;;                                 "\n recorded_as\t" exp
-    ;;                                 "\n orig_wanted\t" iti-dur
-    ;;                                 "\n diff_have-rec\t" (- this-iti exp)))
           
     (println "iti" trial0
              "\n iti_to_now(have)\t" this-iti
              "\n orig_wanted\t" iti-exp
-             "\n adjust\t" adjust)
+             "\n would adjust\t" adjust)
     ;; (assoc  state :time-cur (- time-cur adjust))
     state
     ))
    
-
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task
   and by instruction on last instruction).
@@ -274,9 +282,10 @@ nil if timout"
         ;; iti-dur for first trial0==-1
         ;; 20220726 - confirmed first trial is 0. state-fresh starts with 0
         ;; 20220727 - remove (get @settings/current-settings :iti-first)
+        ;;            iti is start of next trial. use trial as next
         iti-dur (if (< trial0 0)
                   (do (println "WARNING: @ trail" trial) settings/ITIDUR)
-                  (get-in state [:well-list trial0 :iti-dur], settings/ITIDUR))
+                  (get-in state [:well-list trial :iti-dur], settings/ITIDUR))
 
         catch-dur (if (< trial0 0) 0  (get-in state [:well-list trial0 :catch-dur] 0))
         rt-max (get-in @settings/current-settings [:times :choice-timeout])
@@ -307,29 +316,37 @@ nil if timout"
                      (and (= pname :waiting) (some? hit))
                      (assoc phase :name :feedback :sound-at nil :start-at time-cur)
 
+                     ;; instruction update gets first iti
+                     (= pname :instruction)
+                     (assoc phase :name :iti :start-at time-cur :hit nil :scored false :picked nil
+                              :iti-dur (get-in state [:well-list 0 :iti-dur] settings/ITIDUR))
+
                      ;; move onto iti or start the task: instruction -> iti
                      ;; might be comming from feedback, timeout, or instructions
                      (or (and (= pname :feedback) (avatar/avatar-home? state))
-                         (= pname :instruction)
                          (and (= pname :catch)
                               (>= time-since catch-dur))
                          (and (= pname :timeout)
                               (>= time-since (get-in @settings/current-settings [:times :timeout-dur]))))
 
-                     (assoc phase
-                            :name :iti
-                            :start-at time-cur
-                            ;; 20220527 - clear trial info. untested change
-                            ;; but nothing should depend on these being held over
-                            :hit nil
-                            :scored false
-                            :picked nil
-                            :iti-dur (adjust-iti-time (get-rt state) iti-dur))
+                     (do
+                       (println "update from trial " trial " with phase: " phase)
+                       (assoc phase
+                              :name :iti
+                              :start-at time-cur
+                              ;; 20220527 - clear trial info. untested change
+                              ;; but nothing should depend on these being held over
+                              :hit nil
+                              :scored false
+                              :picked nil
+                              :iti-dur (adjust-iti-time (get-rt state) iti-dur)))
 
                      ;; restart at chose when iti is over
                      (or 
-                      (is-time (get-in state [:well-list trial0 :iti-ideal-end])
-                               (get-in state [:record :start-time :browser]))
+                      (and (= pname :iti)
+                           (contains? #{:mri} (get-in @settings/current-settings [:where]))
+                           (is-time (get-in state [:well-list trial0 :iti-ideal-end])
+                                                   (get-in state [:record :start-time :browser])))
                       ;; TODO: do we want to skip dur check below if we have iti-ideal-end time?
                       ;;       dur check might be true before iti ideal
                       (and (= pname :iti)
@@ -339,7 +356,9 @@ nil if timout"
                                             (if (> trial (count (:well-list state)))
                                               (get-in state [:record :settings :iti+end])
                                               0)))))
-                     (phase-done-or-next-trial (adjust-over-iti state))
+                     (phase-done-or-next-trial state)
+                     ;; alternative use adjust-over-iti to see print how far off we are
+                     ;; (phase-done-or-next-trial (adjust-over-iti state))
 
                      ;; no change if none needed
                      :else phase)

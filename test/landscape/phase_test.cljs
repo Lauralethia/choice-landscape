@@ -41,7 +41,7 @@
               "\t" (select-keys phase [:score :hit :picked :iti-dur]) "\n"
              "\t" (select-keys key [:have :time]) "\n"
              "\t" (select-keys wells [:left]) "\n"
-             "\t" (get-in well-list [(dec trial) :iti-ideal-end]) "\n"
+             "\t" "iti-end" (get-in well-list [(dec trial) :iti-ideal-end]) "\n"
              ;; "\t" (:left (nth well-list t0))
              ))
 
@@ -110,11 +110,11 @@
 
     ;;  check out second trial
     ;; 1. timeout
-    (is (= 7500 (get-in @state [:well-list 2 :iti-ideal-end])))
-    (is (= 7500 (let [record (:events (step-state state :ntrials 2 :step 43))]
+    (is (= 7000 (get-in @state [:well-list 2 :iti-ideal-end])))
+    (is (= 7000 (let [record (:events (step-state state :ntrials 2 :step 43))]
                   (get-in record [2 "iti-time"]))))
     ;; 2. pushed key
-    (is (= 7500 (let [record (:events (step-state state :step 43 :ntrials 2 :simkey 37))]
+    (is (= 7000 (let [record (:events (step-state state :step 43 :ntrials 2 :simkey 37))]
              (get-in record [2 "iti-time"]))))
     
     ;; third
@@ -238,6 +238,8 @@
 
 (deftest get-rt-test
   "more demonstration of where values are stored than actual test"
+  (is (= settings/RT-EXPECTED (phase/get-rt {:trial 0 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
+  (is (= settings/RT-EXPECTED (phase/get-rt {:trial 1 :phase {:name :instruction} :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
   (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
   (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "catch-time" 1100}]} })))
   (is (nil? (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "timeout-time" 1100}]} }))))
