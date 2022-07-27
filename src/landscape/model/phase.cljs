@@ -272,15 +272,15 @@ nil if timout"
         picked (get phase :picked)
         time-since (- time-cur (:start-at phase))
         ;; iti-dur for first trial0==-1
-        iti-dur (or (if (< trial0 0)
-                      (get @settings/current-settings :iti-first)
-                      (get-in state [:well-list trial0 :iti-dur]))
-                    settings/ITIDUR
-                    )
-        catch-dur (get-in state [:well-list trial0 :catch-dur] 0)
+        ;; 20220726 - confirmed first trial is 0. state-fresh starts with 0
+        ;; 20220727 - remove (get @settings/current-settings :iti-first)
+        iti-dur (if (< trial0 0)
+                  (do (println "WARNING: @ trail" trial) settings/ITIDUR)
+                  (get-in state [:well-list trial0 :iti-dur], settings/ITIDUR))
+
+        catch-dur (if (< trial0 0) 0  (get-in state [:well-list trial0 :catch-dur] 0))
         rt-max (get-in @settings/current-settings [:times :choice-timeout])
         phase-next (cond
-
                      ;; phase=catch (isi) if response or timeout w/catch-dur
                      ;; use catch-dur (def 0) from well-list as both duration (later)
                      ;; and as flag for if trial is catch

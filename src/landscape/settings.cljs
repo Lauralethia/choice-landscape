@@ -82,7 +82,6 @@ used by MR to adjust ITI dur"
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal
     :where :online          ;; :mri :eeg :seeg
-    :iti-first ITIDUR       ;; will be different for MRI
     :iti+end   0            ;; probably want e.g. 6000 for MRI
 })
 
