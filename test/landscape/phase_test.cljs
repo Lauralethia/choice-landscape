@@ -8,7 +8,6 @@
    [landscape.fixed_timing :as fixed]
    [landscape.utils :as utils]
    [landscape.settings :as settings]
-   [landscape.fixed-timing :refer [iti-ideal-end]]
    [landscape.instruction :refer [instruction-finished]]
    [landscape.loop :as loop]
    [clojure.test :refer [is deftest]]
@@ -24,7 +23,9 @@
         wells (:practice fixed/trials)
         ;;                  trial wells default-iti
         ;;                  1000        2000
-        wells (iti-ideal-end (+ settings/WALKTIME settings/RT-EXPECTED) wells 2000)
+        time-trial (+ settings/WALKTIME settings/RT-EXPECTED)
+        ;; ime-trial 1500
+        wells (utils/iti-ideal-end time-trial wells settings/ITIDUR)
         state (assoc state :well-list (vec (wells/list-add-pos wells)))
         state (assoc state :phase {:name :instruction :idx 17})
         ;; state (assoc state :trial 0)

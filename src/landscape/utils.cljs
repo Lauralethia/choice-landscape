@@ -33,3 +33,27 @@
   (let [thres 10]
     (< (distance a b) 
         thres)))
+
+ ;(with-redefs [landscape.settings/current-settings (atom (-> @landscape.settings/current-settings (assoc-in [:nTrials :pairsInBlock] 1) (assoc-in [:nTrials :devalue] 1)(assoc-in [:nTrials :devalue-good] 1)))] (landscape.core/gen-well-list))
+(defn cumsum [v]
+  (loop [in v
+         out []]
+    (if (= (count in) 0)
+      out
+      (recur (rest in)
+             (conj out (+ (first in) (last out) ))))))
+
+(defn iti-ideal-end
+  "add :iti-ideal-end to well list for MR timing
+  (map :iti-ideal-end (iti-ideal-end 2 [{:iti-dur 1} {:iti-dur 2} {}] 1))
+  (1 5 8)
+  TODO: if :catch-dur, ideal-trial-time will be different (no feedback or walk)
+  TODO: need to add iti+end to last ideal-end "
+  [ideal-trial-time well-list default-iti-time]
+  (let
+      [iti-durs  (map #(or (:iti-dur %) default-iti-time) well-list)
+       end-times (cumsum (map #(+ % ideal-trial-time) iti-durs))
+       ;; first iti happens before ideal-trial-time
+       ;; rmoe that from all elements
+       end-times (map #(- %  ideal-trial-time) end-times)]
+      (vec (map #(merge %1 {:iti-ideal-end %2}) well-list end-times))))
