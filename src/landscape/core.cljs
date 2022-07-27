@@ -140,7 +140,7 @@
     (swap! STATE assoc :wells (first well-list)))
 
   (let [time-trial (+ settings/RT-EXPECTED (get @settings/current-settings [:times :walk-dur]))
-        time-iti   (get @settings/current-settings [:times :iti-dur])
+        time-iti   (get-in @settings/current-settings [:times :iti-dur] settings/ITIDUR)
         well-ideal-end (utils/iti-ideal-end time-trial (:well-list @STATE) time-iti)]
      (swap! STATE assoc :well-list well-ideal-end))
 

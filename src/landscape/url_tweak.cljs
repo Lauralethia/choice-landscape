@@ -89,6 +89,9 @@
        ; 20220727 - first iti is on first trial. should be set by MR timing
        ;(update-settings u #"where=mr" [:iti-first] settings/MR-FIRST-ITI)
        (update-settings u #"where=mr" [:iti+end] settings/MR-END-ITI)
+       ; unlike to be need. iti is specfied for all trials in well-list for mr when using timing=
+       ; here for testing with randomly generated timings
+       (update-settings u #"where=mr" [:times :iti-dur] 2000)
 
        (update-settings u #"where=eeg" [:where] :eeg)
        (update-settings u #"where=eeg" [:skip-captcha] true)

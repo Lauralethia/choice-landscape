@@ -279,13 +279,14 @@ nil if timout"
         hit (get phase :hit)
         picked (get phase :picked)
         time-since (- time-cur (:start-at phase))
+        iti-default (get-in @settings/current-settings [:times :iti-dur])
         ;; iti-dur for first trial0==-1
         ;; 20220726 - confirmed first trial is 0. state-fresh starts with 0
         ;; 20220727 - remove (get @settings/current-settings :iti-first)
         ;;            iti is start of next trial. use trial as next
         iti-dur (if (< trial0 0)
-                  (do (println "WARNING: @ trail" trial) settings/ITIDUR)
-                  (get-in state [:well-list trial :iti-dur], settings/ITIDUR))
+                  (do (println "WARNING: @ trail" trial) iti-default)
+                  (get-in state [:well-list trial :iti-dur], iti-default))
 
         catch-dur (if (< trial0 0) 0  (get-in state [:well-list trial0 :catch-dur] 0))
         rt-max (get-in @settings/current-settings [:times :choice-timeout])
@@ -319,7 +320,8 @@ nil if timout"
                      ;; instruction update gets first iti
                      (= pname :instruction)
                      (assoc phase :name :iti :start-at time-cur :hit nil :scored false :picked nil
-                              :iti-dur (get-in state [:well-list 0 :iti-dur] settings/ITIDUR))
+                              :iti-dur (get-in state [:well-list 0 :iti-dur],
+                                               (get-in @settings/current-settings [:times :iti], settings/ITIDUR)))
 
                      ;; move onto iti or start the task: instruction -> iti
                      ;; might be comming from feedback, timeout, or instructions
