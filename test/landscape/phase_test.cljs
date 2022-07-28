@@ -2,10 +2,12 @@
   (:require
    [landscape.model :as model :refer [add-key-to-state]]
    [landscape.model.phase :as phase]
+   [landscape.model.wells :as wells]
+   [landscape.model.records :as records]
    [landscape.model.timeline :refer [gen-wells]]
    [landscape.fixed_timing :as fixed]
    [landscape.utils :as utils]
-   [landscape.fixed-timing :refer [iti-ideal-end]]
+   [landscape.settings :as settings]
    [landscape.instruction :refer [instruction-finished]]
    [landscape.loop :as loop]
    [clojure.test :refer [is deftest]]
@@ -15,27 +17,33 @@
 ;; TODO: check phase-update between instruction and first trial
 ;; are we sending twice?
 (def initial-state
-  (let [phase_start {:name :instruction :idx 99}
+  (let [
+        state  (model/state-fresh)
+        ;; :left on first trial is open and 100%
         wells (:practice fixed/trials)
-        ;;                   first trial wells default-iti
-        wells (iti-ideal-end 1000 2000 wells 2000)
-        state {:trial 0 :start-time 0 :flip-time 0 :time-cur 0
-               :phase phase_start :well-list wells}
-        state (instruction-finished state 0)
+        ;;                  trial wells default-iti
+        ;;                  1000        2000
+        time-trial (+ settings/WALKTIME settings/RT-EXPECTED)
+        ;; ime-trial 1500
+        wells (utils/iti-ideal-end time-trial wells settings/ITIDUR)
+        state (assoc state :well-list (vec (wells/list-add-pos wells)))
+        state (assoc state :phase {:name :instruction :idx 17})
+        ;; state (assoc state :trial 0)
         ;; TODO: what is suppose to open the first well?!
-        state (assoc state :wells (first wells))
-        state (assoc-in state [:wells :left :open] true)]
+        ;state (assoc state :wells (first wells))
+        ;; state (assoc-in state [:wells :left :open] true)
+        ]
     state))
 
-(defn print-state [{:keys [time-cur phase key avatar wells well-list] :as state}]
-  (let [t0 (dec (:trial state))]
-    (println "t" t0 time-cur "@" (:name phase) "/" (:start-at phase)
+(defn print-state [{:keys [time-cur trial phase key avatar wells well-list] :as state}]
+    (println trial time-cur "@" (:name phase) "/" (:start-at phase)
              " = "  "x,y:" (:pos avatar) "->"  (:destination avatar) "\n"
               "\t" (select-keys phase [:score :hit :picked :iti-dur]) "\n"
              "\t" (select-keys key [:have :time]) "\n"
              "\t" (select-keys wells [:left]) "\n"
+             "\t" "iti-end" (get-in well-list [(dec trial) :iti-ideal-end]) "\n"
              ;; "\t" (:left (nth well-list t0))
-             )))
+             ))
 
 (def  global-time (atom 5000)) 
 (defn in-global-time [step] (swap! global-time #(+ % step)))
@@ -59,10 +67,17 @@
 
 (defn step-state
     "collect transition times. could use phone home"
-    [state & {:keys [step simkey] :or {simkey nil step 1000 }}]
+    [state & {:keys [step simkey ntrials maxtime] :or {simkey nil step 1000 ntrials 2 maxtime 90000}}]
     (with-redefs [global-time (atom step)
                  landscape.utils/now  #(in-global-time step)]
-      (while (>= 1 (:trial @state))
+
+      ;; use redef utils/now to update :browser start-time
+      ;; needed for absolute time.
+      ;; done by instruction-finish but for inintial-state before 'now' is redefeind
+      ;; (swap! state assoc-in [:record :start-time] (records/make-start-time (:time-cur state)))
+      (swap! state instruction-finished 0) 
+
+      (while (and (>= ntrials  (:trial @state)) (< (:time-cur @state) maxtime))
         (let [time (:time-cur @state)
               state-key  (add-key-once @state simkey)]
           (print-state state-key)
@@ -77,16 +92,38 @@
 (deftest iti-phase-test
   (let [state (atom initial-state)]
     ;; how we start (for documentation more than testing)
-    (is (= :iti (-> @state :phase :name)))
-    (is (= 1000 (-> @state :phase :iti-dur))) ;; this is not accounting for hard coded wait at start
-    (is (= 0 (-> @state :phase :start-at)))
-    ;; ideal trial time (2000) + first wait time (1000) + iti duration of 1000
-    (is (= 4000 (-> @state :well-list first :iti-ideal-end)))
-    ;; go through phases until we get to next trail. (timeout)
-    (is (= 4000 (let [record (:events (step-state state))]         (get-in record [1 "iti-time"]))))
-    ;; pushed key
-    (is (= 4000 (let [record (:events (step-state state :key 38 :step 30))] record ;; (get-in record [2 "iti-time"])
-                     )))))
+    (is (= 1    (-> @state :trial)))
+    (is (= :iti (-> @state (instruction-finished 0) :phase :name)))
+    (is (= 2000 (-> @state (instruction-finished 0) :phase :iti-dur))) 
+    (is (= 0    (-> @state (instruction-finished 0) :phase :start-at)))
+
+    ;; ideal trial time (2000) + iti wait time (2000) 
+    (is (= 2000 (-> @state (instruction-finished 0) (get-in  [:well-list 0 :iti-ideal-end]))))
+    ;; go through phases until we get to next trail (iti-time 1 is start of 2nd trial)
+    ;; 1. timeout
+    (is (= 4500) (get-in @state [:well-list 1 :iti-ideal-end]))
+    (is (= 4500 (let [record (:events (step-state state :step 500))]
+                  (get-in record [1 "iti-time"]))))
+    ;; 2. pushed key. using 43 to off from expected 30ms betwen frames for tests
+    (is (= 4500 (let [record (:events (step-state state :simkey 37 :step 43))]
+                  (get-in record [1 "iti-time"]))))
+
+    ;;  check out second trial
+    ;; 1. timeout
+    (is (= 7000 (get-in @state [:well-list 2 :iti-ideal-end])))
+    (is (= 7000 (let [record (:events (step-state state :ntrials 2 :step 43))]
+                  (get-in record [2 "iti-time"]))))
+    ;; 2. pushed key
+    (is (= 7000 (let [record (:events (step-state state :step 43 :ntrials 2 :simkey 37))]
+             (get-in record [2 "iti-time"]))))
+    
+    ;; third
+    (is (= (get-in @state [:well-list 3 :iti-ideal-end])
+           (let [record (:events (step-state state :simkey 37 :step 43 :ntrials 3))]
+                  (get-in record [3 "iti-time"]))))
+    (is (= (get-in @state [:well-list 3 :iti-ideal-end])
+           (let [record (:events (step-state state :step 43 :ntrials 3))]
+                  (get-in record [3 "iti-time"]))))))
 
 (deftest phase-update-test
   (let [phase_iti (assoc (phase/set-phase-fresh :iti 10) :iti-dur 100)
@@ -201,6 +238,8 @@
 
 (deftest get-rt-test
   "more demonstration of where values are stored than actual test"
+  (is (= settings/RT-EXPECTED (phase/get-rt {:trial 0 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
+  (is (= settings/RT-EXPECTED (phase/get-rt {:trial 1 :phase {:name :instruction} :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
   (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "waiting-time" 1100}]} })))
   (is (= 100 (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "catch-time" 1100}]} })))
   (is (nil? (phase/get-rt {:trial 1 :record {:events [{"chose-time" 1000 "timeout-time" 1100}]} }))))

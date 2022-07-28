@@ -1,7 +1,7 @@
 (ns landscape.url-tweak-test
   (:require
    [landscape.url-tweak :refer
-    [vis-type-from-url task-parameters-url url-path-info path-info-to-id]]
+    [vis-type-from-url task-parameters-url url-path-info path-info-to-id update-walktime]]
    [landscape.settings :refer [current-settings]]
    [cemerick.url :as url]
    [clojure.test :refer [is deftest]])
@@ -43,3 +43,17 @@
   (let [url-map (url-path-info {:path "url/i/t/v/r"})]
     (is (= "i_t_v_r" (path-info-to-id url-map)))
     (is (= "unlabeled_run" (path-info-to-id nil)))))
+
+(deftest update-walktime-test
+  "confirm defaults"
+  (let [s @current-settings]
+    (is (= 70 (get-in s [:step-sizes 0])))
+    (is (= 10 (get-in s [:avatar-step-size])))
+    (is (= 420 (get-in s [:times :timeout-dur])))
+    ;; and recalc on defaults has no effect
+    (is (= 420 (get-in (update-walktime s) [:times :timeout-dur])))
+    (is (= 420 (get-in (update-walktime {}) [:times :timeout-dur]))))
+  (let [s (-> @current-settings
+              (assoc-in [:step-sizes 0] 140)
+              (assoc-in [:avatar-step-size] 15))]
+    (is (= 560 (get-in (update-walktime s) [:times :timeout-dur])))))

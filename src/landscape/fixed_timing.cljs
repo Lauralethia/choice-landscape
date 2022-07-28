@@ -2,28 +2,6 @@
 "hardcoded timings. ostensibly for fixed MR task timing but useful for debugging
 see core/gen-well-list")
 
- ;(with-redefs [landscape.settings/current-settings (atom (-> @landscape.settings/current-settings (assoc-in [:nTrials :pairsInBlock] 1) (assoc-in [:nTrials :devalue] 1)(assoc-in [:nTrials :devalue-good] 1)))] (landscape.core/gen-well-list))
-(defn cumsum [v]
-  (loop [in v
-         out []]
-    (if (= (count in) 0)
-      out
-      (recur (rest in)
-             (conj out (+ (first in) (last out) ))))))
-
-(defn iti-ideal-end
-  "add :iti-ideal-end to well list for MR timing
-  (map :iti-ideal-end (iti-ideal-end 4 2 [{:iti-dur 1} {:iti-dur 2} {}] 1))
-  (7 11 14)
-  TODO: if :catch-dur, ideal-trial-time will be different (no feedback or walk)
-  TODO: need to add iti+end to last ideal-end
-  NB. iti is first event of trial. but we modeled as if it's the last. first trials iti should be 0?"
-  [first-iti ideal-trial-time well-list default-iti-time]
-  (let
-      [iti-durs  (map #(or (:iti-dur %) default-iti-time) well-list)
-       end-times (map #(+ first-iti %) (cumsum (map #(+ % ideal-trial-time) iti-durs)))]
-      (map #(merge %1 {:iti-ideal-end %2}) well-list end-times)))
-
 (def trials
   "fixed timing list of trials. timing for isi and iti can be specified
   position of well shouldn't be hardcoded but current is"

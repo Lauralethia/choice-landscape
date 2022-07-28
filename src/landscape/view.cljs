@@ -10,6 +10,7 @@
    [landscape.key :as key]
    [cljsjs.react]
    [cljsjs.react.dom]
+   [goog.string :as gstring]
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
@@ -266,11 +267,12 @@
                   missed (dec (count (filter #(nil? %) rt_all)))]
               [:p {:style {:font-size "10px"} }
                cnt " trials in "
-               (/ (- (get-in state [:record :end-time :browser])
-                     (get-in state [:record :start-time :browser]))
-                  (* 1000 60)) " minutes"
+               (let [ttime (- (get-in state [:record :end-time :browser])
+                              (get-in state [:record :start-time :browser]))
+                     secs (/ ttime 1000)
+                     mins (/ secs  60)] (str (gstring/format "%.3f" mins) "min " secs "secs") )
                [:br]
-               "average rt:" (/ (reduce #'+ rts) (count rts)) "ms"
+               "average rt:" (gstring/format "%0.1f" (/ (reduce #'+ rts) (count rts))) "ms"
                [:br] "# no resp: " missed
                ])])
          [:br]]))
@@ -290,6 +292,16 @@
     (sab/html [:div  {:style {:opacity "50%"}}  html])
     html))
 
+(defn fmt-ms-s [ms] (gstring/format "%.2f" (/ ms 1000)))
+(defn show-events [initial keys times]
+  [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
+   (html [(map #(html [:td (fmt-ms-s (- (get times (str % "-time"), initial) initial))])
+               keys)
+          [:td (fmt-ms-s (- (get times "waiting-time") (get times "chose-time")))]
+          [:td (fmt-ms-s (:iti-dur times))]
+          [:td (fmt-ms-s (:iti-orig times))]
+          [:td (fmt-ms-s (:iti-ideal-end times))]
+          ])])
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -299,9 +311,18 @@
      [:div#background {:class vis-class}
       (progress-bar state)
 
-      (if DEBUG [:div {:style {:color "white"}}
-                 [:br] (str (:key state))
-                 [:button {:on-click (fn [] (popup-state state))} "show"]])
+      (if DEBUG [:div {:style {:color "white" :background-color "black" :position "absolute" :top "500px"}}
+                 [:br] (str "trial: " (:trial state))
+                 [:br] (str "phase:" (select-keys phase [:name :score :iti-dur :iti-ideal-end :picked]))
+                 [:br] (str "have key: " (select-keys (:key state) [:have :time]))
+                 [:br] [:button {:on-click (fn [] (popup-state state))} "show"]
+                 (let [time-keys ["iti" "chose" "waiting" "timeout" "feedback"]
+                       start-time (get-in state [:record :start-time :animation])
+                       iti-dur 0]
+                   [:table {:border "1px" :style {:background "white"}}
+                    [:tr (map #(html [:td %]) (concat time-keys ["rt" "itidur" "itiorig" "itiend"])) ]
+                    (map  (partial show-events start-time time-keys)
+                          (get-in state [:record :events]))])])
       
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))

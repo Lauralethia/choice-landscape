@@ -18,9 +18,14 @@ used by MR to adjust ITI dur"
 (def WALKTIME
   "ms to walk to choice before given feedback. not seen if timeout.
    should calculate this based on distance and animation ticks
-  but have hardcoded value for MR timing.
-  needed to calculate ideal iti onset"
-  534)
+  used in current-settings, but reset based on avatar and wells by url-tweaks/update-walktime
+
+  hardcoded value for MR timing. needed to calculate ideal iti onset
+
+  intially 70px total/10px avatar * 30ms sampling (210ms).
+  ocean is 140/15*30  (280ms)
+  but time-diff caled at 534 (walk there and back) set to 210 for original"
+  (* 2 210))
 
 (def ITIDUR 1000)
 (def MR-FIRST-ITI "enough time to get a stable hrf" 3000)
@@ -77,7 +82,6 @@ used by MR to adjust ITI dur"
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal
     :where :online          ;; :mri :eeg :seeg
-    :iti-first ITIDUR       ;; will be different for MRI
     :iti+end   0            ;; probably want e.g. 6000 for MRI
 })
 
@@ -85,8 +89,8 @@ used by MR to adjust ITI dur"
 (def TIMES "settings for time constraints"
   {
    :choice-timeout 2000 ; ms allowed to make a choice
-
    ;; prev 1000 (1sec). should match walktime for consitant timing
+   :walk-dur       WALKTIME ; ms how long to show timeout
    :timeout-dur    WALKTIME ; ms how long to show timeout
    :iti-dur        ITIDUR ; ms - show white cross. used by gen-wells. MR will be different
 })

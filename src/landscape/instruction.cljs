@@ -456,7 +456,11 @@
                          [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
                        [:li "How often you visit a " (item-name :well)
                         " does not change how often it gives " (item-name :water) ]
-                       [:li "Make choices with a single tap. Do not hold keys down."]]])
+                       [:li "Make choices with a single tap. Do not hold keys down."]]
+                      [:input
+                       {:type :button :value "Test Sound"
+                        :on-click (fn [e] (play-sound :reward))}]
+])
 
     ;; trigger test/blocking in read-keys
     ;; :key ...
