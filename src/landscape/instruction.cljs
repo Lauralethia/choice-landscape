@@ -124,11 +124,8 @@
 
 (defn instruction-finished [state time-cur]
   (-> state
-      ;; NB. maybe bug?
-      ;; we move to "home" at start and dont want to intercept any
-      ;; keys until we are there.
-      ;; START TASK buy moving :phase :name to iti
-      ;; TODO pull iti from somewhere?
+      ;; an instruction might have set trial to 0.make sure we start at 1
+      (assoc-in [:trial] 1)
       (phase/phase-update)
       ;; (assoc :phase (merge {:iti-dur 2000}
       ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
@@ -352,20 +349,20 @@
     :start wells/all-empty
     :stop wells/wells-turn-off
     }
-   {:text (fn[state]
-            (html [:div "Sometimes you will be too tired to walk." [:br]
-                   "Instead, you will fade out until you are rested." [:br]
-                   "This happens randomly and is "
-                   [:b "not related"] " to your choice" [:br]]))
-    :pos (fn[state] {:x 0 :y 100})
-    :start (fn[state]
-             (-> state
-                 (assoc :zzz (floater/zzz-new (avatar/top-center-pos state) 2))
-                 (assoc-in [:phase :fade] true)))
-    :stop (fn[state] (-> state
-                         (assoc-in [:phase :fade] false)
-                         (assoc :zzz [])))
-    }
+   ;; {:text (fn[state]
+   ;;          (html [:div "Sometimes you will be too tired to walk." [:br]
+   ;;                 "Instead, you will fade out until you are rested." [:br]
+   ;;                 "This happens randomly and is "
+   ;;                 [:b "not related"] " to your choice" [:br]]))
+   ;;  :pos (fn[state] {:x 0 :y 100})
+   ;;  :start (fn[state]
+   ;;           (-> state
+   ;;               (assoc :zzz (floater/zzz-new (avatar/top-center-pos state) 2))
+   ;;               (assoc-in [:phase :fade] true)))
+   ;;  :stop (fn[state] (-> state
+   ;;                       (assoc-in [:phase :fade] false)
+   ;;                       (assoc :zzz [])))
+   ;;  }
    {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
 
