@@ -4,7 +4,7 @@
  "rt","n_keys", "first_key_rt", "first_key",
  "picked","picked_prob","picked_step",
  "avoided","avoided_prob","avoided_step",
- "iti_onset","chose_onset","waiting_onset","feedback_onset","trial_choices", "survey_age"],
+ "iti_onset","chose_onset","waiting_onset","feedback_onset","timeout_onset","trial_choices", "survey_age"],
 (.[]|
    .id as $id|
    .timepoint as $tp|
@@ -27,7 +27,7 @@
        else null end,
     if(".all-keys") then ."all-keys"[0].key else null end,
     ."picked", ."picked-prob", ."picked-step", ."avoided", ."avoided-prob", ."avoided-step",
-    ."iti-time", $ct, ."waiting-time", ."feedback-time", 
+    ."iti-time", $ct, ."waiting-time", ."feedback-time", ."timeout-time",
     ."trial-choices",
     if($survey|type=="array") then "NA" else $survey.age end] )|
    @tsv
