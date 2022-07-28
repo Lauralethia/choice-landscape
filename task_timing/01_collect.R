@@ -29,17 +29,20 @@ simplify_lc <- function(d, max_rep_catch=2) {
     arrange(sum_LC)
 }
 
-rank_LC <- function(d, sort_col) {
+rank_LC <- function(d) {
  d %>%
     simplify_lc() %>%
     select(-sum_LC) %>%
     mutate(across(matches("_LC"), rank)) %>%
     #mutate(across(matches("_LC"), function(x) scale(x-min(x), center=F))) %>%
+    # new sum for rank. prev sum was LC
     rowwise() %>% mutate(overall = sum(c_across(-name)))
 }
 
 ### pick
-d_lc <- read_all(gen_ver="v1.5", total_dur=280)
+#d_lc <- read_all(gen_ver="v1.5", total_dur=280)
+d_lc <- read_all(gen_ver="v1-nocatch", total_dur=185)
+d_lc <- read_all(gen_ver="v1.5-nocatch", total_dur=185)
 d_rank <- d_lc %>%  rank_LC()
 # show
 #d_rank %>% arrange(choice.fbk_LC)  %>%  head %>% print
@@ -52,17 +55,34 @@ d_rank %>% arrange(overall) %>% head %>% print.data.frame(row.names=F)
 ## inspect differences of min(iti) and total_duration
 head_miniti<-function(v, miniti, dur="240", n=Inf) read.table(paste0(dur,'_',v,'_std_dev_tests.tsv'), header=T) %>% simplify_lc() %>% head(n=n) %>% mutate(miniti=miniti, totaldur=dur)
 
-rbind(head_miniti("v025",.25),
+iti_varations <-
+   rbind(head_miniti("v025",.25),
       head_miniti("v1",1.0),
       head_miniti("v1.5",1.5),
       head_miniti("v1", 1.0, 280),
-      head_miniti("v1.5", 1.5, 280)) %>%
-  mutate(miniti=as.factor(miniti)) %>%
-  ggplot() +
-   aes(x=choice_LC, y=choice.fbk_LC, size=sum_LC, color=miniti) +
+      head_miniti("v1.5", 1.5, 280),
+      head_miniti("v1-nocatch",1.0,185),
+      head_miniti("v1.5-nocatch",1.5,185)
+      ) %>%
+  mutate(miniti=as.factor(miniti))
+
+library(ggplot2)
+library(cowplot)
+theme_set(theme_cowplot())
+iti_var_g_ng<-ggplot(iti_varations) +
+   aes(x=choice_LC, y=good.nogood_LC, size=sum_LC, color=miniti) +
    geom_point(alpha=.5) +
    ggtitle("min(iti) LCs")+
    facet_wrap(~totaldur)
+iti_var_g_choicefbk<-ggplot(iti_varations) +
+   aes(x=choice_LC, y=choice.fbk_LC, size=sum_LC, color=miniti) +
+   geom_point(alpha=.5) +
+   #ggtitle("min(iti) LCs")+
+   facet_wrap(~totaldur)
+iti_var_plt <- plot_grid(iti_var_p + theme(legend.position ='none'),
+                         iti_var_g_choicefbk,
+                         align="h")
+ggsave(iti_var_plt, file='iti_variations.pdf', width=8, height=5)
 
 #rbind(head_miniti("v1",1.0, 280),
 #      head_miniti("v1.5",1.5, 280)) %>%
