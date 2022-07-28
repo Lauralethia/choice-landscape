@@ -10,7 +10,8 @@
    [landscape.key :as key]
    [cljsjs.react]
    [cljsjs.react.dom]
-   [goog.string :as gstring]
+   [goog.string :as gstring :refer [format]]
+   [goog.string.format]                 ;; needed for compiled js
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
@@ -270,9 +271,9 @@
                (let [ttime (- (get-in state [:record :end-time :browser])
                               (get-in state [:record :start-time :browser]))
                      secs (/ ttime 1000)
-                     mins (/ secs  60)] (str (gstring/format "%.3f" mins) "min " secs "secs") )
+                     mins (/ secs  60)] (str (format "%.3f" mins) "min " secs "secs") )
                [:br]
-               "average rt:" (gstring/format "%0.1f" (/ (reduce #'+ rts) (count rts))) "ms"
+               "average rt:" (format "%0.1f" (/ (reduce #'+ rts) (count rts))) "ms"
                [:br] "# no resp: " missed
                ])])
          [:br]]))
@@ -292,7 +293,7 @@
     (sab/html [:div  {:style {:opacity "50%"}}  html])
     html))
 
-(defn fmt-ms-s [ms] (gstring/format "%.2f" (/ ms 1000)))
+(defn fmt-ms-s [ms] (format "%.2f" (/ ms 1000)))
 (defn show-events [initial keys times]
   [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
    (html [(map #(html [:td (fmt-ms-s (- (get times (str % "-time"), initial) initial))])
