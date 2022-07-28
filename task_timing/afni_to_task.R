@@ -16,7 +16,7 @@ GLIST <- list(c("true","true","false"),
 NGLIST <-list(c("true","false","true"))
 ISIDUR <- 1000
 
-FIRSTITI <- 3000
+FIRSTITI <- 3 # in seconds
 
 # {:left {:step 1, :open true, :prob 20}, :up   {:step 1, :open true, :prob 50}, :right{:step 2, :open false, :prob 100}, :iti-dur 1}
 build_trial <- function(probs, open, iti,
@@ -40,6 +40,9 @@ read_events <- function(fname='out/500s/v1_102_31234/events.txt'){
   d$catch <- 0
   # fixied isi duration
   d$catch[grepl('catch', d$event)] <- ISIDUR
+  # was worried we'd be chopping of a variable last iti
+  # but it's always 1.5
+  # lapply(files, function(f) read_events(f) %>% tail(n=1)) 
   return(d)
 }
 
