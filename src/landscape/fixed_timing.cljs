@@ -33,6 +33,23 @@ see core/gen-well-list")
   {:left {:step 1, :open true, :prob 100},
    :up   {:step 1, :open false, :prob 100},
    :right{:step 2, :open true, :prob 100},
+   :iti-dur 2500}
+  {:left {:step 1, :open false, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open true, :prob 100},
+   :iti-dur 2300}
+  {:left {:step 1, :open false, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open true, :prob 100},
+   :iti-dur 2700}],
+:practice-orig
+ [{:left {:step 1, :open true, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open false, :prob 100},
+   :iti-dur 2000}
+  {:left {:step 1, :open true, :prob 100},
+   :up   {:step 1, :open false, :prob 100},
+   :right{:step 2, :open true, :prob 100},
    :catch-dur 1000,
    :iti-dur 1500}
   {:left {:step 1, :open false, :prob 100},
