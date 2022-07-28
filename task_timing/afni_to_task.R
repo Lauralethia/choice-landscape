@@ -49,7 +49,7 @@ gen_edn <- function(files, leftgood=FALSE){
   d <- lapply(files, read_events) %>% bind_rows
 
   # iti is first event of trial for task, but modeled as last in 3dDeconvolve
-  d %>% mutate(iti=c(FIRSTITI, iti[1:(n()-1)]))
+  d <- d %>% mutate(iti=c(FIRSTITI, iti[1:(n()-1)]))
 
   d_tally <- d %>% group_by(event) %>% tally
   n_events <- t(d_tally %>% select(n)) %>% as.list() %>% `names<-`(d_tally$event)

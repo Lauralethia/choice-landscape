@@ -10,12 +10,29 @@
 #./afni_to_task.R out/240s/v1_53_{6156,23263,1599}/events.txt
 test -d edn || mkdir "$_"
 
+files=( out/185s/v1.5-nocatch_34_{22353,7403,28744,23677,31668}/events.txt )
+
+./afni_to_task.R "${files[@]:0:3}" > edn/mr_nocatch_1_right.edn
+./afni_to_task.R "${files[@]:2:3}" > edn/mr_nocatch_2_right.edn
+./afni_to_task.R --left "${files[@]:0:3}" > edn/mr_nocatch_1_left.edn
+./afni_to_task.R --left "${files[@]:2:3}" > edn/mr_nocatch_2_left.edn
+
+(echo -e "\n:mrA1 "
+ cat edn/mr_nocatch_1_right.edn
+ echo -e ",\n:mrA2 "
+ cat edn/mr_nocatch_2_right.edn
+ echo -e ",\n:mrB1 "
+ cat edn/mr_nocatch_1_left.edn
+ echo -e ",\n:mrB2 "
+ cat edn/mr_nocatch_2_left.edn) > edn/mr_all_nocatch.edn
+
 # original with catch trials
 # ./afni_to_task.R out/280s/v1.5_53_{10987,32226,24271}/events.txt > edn/mra1.edn
 # ./afni_to_task.R out/280s/v1.5_53_{23960,28898,25862}/events.txt > edn/mra2.edn
 # # TODO: use different seeds?
 # ./afni_to_task.R --left out/280s/v1.5_53_{10987,32226,24271}/events.txt > edn/mrb1.edn
 # ./afni_to_task.R --left out/280s/v1.5_53_{23960,28898,25862}/events.txt > edn/mrb2.edn
+##### 
 
 # without catches
 # d<-read.table('./185_v1.5-nocatch_std_dev_tests.tsv',header=T)
@@ -41,11 +58,3 @@ test -d edn || mkdir "$_"
 # v1.5-nocatch-185-34-29041    3.2445        1.3813         2.6452          2.8400 10.1110
 #  v1.5-nocatch-185-34-6669    3.2746        1.3817         2.8000          2.9895 10.4458
 #  v1.5-nocatch-185-34-3026    3.3002        1.3815         2.6545          2.8551 10.1913
-
-files=( out/185s/v1.5-nocatch_34_{22353,7403,28744,23677,31668}/events.txt )
-
-./afni_to_task.R "${files[@]:0:3}" > edn/mr_nocatch_1_right.edn
-./afni_to_task.R "${files[@]:2:3}" > edn/mr_nocatch_2_right.edn
-./afni_to_task.R --left "${files[@]:0:3}" > edn/mr1_nocatch_1_left.edn
-./afni_to_task.R --left "${files[@]:2:3}" > edn/mr2_nocatch_1_left.edn
-
