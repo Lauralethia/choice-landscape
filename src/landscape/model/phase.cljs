@@ -190,6 +190,11 @@ nil if timout"
           ;; add picked and avoided
           (update-in [:record :events trial0]
                      #(merge % (wells/wide-info-picked wells picked))))
+      :timeout
+      (-> state-time
+          ;; picked and avoided are null. but want to add trial-choices
+          (update-in [:record :events trial0]
+                     #(merge % (wells/wide-info-picked wells picked))))
 
       :feedback
       (-> state-time

@@ -155,7 +155,7 @@ read_taskdata <- function(fpath='raw.tsv'){
         unify_picked %>%
         remove_will
 }
-inspect_one <- function(){
+inspect_one <- function(ex_id='WWF',ex_ver='v6'){
     d <- read.csv('raw.tsv', header=T, sep="\t") %>%
         fix_prob_picked %>%
         fix_url_order %>%
@@ -164,7 +164,7 @@ inspect_one <- function(){
         add_blocktype %>%
         labpilot_id_age_sex %>%
         unify_picked %>%
-        filter(grepl('WWF',id),grepl('v6',ver))
+        filter(grepl(ex_id,id),grepl(ex_ver,ver))
 }
 
 # tie it all together. could all this "main"

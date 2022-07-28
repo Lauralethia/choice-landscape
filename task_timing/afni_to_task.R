@@ -14,9 +14,9 @@ CHOICE_ORDER <- c("left","up","right")
 GLIST <- list(c("true","true","false"),
               c("true","false","true"))
 NGLIST <-list(c("true","false","true"))
-
 ISIDUR <- 1000
 
+FIRSTITI <- 3 # in seconds
 
 # {:left {:step 1, :open true, :prob 20}, :up   {:step 1, :open true, :prob 50}, :right{:step 2, :open false, :prob 100}, :iti-dur 1}
 build_trial <- function(probs, open, iti,
@@ -40,12 +40,19 @@ read_events <- function(fname='out/500s/v1_102_31234/events.txt'){
   d$catch <- 0
   # fixied isi duration
   d$catch[grepl('catch', d$event)] <- ISIDUR
+  # was worried we'd be chopping of a variable last iti
+  # but it's always 1.5
+  # lapply(files, function(f) read_events(f) %>% tail(n=1)) 
   return(d)
 }
 
+"%||%" <- function(x, y) if(is.null(x)||length(x)==0L) y else x
 gen_edn <- function(files, leftgood=FALSE){
   # read in each file, and combine. could shuffle but not done here
   d <- lapply(files, read_events) %>% bind_rows
+
+  # iti is first event of trial for task, but modeled as last in 3dDeconvolve
+  d <- d %>% mutate(iti=c(FIRSTITI, iti[1:(n()-1)]))
 
   d_tally <- d %>% group_by(event) %>% tally
   n_events <- t(d_tally %>% select(n)) %>% as.list() %>% `names<-`(d_tally$event)
@@ -56,10 +63,15 @@ gen_edn <- function(files, leftgood=FALSE){
   # ng_catch   11
   # g_catch    23
 
+  ### no catch version ###
+  # event   n
+  # good   115
+  # nogood  55
+
   opens <- list(good    =sample(rep(GLIST, ceiling(n_events$good/2))),
-                g_catch =sample(rep(GLIST, ceiling(n_events$g_catch/2))),
+                g_catch =sample(rep(GLIST, ceiling(n_events$g_catch/2)%||%0)),
                 nogood  =rep(NGLIST, n_events$nogood),
-                ng_catch=rep(NGLIST, n_events$ng_catch))
+                ng_catch=rep(NGLIST, n_events$ng_catch%||%0))
 
   # order is: left, up, right. unless reversed. up never "good"
   choice_order <- CHOICE_ORDER
@@ -94,10 +106,18 @@ if (sys.nframe() == 0) {
     }
     leftgood_i <-grep("--left",argv)
     leftgood <- length(leftgood_i)>=1L
-    print(argv)
-    print(leftgood)
+    #print(argv)
+    #print(leftgood)
     if(leftgood) argv <- argv[-leftgood_i]
-    print(argv)
+    #print(argv)
 
     gen_edn(argv, leftgood=leftgood)
+}
+
+quicktests <- function(){
+ files <- sprintf(sprintf("out/280s/v1.5_53_%s/events.txt", c("10987", 32226, 24271)))
+ x <- gen_edn(files, leftgood=TRUE)
+
+ files <- sprintf(sprintf("out/185s/v1.5-nocatch_34_%s/events.txt", c("22353",7403,28744,23677,31668)))
+ x <- gen_edn(files, leftgood=TRUE)
 }
