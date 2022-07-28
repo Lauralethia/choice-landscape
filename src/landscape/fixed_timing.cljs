@@ -28,7 +28,7 @@ see core/gen-well-list")
   "fixed timing list of trials. timing for isi and iti can be specified
   position of well shouldn't be hardcoded but current is"
   {
-:debug
+:debugcatch
  [{:left {:step 1, :open true, :prob 20},
    :up   {:step 1, :open true, :prob 50},
    :right{:step 2, :open false, :prob 100},
@@ -38,6 +38,23 @@ see core/gen-well-list")
    :up   {:step 1, :open false, :prob 20},
    :right{:step 2, :open true, :prob 100},
    :catch-dur 1000,
+   :iti-dur 500}
+  {:left {:step 1, :open false, :prob 100},
+   :up   {:step 1, :open true, :prob 100},
+   :right{:step 2, :open true, :prob 100},
+   :iti-dur 1000}
+  {:left {:step 1, :open false, :prob 75},
+   :up   {:step 1, :open true, :prob 75},
+   :right{:step 2, :open true, :prob 75},
+   :iti-dur 1000}],
+:debug
+ [{:left {:step 1, :open true, :prob 20},
+   :up   {:step 1, :open true, :prob 50},
+   :right{:step 2, :open false, :prob 100},
+   :iti-dur 200}
+  {:left {:step 1, :open true, :prob 50},
+   :up   {:step 1, :open false, :prob 20},
+   :right{:step 2, :open true, :prob 100},
    :iti-dur 500}
   {:left {:step 1, :open false, :prob 100},
    :up   {:step 1, :open true, :prob 100},
