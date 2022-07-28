@@ -73,7 +73,7 @@
 
 ;; TODO: this could maybe be water too. not just a coin
 (defn coin-new [^pos pos]
-  (floater-new pos 15 (html [:img {:style {:scale "20%"} :src "imgs/starcoin.png"} ])))
+  (floater-new pos 15 (html [:img {:style {:width "20%" :height "20%"} :src "imgs/starcoin.png"} ])))
 
 (defn jitter [x] (+ x (rand-int 100) -50))
 (defn coin-addto-state
