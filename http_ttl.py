@@ -198,7 +198,7 @@ class HttpTTL(RequestHandler):
 
     def get(self, ttl):
         """Handle a GET request for saying Hello World!."""
-        self.hardware.send(ttl)
+        self.hardware.send(int(ttl))
         # TODO: return string. no need to do interpolation
         self.write(f"ttl: {ttl} @ global {datetime.datetime.now()}")
 
