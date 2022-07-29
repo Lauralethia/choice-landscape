@@ -1,6 +1,6 @@
 (ns landscape.key
   (:require
-   [landscape.settings :refer [current-settings]]
+   [landscape.settings :refer [current-settings arrow-keycodes]]
    [clojure.set :refer [map-invert]]))
 (defn keypress-init [] {:key nil
                         :first nil
@@ -71,7 +71,10 @@
 (defn sim-key
   "simulate keypress using keyCode"
   [keysym]
-  (let [keycode (keysym (:keycodes @current-settings))
+  (let [;; keycode always arrow keys.
+        ;; see (:keycodes @current-settings) for current
+        ;; BUT then button push wont advance instructions when where=mri
+        keycode (keysym arrow-keycodes)
         jskey (clj->js {:keyCode keycode})
         el js/document
         event-down (new js/KeyboardEvent "keydown" jskey)
@@ -85,10 +88,10 @@
 
 (defn key-state-fresh
   "clean slate for keys.
-  20211007 - currently not using util, want, or next"
+  20211007 - currently not using until, want, or next
+  20220725 - remove until want and next"
   []
-  {:until nil :want [] :next nil :have nil :time nil :touch nil :all-pushes [] })
-
+  {:have nil :time nil :touch nil :all-pushes [] })
 
 (defn side-from-keynum
   "invert map to get up/down/left/right from keypush
@@ -97,6 +100,14 @@ TOOD: invert map might be expensive to do every keypush?"
   (get
    (map-invert (:keycodes @landscape.settings/current-settings))
    keynum))
+
+(defn side-from-keynum-instructions
+  "use defined keys but also default keys. 
+  hard for RA to advance using button glove keys
+  esp. because glove stats with 2=left instead of 1"
+ [keynum]
+ (or (side-from-keynum keynum)
+     (get (map-invert landscape.settings/arrow-keycodes) keynum)))
 ;; 20211007 - just assoc w/key-state-fresh
 ;; (defn remove-key
 ;;   "remove any keypress from state"

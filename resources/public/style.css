@@ -18,6 +18,12 @@ body.mountain{
 .orange {
    background: url("imgs/orange1x1.png");
 }
+
+/* color code arrows/fingers */
+.indexfinger { background-color: #3ee7de;}
+.middlefinger { background-color: #f5d927;}
+.ringfinger { background-color: #f58c27;}
+
 #background {
    width:  558px;
    height:  299px;

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
 # generate timings for MR task with decaying ITI and catch trials
+# TODO:
+#  * consider variable ISI "ZZZ_TIME" (see comment in var def)
+#  * sed in more GLTs to deconvolve
 #
 # 20220510WF - init
-# 20220701WF - remove catch trials
 #
 [ -v DRYRUN ] && DRYRUN=echo || DRYRUN=
 warn(){ echo "$@" >&2; }
@@ -15,6 +17,8 @@ TR=1.3
 MEAN_RT=0.580     # but can be up to 1.5
 WALK_TIME=0.534   # always take the same time to walk to feedback
 FBK_TIME=1        # always 1 second of feedback
+ZZZ_TIME=1        # hardcode as one second always
+#ZZZ_TIME="0.5 1 3 dist=decay" between .5 and 3 with mean of 1. exp distributed
 
 # would like 6s but b/c we're combining all into one
 # dont model this extra time
@@ -27,7 +31,7 @@ MINITI=1.5
 # but want to hold onto old
 # will already be organized by total runtime and include total_trials
 #   outdir=${total_runtime}s/${PREFIX}_${total}_$seed
-PREFIX=v$MINITI-nocatch
+PREFIX=v$MINITI
 
 # average trial time is 2.1 seconds
 # mean iti should be ~3 (exp disp)
@@ -40,18 +44,22 @@ trial_counts(){
   # 2/3 of trials have the good choice, 1/3 without the good choice
   # 1/3 of total as catch ("zzz")
   local total="$1"
-          good=$(printf "%.0f" $(bc -l <<< ".666*$total"))
-        nogood=$(printf "%.0f" $(bc -l <<< ".333*$total"))
+          good=$(printf "%.0f" $(bc -l <<< ".666*.666*$total"))
+    good_catch=$(printf "%.0f" $(bc -l <<< ".333*.666*$total"))
+        nogood=$(printf "%.0f" $(bc -l <<< ".666*.333*$total"))
+  nogood_catch=$(printf "%.0f" $(bc -l <<< ".333*.333*$total"))
+  total_nocatch=$(( $good + $nogood ))
+  total_catch=$(( $good_catch + $nogood_catch))
   # quick look. might have added or lost a trial
-  new_total=$(( $good + $nogood ))
+  new_total=$(( $good + $good_catch + $nogood + $nogood_catch ))
   [[ $total -ne $new_total ]] && warn "WARNING: wanted $total trials, but using $new_total"
-  echo $good $nogood $new_total
+  echo $good $good_catch $nogood $nogood_catch $total_nocatch $total_catch
 }
 # lisp macro a la tcl: unsafe string interpolation
 # set variables usinng trial_counts where it's eval'ed
 # here so we dont have to keep changing the read. just update (likely append) variable names
 # should match output of trail_counts function
-MACRO_TRIAL_COUNTS='read good nogood total_nocatch <<< "$(trial_counts $total)"'
+MACRO_TRIAL_COUNTS='read good good_catch nogood nogood_catch total_nocatch total_catch <<< "$(trial_counts $total)"'
 
 
 # from https://github.com/LabNeuroCogDevel/slipstask/tree/master/timing
@@ -95,12 +103,9 @@ add_glt(){
 mktiming(){
   total="$1"; shift         # expecting
   total_runtime="$1"; shift # something like 540
-  if [ $# -ge 1 ]; then
+  if [ $# -eq 1 ]; then
      MINITI="$1"; shift
      PREFIX="v$MINITI"
-  fi
-  if [ $# -eq 1 ]; then
-     PREFIX="$1"; shift
   fi
   eval $MACRO_TRIAL_COUNTS # set good good_catch ...
 
@@ -121,6 +126,7 @@ mktiming(){
      -add_timing_class s_choice_wo_good "$MEAN_RT"  \
      -add_timing_class s_walk           "$WALK_TIME"\
      -add_timing_class s_feedback       "$FBK_TIME" \
+     -add_timing_class s_zzz            $ZZZ_TIME \
      \
      -add_timing_class nobreak 0 0 0 dist=INSTANT \
      -add_timing_class iti $MINITI -1 8     \
@@ -128,14 +134,20 @@ mktiming(){
      -add_stim_class good          "$good"          s_choice_w_good  nobreak \
      -add_stim_class g_fbk         "$good"          s_feedback iti       \
      -add_stim_class g_walk        "$good"          s_walk nobreak           \
+     -add_stim_class g_catch       "$good_catch"    s_choice_w_good  nobreak     \
+     -add_stim_class g_zzz         "$good_catch"    s_zzz iti     \
      \
      -add_stim_class nogood        "$nogood"        s_choice_wo_good nobreak \
      -add_stim_class ng_fbk        "$nogood"        s_feedback iti \
      -add_stim_class ng_walk       "$nogood"        s_walk nobreak           \
-     `:          g ng gfb gwk ngf ngw  -- not sure this works with ordered_stim`\
-     -max_consec 3  3   0   0   0   0  \
+     -add_stim_class ng_catch      "$nogood_catch"  s_choice_wo_good nobreak     \
+     -add_stim_class ng_zzz        "$nogood_catch"  s_zzz iti     \
+     `:          g ng gfb gwk ngf ngw gc ngc gz ngz -- not sure this works with ordered_stim`\
+     -max_consec 3  3   0   0   0   0  2   2  0   0 \
      -ordered_stimuli good g_walk g_fbk \
      -ordered_stimuli nogood ng_walk ng_fbk \
+     -ordered_stimuli g_catch  g_zzz  \
+     -ordered_stimuli ng_catch ng_zzz \
      -show_timing_stats                 \
      -make_3dd_contrasts                \
      -write_event_list events.txt \
@@ -143,13 +155,13 @@ mktiming(){
      -seed $seed                        \
      -prefix stimes > mktiming.log
 
-  add_glt decon.tcsh \
-     'good +nogood' 'choice' \
-     'g_fbk +ng_fbk' 'fbk' \
-     'good +nogood -g_fbk -ng_fbk' 'choice-fbk'
+  #TODO: better contrasts?
 
-     # included for free :)
-     #'good -nogood' 'good-nogood' \
+  add_glt decon.tcsh \
+     'good +nogood -g_fbk -ng_fbk' 'choice-fbk' \
+     '2*good +g_catch'    'good_and_catch' \
+     '2*nogood +ng_catch' 'nogood_and_catch' \
+     'nogood +nogood +g_catch +ng_catch' 'choice'
 
   tcsh decon.tcsh > decon.log
   parse_decon "${PREFIX}-${total_runtime}-${total}-${seed}" < decon.log > stddevtests.tsv

@@ -11,7 +11,6 @@
    [landscape.model.phase :as phase]
    [landscape.model.avatar :as avatar]
    [landscape.model.floater :as floater]
-   [landscape.model.phase :as phase]
    [landscape.http :as http]
    [landscape.sound :refer [play-sound]]
    [clojure.string]
@@ -129,11 +128,8 @@
   (if-let [url (:local-ttl-server @settings/current-settings)]
     (http/send-local-ttl url 128))
   (-> state
-      ;; NB. maybe bug?
-      ;; we move to "home" at start and dont want to intercept any
-      ;; keys until we are there.
-      ;; START TASK buy moving :phase :name to iti
-      ;; TODO pull iti from somewhere?
+      ;; an instruction might have set trial to 0.make sure we start at 1
+      (assoc-in [:trial] 1)
       (phase/phase-update)
       ;; (assoc :phase (merge {:iti-dur 2000}
       ;;                       (phase/set-phase-fresh :iti (:time-cur state))))
@@ -144,8 +140,15 @@
       ;; wells normally turned off on :chose->:waiting flip
       ;; here we skip right over that into the first :iti so explicitly close
       (wells/wells-close)
+      ;; might have been walking down still. jump ahead so we start as expect
+      ;; only noticebly with 'noinstructions' and when testing
+      (assoc-in  [:avatar :pos] (:avatar-home @current-settings))
+      (assoc-in  [:avatar :destination] (:avatar-home @current-settings))
       (assoc :key (key/key-state-fresh))))
 
+(defn buttonbox? [state]
+  (contains? #{:mri :eeg}
+             (get-in state [:record :settings :where])))
 
 (def INSTRUCTION
   [
@@ -153,10 +156,25 @@
             (html
              [:div [:h1  "Welcome to our game!"]
               [:br]
-              "Push the keyboard's " [:b "right arrow key"] " to get to the next instruction. "
-              [:br] [:br]
-              "You can also click the \"->\" button below"
-              ]))
+
+              (if (buttonbox? state) 
+                [:div
+                 [:img {:src "imgs/fingers.png"}]
+                 [:br]
+                 "You will use buttons to push "
+                 [:b {:class "indexfinger"} "left"] ", "
+                 [:b {:class "middlefinger"} "up"] ", and "
+                 [:b {:class "ringfinger"} "right."]
+                 [:br]
+                 [:br]
+                 "Use your " [:b {:class "ringfinger"} "ring finger" ]
+                 " to get the next instruction."
+                 ]
+                [:div 
+                 "Push the keyboard's " [:b "right arrow key"]
+                 " to get to the next instruction. "
+                 [:br] [:br]
+                 "You can also click the \"->\" button below"])]))
     :start identity
     ;; NB. fullscreen in firefox removes background and centering
     ;;  on either .-body "main-container"
@@ -209,9 +227,16 @@
               [:br]
               "In the game, all characters are equal"
               [:ul
-               [:li "Use the " [:b "up arrow"] " to " [:u "change"] " your selection."]
-               [:li "Use the " [:b "right arrow"] " to continue " [:br]
-                " when done choosing"]]
+               [:li "Use "
+                (if (buttonbox? state)
+                      [:span  "your " [:b {:class "middlefinger"} "middle finger"]]
+                      "the up arrow")
+                " to " [:u "change"] " your selection."]
+               [:li "Use "
+                (if (buttonbox? state)
+                  [:span  "your " [:b {:class "ringfinger"} "ring finger"]]
+                  [:span "the " [:b "right arrow"]])
+                " to choose and continue"]]
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
@@ -235,7 +260,7 @@
              (assoc-in state [:water :level] 100))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))}
-   {:text (fn[_] (html [:div "You want to get as much " (item-name :water) " as possible as quicly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]))
+   {:text (fn[_] (html [:div "You want to get as much " (item-name :water) " as possible as quickly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]))
     :skip (fn[state] (not (contains? #{:ocean} (get-in state [:record :settings :vis-type]))))
     }
 
@@ -328,19 +353,20 @@
     :start wells/all-empty
     :stop wells/wells-turn-off
     }
-   {:text (fn[state]
-            (html [:div "Sometimes you will be too tired to walk." [:br]
-                   "Instead, you will fade out until you are rested." [:br]
-                   "This happens randomly and is not related your choice" [:br]]))
-    :pos (fn[state] {:x 0 :y 100})
-    :start (fn[state]
-             (-> state
-                 (assoc :zzz (floater/zzz-new (avatar/top-center-pos state) 2))
-                 (assoc-in [:phase :fade] true)))
-    :stop (fn[state] (-> state
-                         (assoc-in [:phase :fade] false)
-                         (assoc :zzz [])))
-    }
+   ;; {:text (fn[state]
+   ;;          (html [:div "Sometimes you will be too tired to walk." [:br]
+   ;;                 "Instead, you will fade out until you are rested." [:br]
+   ;;                 "This happens randomly and is "
+   ;;                 [:b "not related"] " to your choice" [:br]]))
+   ;;  :pos (fn[state] {:x 0 :y 100})
+   ;;  :start (fn[state]
+   ;;           (-> state
+   ;;               (assoc :zzz (floater/zzz-new (avatar/top-center-pos state) 2))
+   ;;               (assoc-in [:phase :fade] true)))
+   ;;  :stop (fn[state] (-> state
+   ;;                       (assoc-in [:phase :fade] false)
+   ;;                       (assoc :zzz [])))
+   ;;  }
    {:text (fn[state] (html [:div "This " (item-name :well) " is far away." [:br] " It'll take longer to get than the other two."]))
     :pos (fn[state] (-> state find-far-well val position-next-to-well))
 
@@ -379,7 +405,7 @@
                        (update :y #(- % 200))))
     :start (fn[state] (-> state
                         (assoc-in [:water :score] 10)
-                        (assoc-in [:trial] 20)))
+                        (assoc-in [:trial] (* 0.25 (count (get state :well-list ))))))
     :stop (fn[state] (-> state
                         (assoc-in [:water :score] 0)
                         (assoc-in [:trial] 0)))
@@ -431,7 +457,11 @@
                          [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
                        [:li "How often you visit a " (item-name :well)
                         " does not change how often it gives " (item-name :water) ]
-                       [:li "Make choices with a single tap. Do not hold keys down."]]])
+                       [:li "Make choices with a single tap. Do not hold keys down."]]
+                      [:input
+                       {:type :button :value "Test Sound"
+                        :on-click (fn [e] (play-sound :reward))}]
+])
 
     ;; trigger test/blocking in read-keys
     ;; :key ...
@@ -439,7 +469,7 @@
 
 
 (defn read-keys [{:keys [key phase time-cur] :as state}]
-  (let [dir (key/side-from-keynum (:have key))
+  (let [dir (key/side-from-keynum-instructions (:have key))
         last-instruction (dec(count INSTRUCTION))
         i-cur (:idx phase)
         i-keyfn (get-in INSTRUCTION [i-cur :key dir])

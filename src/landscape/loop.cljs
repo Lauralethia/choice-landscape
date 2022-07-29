@@ -2,6 +2,7 @@
   (:require
    [landscape.view :as view]
    [landscape.model :as model]
+   [landscape.settings :as settings]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
    (:require-macros  [cljs.core.async.macros :refer [go-loop go]]))
 
@@ -32,7 +33,7 @@
    only changes time, which is picked up by watcher that runs render"
   (let [new-state (swap! state-atom (partial time-update time))]
   (when (:running? new-state)
-    (go (<! (timeout 30))
+    (go (<! (timeout settings/SAMPLERATE)) ;; 20220722 samplerate=30ms
             (.requestAnimationFrame js/window (partial run-loop state-atom))))))
 
 (defn run-start

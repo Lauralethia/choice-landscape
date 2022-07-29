@@ -1,1 +1,1 @@
-web: psiclj-heroku -t habit -r out/ -v 20220331v10_allkeys
+web: psiclj-heroku -t habit -r out/ -v 20220727v12_410MRtime

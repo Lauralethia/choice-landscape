@@ -11,7 +11,15 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
  Using [[./Procfile][~Procfile~]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
 
 * implementation
-  
+
+** TODO consistent MR timing
+<2022-07-06 Wed>
+create iti-start-at key in well-list
+check that against start time if it exists instead of looking at duration
+need mr start and average walk
+
+likely problem with current timing: timeout is same length as feedback. and there is no "walk"
+should implement phase tests that progress through each step (maybe with for loop at 30ms intervals?)
 ** audio captcha
    plays a speaker saying a word. word must be typed before continuing
 

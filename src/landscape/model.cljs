@@ -49,12 +49,13 @@
                        (points/->pos 590 0))]
         (-> score-state
             (update :points-floating #(conj % new-point))
-            (update-in [:water] #(water/water-inc % time-cur step-size))))
+            (update-in [:water] #(water/water-inc % time-cur step-size))
+            (floater/coin-addto-state)))
       score-state)))
 
 
 
-;; :key {:until nil :want [] :next nil :have nil}
+;; :key {:have nil :time nil :touch :all-pushes []}
 (defn read-keys
   "read any keypush, clear, and translate to avatar motion"
   [{:keys [key wells] :as state}]
@@ -101,6 +102,8 @@
       (points/points-floating-update 10) 
       ;; catch event. have floating Z's. move them around/remove them
       (floater/update-state)
+      ;; move floating coins down
+      (floater/coin-update-state)
       ))
 
 (declare STATE) ; defined below
@@ -151,7 +154,7 @@
   []
   {
    :running? true
-   :trial 0
+   :trial 1
    :start-time 0
    :time-cur 0
    :key (key/key-state-fresh)
@@ -161,6 +164,8 @@
    :phase (phase/set-phase-fresh :chose nil)
    :sprite-picked :astro
    :record (records/record-init)
+   :coins {:floating [] :pile []}
+   :zzz {}
    :avatar {:pos {:x 245 :y 0}
             :active-at 0
             :direction :down

@@ -5,6 +5,7 @@
         cljs-bach/cljs-bach {:mvn/version "0.3.0"}        ;; audio
         cljsjs/react-dom {:mvn/version "15.3.1-0"}        ;; for sablono
         cljsjs/react {:mvn/version "15.3.1-0"}            ;; for sablono
+        quil/quil {:mvn/version "3.1.0"}                  ;; for animating piling reward
         sablono/sablono {:mvn/version "0.7.5"}            ;; state<->dom
         philoskim/debux-stubs {:mvn/version "0.8.1"}      ;; noop leftover (dbg)
         devcards/devcards {:mvn/version "0.2.5"}          ;; need :devcard true to enable

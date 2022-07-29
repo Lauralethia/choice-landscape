@@ -1,4 +1,4 @@
-std_dev_tests.tsv: out/
+240_std_dev_tests.tsv: out/
 	./01_collect.R
 
 # out/*s/*/stddevtests.tsv

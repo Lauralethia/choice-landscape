@@ -10,6 +10,8 @@
    [landscape.key :as key]
    [cljsjs.react]
    [cljsjs.react.dom]
+   [goog.string :as gstring :refer [format]]
+   [goog.string.format]                 ;; needed for compiled js
    [sablono.core :as sab :include-macros true :refer-macros [html]]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
   (:require-macros [devcards.core :refer [defcard]]))
@@ -92,7 +94,7 @@
 (defn progress-bar
   "show how far along we are in the task."
   [{:keys [trial well-list water] :as  state}]
-  (let [ntrials (count well-list)
+  (let [ntrials (inc (count well-list))
         score (/ (:score water) ntrials)
         progress (/ trial ntrials)
         vis-class (-> @current-settings :vis-type name)]
@@ -133,6 +135,12 @@
 (defn show-all-zzz [{:keys[zzz] :as state}]
   "show all zzzs that could be floating"
   (html [:div (mapv #'show-zzz-floating zzz)]))
+
+(defn show-all-floating-coins [{:keys[coins] :as state}]
+  "show all coins that could be floating or resting in the pile"
+  (html [:div
+         [:div.coins_pile (mapv #'show-zzz-floating (:pile coins))]
+         [:div.coins_floating (mapv #'show-zzz-floating (:floating coins))]]))
 
 ;;
 (defn bucket []
@@ -182,19 +190,19 @@
          (well-side state :right)]))
 
 (defn button-keys [] (html [:div.bottom
-                               [:button {:on-click #(key/sim-key :left)
-                                         :class "arrow"}
-                                [:img {:src "imgs/arrow_l.png"}]]
-                               [:button {:on-click #(key/sim-key :up)
-                                         :class "arrow"}
-                                [:img {:src "imgs/arrow_l.png"
-                                       :class "rot_up"}]]
                                [:button {:on-click #(key/sim-key :down)
                                          :class "arrow"}
                                 [:img {:src "imgs/arrow_l.png"
                                        :class "rot_down"}]]
+                               [:button {:on-click #(key/sim-key :left)
+                                         :class "arrow indexfinger"}
+                                [:img {:src "imgs/arrow_l.png"}]]
+                               [:button {:on-click #(key/sim-key :up)
+                                         :class "arrow middlefinger"}
+                                [:img {:src "imgs/arrow_l.png"
+                                       :class "rot_up"}]]
                                [:button {:on-click #(key/sim-key :right)
-                                         :class "arrow"}
+                                         :class "arrow ringfinger"}
                                 [:img {:src "imgs/arrow_l.png"
                                        :class "rot_lr"}]]]))
 (defn instruction-view [{:keys [phase] :as state}]
@@ -259,7 +267,30 @@
                                   (:time-cur state)
                                   ".json")
                    :href (-> state :record create-json-url)
-                   } "download task data"]])
+                   } "download task data"]
+            [:br]
+            ;; might be blocked:
+            ;;   Scripts may not close windows that were not opened by script.
+            ;; about:config -> dom.allow_scripts_to_close_windows
+            [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]
+            [:br]
+
+            ;; 'dec' b/c one extra trial = "done" screen
+            (let [events (get-in state [:record :events])
+                  cnt (-> events count dec)
+                  rt_all (map #(:rt %) events)
+                  rts (filter #(not(nil? %)) rt_all)
+                  missed (dec (count (filter #(nil? %) rt_all)))]
+              [:p {:style {:font-size "10px"} }
+               cnt " trials in "
+               (let [ttime (- (get-in state [:record :end-time :browser])
+                              (get-in state [:record :start-time :browser]))
+                     secs (/ ttime 1000)
+                     mins (/ secs  60)] (str (format "%.3f" mins) "min " secs "secs") )
+               [:br]
+               "average rt:" (format "%0.1f" (/ (reduce #'+ rts) (count rts))) "ms"
+               [:br] "# no resp: " missed
+               ])])
          [:br]]))
 
 
@@ -277,6 +308,16 @@
     (sab/html [:div  {:style {:opacity "50%"}}  html])
     html))
 
+(defn fmt-ms-s [ms] (format "%.2f" (/ ms 1000)))
+(defn show-events [initial keys times]
+  [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
+   (html [(map #(html [:td (fmt-ms-s (- (get times (str % "-time"), initial) initial))])
+               keys)
+          [:td (fmt-ms-s (- (get times "waiting-time") (get times "chose-time")))]
+          [:td (fmt-ms-s (:iti-dur times))]
+          [:td (fmt-ms-s (:iti-orig times))]
+          [:td (fmt-ms-s (:iti-ideal-end times))]
+          ])])
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -286,10 +327,19 @@
      [:div#background {:class vis-class}
       (progress-bar state)
 
-      (if DEBUG [:div {:style {:color "white"}}
-                 [:br] (str (:key state))
-                 [:button {:on-click (fn [] (popup-state state))} "show"]])
-
+      (if DEBUG [:div {:style {:color "white" :background-color "black" :position "absolute" :top "500px"}}
+                 [:br] (str "trial: " (:trial state))
+                 [:br] (str "phase:" (select-keys phase [:name :score :iti-dur :iti-ideal-end :picked]))
+                 [:br] (str "have key: " (select-keys (:key state) [:have :time]))
+                 [:br] [:button {:on-click (fn [] (popup-state state))} "show"]
+                 (let [time-keys ["iti" "chose" "waiting" "timeout" "feedback"]
+                       start-time (get-in state [:record :start-time :animation])
+                       iti-dur 0]
+                   [:table {:border "1px" :style {:background "white"}}
+                    [:tr (map #(html [:td %]) (concat time-keys ["rt" "itidur" "itiorig" "itiend"])) ]
+                    (map  (partial show-events start-time time-keys)
+                          (get-in state [:record :events]))])])
+      
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
       (if (contains? #{:mountain :desert :wellcoin} (get @current-settings :vis-type))
@@ -314,6 +364,9 @@
 
       ;; draw ZZZ over avatar during catch trial
       (show-all-zzz state)
+
+      ;; coin pile and floating coins
+      (show-all-floating-coins state)
 
       ;; instructions on top so covers anything else
       ;; -- maybe we want them under?
