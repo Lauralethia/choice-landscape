@@ -208,6 +208,7 @@ def http_run(this_hardware):
     # this should be done by task?
     #this_hardware.send(128)
 
+    print("# listening to forward ttl on http://127.0.0.1:8888")
     app = Application([('/(.*)', HttpTTL, dict(hardware=this_hardware))])
     server = HTTPServer(app)
     server.listen(8888)
