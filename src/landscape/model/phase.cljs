@@ -136,6 +136,7 @@ nil if timout"
    {:keys [start-at] :as next-phase}
    ;; NB. not pulling in name so we can use name function
    ]
+  ;; 20220729 TODO: looks like maybe we are sending the prev state
   (if-let [url (:local-ttl-server @settings/current-settings)]
     (http/send-local-ttl url (gen-ttl (:wells state) phase) ))
   (let [time-key (str (name (:name next-phase)) "-time") ;chose-time waiting-time feedback-time

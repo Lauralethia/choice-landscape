@@ -56,15 +56,15 @@
 ;; TODO: should this be in phase.cljs?
 (defn photodiode-instructions
   "Paging between instructions can be used to test hardware (color based on instruction idx)"
-  [phase]
-  (if (even? (or 0 (:idx phase))) "white" "black"))
+  [idx]
+  (if (even? idx) "white" "black"))
 (defn photodiode-white-on
   "white at onset of new phase. cleared after 100ms (is it ms? feels like it)"
   [{:keys [start-at] :as phase} time-cur]
   (if (< (- time-cur start-at) 100) "white" "black"))
 (defn photodiode-color [{:keys [phase time-cur] :as state}]
   (if (= (:name phase) :instruction)
-    (photodiode-instructions phase)
+    (photodiode-instructions (get phase :idx 0))
     (photodiode-white-on phase time-cur)))
 
 (defn photodiode-color-steps
