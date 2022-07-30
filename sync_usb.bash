@@ -10,4 +10,6 @@ rsync --size-only -urvLhi ../choice-landscape/ /mnt/usb/task/choice-landscape/ \
    --exclude .cpcache \
    --exclude 'clojure-tools*' \
    --exclude '*.sqlite3' \
+    --exclude  .mypy_cache \
+    --exclude out/cljs \
    "$@"
