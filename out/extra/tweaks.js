@@ -12,11 +12,12 @@ let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha',
               'devalue1': '3 blocks (original 8 versions)',
               'devalue2=75': '4th deval all equal',
               'devalue2=100_80': '4th deval good now bad',
-              'norev': 'remove 2nd block reversal'
+              'norev': 'remove 2nd block reversal',
+              'step=slow': 'very slow moving avatar for debuging'
 }
 
 let landscapes = ['ocean', 'mountain', 'desert', 'wellcoin']
-let timing_choices = ['random', 'debug', 'mrA1', 'mrA2', 'mrB1', 'mrB2']
+let timing_choices = ['random', 'debug', 'mrA1', 'mrA2', 'mrB1', 'mrB2', 'quickrandom']
 
 // grab value of an input
 function qs(name) {
