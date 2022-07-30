@@ -36,10 +36,29 @@ class Hardware():
     """
     wrapper for sending ttl. DAQ or psycyhopy.parallel
     """
+    def __init__(self, verbose=False):
+        self.verbose = verbose
+        self.start  = datetime.datetime.now()
+
     def send(self, ttl, zero=True):
-        print(f"sending {ttl} @ {datetime.datetime.now()}")
+        if not self.print_timestamp(ttl):
+            print(f"sending {ttl} @ {datetime.datetime.now()}")
         if zero:
             self.wait_and_zero()
+
+    def print_timestamp(self, ttl):
+        "timestamp non-zero ttl reltaive to 128 start code"
+        if not self.verbose:
+            return False
+        # dont want to print timing of the zeros?
+        if ttl==0:
+            return True
+        now = datetime.datetime.now()
+        if ttl == 128:
+            self.start = now
+        diff = now - self.start
+        print(f"{ttl} {diff.total_seconds():.03f}")
+        return True
 
     def wait_and_zero(self):
         # TODO: more percise sleeping psychopy.core.wait(.005) or psychtoolbox.WaitSecs(.005)
@@ -52,13 +71,16 @@ class Hardware():
 # LPT + Cedrus == Loeffler EEG
 class LPT(Hardware):
     """ set TTL on parallel port (LPT) """
-    def __init__(self, address):
+    def __init__(self, address, verbose=False):
         from psychopy import parallel
         import time
         self.port = parallel.ParallelPort(address=address)
+        self.verbose = verbose
+        self.start = datetime.datetime.now()
 
     def send(self, ttl, zero=True):
         self.port.setData(ttl)
+        self.print_timestamp(ttl)
         # without this, mne_python has a hard time finding values
         if zero:
             self.wait_and_zero()
@@ -213,15 +235,15 @@ def http_run(this_hardware):
     server = HTTPServer(app)
     server.listen(8888)
 
-async def loeffeeg():
-    hw = LPT(address=0xD010)
+async def loeffeeg(verbose=False):
+    hw = LPT(address=0xD010, verbose=verbose)
     kb = KB()
     rb = Cedrus(hw, kb)
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
-async def fakeeeg(usekeyboard=False):
-    hw = Hardware()
+async def fakeeeg(usekeyboard=False, verbose=False):
+    hw = Hardware(verbose=verbose)
     kb = KB()
     http_run(hw)
     rb = FakeButton(hw,kb)
@@ -236,18 +258,19 @@ def parser(args):
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
     p.add_argument('place', help='one of: "loeff","test","seeg"')
     p.add_argument('-k','--keyboard', help='use keyboard (only for testing)', action='store_true', dest="usekeyboard")
+    p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
 
 
 if __name__ == "__main__":
     args = parser(sys.argv[1:])
-    print(args.place)
+    print(f"# *{args.place}* python pd+button+ttl bridge")
     if args.place == "loeff":
-        asyncio.run(loeffeeg())
+        asyncio.run(loeffeeg(verbose=args.verbose))
     elif args.place == "seeg":
         print("NOT IMPLEMENTED!")
     elif args.place == "test":
-        asyncio.run(fakeeeg(args.usekeyboard))
+        asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
     else:
         print(f"unkown place '{args.place}'!")
 
