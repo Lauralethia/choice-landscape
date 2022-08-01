@@ -96,6 +96,11 @@ nil if timout"
   (let [side (+ (if (get-in wells [:left :open])  1 0)
                 (if (get-in wells [:up :open])    2 0)
                 (if (get-in wells [:right :open]) 3 0))
+
+        ;; iti has side but don't report it
+        ;; confusing to report it. but might help identify trial if something goes wrong
+        ;; side (if (=  (:name phase) :iti) 0 side)
+
         ;; should only exist in feedback. but hangs on into iti?
         picked (case (:picked phase)
                  :left 10
@@ -122,6 +127,11 @@ nil if timout"
         ]
     (+ name side picked score)))
 
+(defn ttl-get-send [wells next-phase]
+ (if-let [url (:local-ttl-server @settings/current-settings)]
+   (let [ttl (gen-ttl wells next-phase)]
+     (http/send-local-ttl url ttl)
+     ttl)))
 ;; ":record" has per trial vector of useful state info
 ;; [{:trial #
 ;;   :chose-time # :waiting-time # :feedback-time #
@@ -137,11 +147,17 @@ nil if timout"
    ;; NB. not pulling in name so we can use name function
    ]
   ;; 20220729 TODO: looks like maybe we are sending the prev state
-  (if-let [url (:local-ttl-server @settings/current-settings)]
-    (http/send-local-ttl url (gen-ttl (:wells state) phase) ))
+
   (let [time-key (str (name (:name next-phase)) "-time") ;chose-time waiting-time feedback-time
         trial0 (dec trial)
         state-time (assoc-in state [:record :events trial0 time-key]  start-at)
+        ;; nil if not sending ttl (valued only for s/eeg)
+        ttl (ttl-get-send (get-in state [:well-list trial0]) next-phase)
+        state-time (if ttl
+                     (assoc-in state-time
+                               [:record :events trial0 :ttl (:name next-phase)]
+                               {:code ttl :onset (utils/now)})
+                     state-time)
         ;; NB. about to change to :feedback when :waiting, so use cur not next
         picked (get phase :picked)]
     (case (:name next-phase)
