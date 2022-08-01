@@ -15,7 +15,7 @@
   }
 
   function go_url(){
-      let url = make_url() + get_anchor() + "&timing=random&noinstruction&photodiode&ttl=local"
+      let url = make_url() + get_anchor() + "&photodiode&ttl=local"
       //window.location.assign(url);
       popup = window.open(url,"Popup",
                           "toolbar=no,location=no,status=no,menubar=no,"+
@@ -26,6 +26,8 @@
 
   function add_choices(){
       add_landscape_choices();
+      timing_choices = ['randomA','randomB']
+      add_timing_choices();
   }
 </script>
    </head>

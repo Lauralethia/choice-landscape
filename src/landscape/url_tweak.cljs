@@ -96,11 +96,13 @@
        (update-settings u #"where=eeg" [:where] :eeg)
        (update-settings u #"where=eeg" [:skip-captcha] true)
        ;; fixed timing
+       (update-settings u #"timing=randomA" [:left-best] false) ; A=right
+       (update-settings u #"timing=randomB" [:left-best] true)  ; B=left
        (update-settings u #"timing=debug" [:timing-method] :debug)
        (update-settings u #"timing=practice" [:timing-method] :practice)
-       (update-settings u #"timing=mra1" [:timing-method] :mrA1)
+       (update-settings u #"timing=mra1" [:timing-method] :mrA1) ; right best
        (update-settings u #"timing=mra2" [:timing-method] :mrA2)
-       (update-settings u #"timing=mrb1" [:timing-method] :mrB1)
+       (update-settings u #"timing=mrb1" [:timing-method] :mrB1) ; left best
        (update-settings u #"timing=mrb2" [:timing-method] :mrB2)
        (update-settings u #"timing=quickrandom" [:nTrials] {:pairsInBlock 2 :devalue 2 :devalue-good 0})
        (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")

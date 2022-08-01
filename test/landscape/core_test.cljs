@@ -1,10 +1,20 @@
 (ns landscape.core-test
   (:require
-   [landscape.core :refer [gen-well-list]]
+   [landscape.core :refer [gen-well-list best-well-side]]
    [landscape.settings :refer [current-settings]]
    ;[thinktopic.aljabr.core :as nd]
    [clojure.core.matrix :as m]
    [clojure.test :refer [is deftest]]))
+
+
+(deftest best-well-random-test
+  "do we pick non-random when told?"
+  (is (= :left (best-well-side true)))
+  (is (= :right (best-well-side false)))
+  (is (contains? #{:right :left} (best-well-side nil)))
+  (is (contains? #{:right :left} (best-well-side))))
+
+
 
 (defn all-eq [s] (every? #(= % (first s)) s))
 
@@ -70,3 +80,4 @@
 ;; but all are equal (24 trials per prob permutation)
 (deftest same-number-trial-sides-learn
   (is (every? #{24} (map #(f %) (filter #(= (deval-type %) :learn) (keys f))))))
+

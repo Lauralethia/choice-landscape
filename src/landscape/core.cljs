@@ -25,11 +25,21 @@
 (enable-console-print!)
 (set! *warn-on-infer* false) ; maybe want to be true
 
-(defn gen-well-list []
+(defn best-well-side
+  "best well is :left or :right. shuffle unless told weither left should be best.
+  left-best was a poor choice. in url_tweak A=right, B=left.
+  NB. up is too different 20211029 excluded from best options
+  "
+  [& left-best]
+  (if (nil? left-best)
+    (first (shuffle [:left :right]))
+    (if (first left-best) :left :right)))
+
+(defn gen-well-list [& left-best]
 
   ;; TODO: might want to get fixed timing
   ;;       look into javascript extern (and supply run or CB) to pull from edn/file
-  (let[best-side (first (shuffle [:left :right])) ; :up  -- up is too different 20211029
+  (let[best-side (best-well-side left-best)
         prob-low (get-in  @current-settings [:prob :low] ) ; initially 20
         prob-mid (get-in  @current-settings [:prob :mid] ) ; initially 50
         prob-high (get-in @current-settings [:prob :high] ) ; originally 100, then 90 (20211104)
@@ -133,8 +143,9 @@
 
 
   (let [timing-method (get @settings/current-settings :timing-method :random)
+        left-best (get @settings/current-settings :left-best)
         well-list (wells/list-add-pos
-                   (get fixed-timing/trials timing-method (gen-well-list)))]
+                   (get fixed-timing/trials timing-method (gen-well-list left-best)))]
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
