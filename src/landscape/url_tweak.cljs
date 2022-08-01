@@ -109,6 +109,13 @@
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
+       ;; wellcoin should match ocean in postions
+       (update-settings u #"landscape=wellcoin"  [:bottom-y] 300)
+       (update-settings u #"landscape=wellcoin"  [:avatar-home :y] 300)
+       (update-settings u #"landscape=wellcoin"  [:bar-pos :y] 400)
+       (update-settings u #"landscape=wellcoin"  [:step-sizes] [140 0]) ;orig 70
+       (update-settings u #"landscape=wellcoin"  [:avatar-step-size] 15)
+       (update-settings u #"landscape=wellcoin"  [:pile-top] 130)
        ;; ocean doesn't have water/gold pile
        (update-settings u #"landscape=ocean"  [:bottom-y] 300)
        (update-settings u #"landscape=ocean"  [:avatar-home :y] 300)

@@ -17,7 +17,7 @@ let tweaks = {'nocaptcha': 'skip audio confirmatin/captcha',
 }
 
 let landscapes = ['ocean', 'mountain', 'desert', 'wellcoin']
-let timing_choices = ['random', 'debug', 'mrA1', 'mrA2', 'mrB1', 'mrB2', 'quickrandom']
+let timing_choices = ['random', 'debug', 'mrA1', 'mrA2', 'mrB1', 'mrB2', 'quickrandom', 'randomA','randomB']
 
 // grab value of an input
 function qs(name) {

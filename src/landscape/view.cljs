@@ -38,20 +38,27 @@
 
 
 ;; scene components
+(defn move-water-pile [style new-top]
+  (merge style (if new-top {:top new-top} {}))
+  )
 (defn water-fill
   "show progress with growing image. scale by FILL"
-  [fill]
+  [fill & new-top]
   (let [img (case (:vis-type @current-settings)
               :mountain "imgs/money_pool.png"
               :wellcoin "imgs/money_pool.png"
               :ocean "imgs/money_pool.png" ;; NB no fill for :ocean but instructions die
               "imgs/water.png"
               )]
-    (html [:img#water {:src img :style {:transform (str "scale(" (/ fill 100) ")")}}])))
+    (html [:img#water {:src img
+                       :style (move-water-pile
+                               {:transform (str "scale(" (/ fill 100) ")")}
+                               new-top
+                               )}])))
 
 (defn water [state]
   (let [fill (get-in state [:water :scale])]
-    (water-fill fill)))
+    (water-fill fill (get-in state [:record :settings :pile-top]))))
 
 ;; TODO: should this be in phase.cljs?
 (defn photodiode-instructions

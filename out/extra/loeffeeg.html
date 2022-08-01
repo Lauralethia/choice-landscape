@@ -7,6 +7,8 @@
 <!-- // qs, yyyymmdd, get_anchor, add_timing_choices -->
 
 <script>
+
+
   function make_url(){
       let id = qs("id");
       let runnum = qs("runnum");
@@ -25,6 +27,8 @@
 
 
   function add_choices(){
+      // reorder preferend  landscapes
+      landscapes = ['wellcoin', 'ocean', 'desert','mountain']
       add_landscape_choices();
       timing_choices = ['randomA','randomB']
       add_timing_choices();
