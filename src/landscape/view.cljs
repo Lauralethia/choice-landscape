@@ -317,7 +317,34 @@
           [:td (fmt-ms-s (:iti-dur times))]
           [:td (fmt-ms-s (:iti-orig times))]
           [:td (fmt-ms-s (:iti-ideal-end times))]
+          [:td (get-in times [:ttl :iti :code] "NA")]
+          [:td (get-in times [:ttl :chose :code] "NA")]
+          [:td (get-in times [:ttl :waiting :code] "NA")]
+          [:td (get-in times [:ttl :feedback :code] "NA")]
           ])])
+
+(defn debug-timing-table [{:keys [phase] :as state}]
+  (html
+   [:div
+    {:style {:color "white" :background-color "black"
+             :position "absolute" :top "500px"}}
+    [:br] (str "trial: " (:trial state))
+    [:br] (str "phase:"
+               (select-keys phase [:name :score :iti-dur :iti-ideal-end :picked]))
+    [:br] (str "have key: " (select-keys (:key state) [:have :time]))
+    [:br] [:button {:on-click (fn [] (popup-state state))} "show"]
+    (let [time-keys ["iti" "chose" "waiting" "timeout" "feedback"]
+          start-time (get-in state [:record :start-time :animation])
+          iti-dur 0]
+      [:table {:border "1px" :style {:background "white"}}
+       [:tr (map #(html [:td %])
+                 (concat time-keys
+                         ["rt" "itidur" "itiorig" "itiend"
+                          "t:i" "t:chose" "t:wait" "t:fbk"])) ]
+       (map  (partial show-events start-time time-keys)
+             (get-in state [:record :events]))])]
+   ))
+
 (defn display-state
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
@@ -327,19 +354,7 @@
      [:div#background {:class vis-class}
       (progress-bar state)
 
-      (if DEBUG [:div {:style {:color "white" :background-color "black" :position "absolute" :top "500px"}}
-                 [:br] (str "trial: " (:trial state))
-                 [:br] (str "phase:" (select-keys phase [:name :score :iti-dur :iti-ideal-end :picked]))
-                 [:br] (str "have key: " (select-keys (:key state) [:have :time]))
-                 [:br] [:button {:on-click (fn [] (popup-state state))} "show"]
-                 (let [time-keys ["iti" "chose" "waiting" "timeout" "feedback"]
-                       start-time (get-in state [:record :start-time :animation])
-                       iti-dur 0]
-                   [:table {:border "1px" :style {:background "white"}}
-                    [:tr (map #(html [:td %]) (concat time-keys ["rt" "itidur" "itiorig" "itiend"])) ]
-                    (map  (partial show-events start-time time-keys)
-                          (get-in state [:record :events]))])])
-      
+      (if DEBUG (debug-timing-table state))
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
       (if (contains? #{:mountain :desert :wellcoin} (get @current-settings :vis-type))
