@@ -31,9 +31,10 @@
   NB. up is too different 20211029 excluded from best options
   "
   [& left-best]
-  (if (nil? left-best)
-    (first (shuffle [:left :right]))
-    (if (first left-best) :left :right)))
+  (let [left-best (first left-best)]
+    (if (nil? left-best)
+      (first (shuffle [:left :right]))
+      (if (true? left-best) :left :right))))
 
 (defn gen-well-list [& left-best]
 
@@ -140,10 +141,12 @@
     (set! landscape.view.DEBUG true))
 
 
-  (let [timing-method (get @settings/current-settings :timing-method :random)
+  (let [timing-method (get @settings/current-settings :timing-method, :random)
         left-best (get @settings/current-settings :left-best)
+        well-list-random (gen-well-list left-best)
         well-list (wells/list-add-pos
-                   (get fixed-timing/trials timing-method (gen-well-list left-best)))]
+                   (get fixed-timing/trials timing-method, well-list-random))]
+    ;; (println "using left-best" left-best "with method" timing-method)
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
