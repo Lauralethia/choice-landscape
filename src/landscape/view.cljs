@@ -327,6 +327,7 @@
           [:td (get-in times [:ttl :iti :code] "NA")]
           [:td (get-in times [:ttl :chose :code] "NA")]
           [:td (get-in times [:ttl :waiting :code] "NA")]
+          [:td (get-in times [:ttl :timeout :code] "NA")]
           [:td (get-in times [:ttl :feedback :code] "NA")]
           ])])
 
@@ -347,7 +348,7 @@
        [:tr (map #(html [:td %])
                  (concat time-keys
                          ["rt" "itidur" "itiorig" "itiend"
-                          "t:i" "t:chose" "t:wait" "t:fbk"])) ]
+                          "t:i" "t:chose" "t:wait" "t:timeout" "t:fbk"])) ]
        (map  (partial show-events start-time time-keys)
              (get-in state [:record :events]))])]
    ))

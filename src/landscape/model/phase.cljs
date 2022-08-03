@@ -179,8 +179,6 @@ nil if timout"
           (assoc-in [:record :events trial0 :iti-dur] (get phase :iti-dur))
           )
 
-      ;; :timeout just resturn state-time
-
       ;; if no response and catch
       ;;    :avoided, :picked, and the rest of wide-info will be keys with
       ;;    but with nil values
@@ -209,7 +207,9 @@ nil if timout"
                      #(merge % (wells/wide-info-picked wells picked))))
       :timeout
       (-> state-time
-          ;; picked and avoided are null. but want to add trial-choices
+          ;; picked and avoided are null. make that explicit (unnecessary) 
+          (assoc-in [:record :events trial0 :picked] nil)
+          (assoc-in [:record :events trial0 :rt] nil)
           (update-in [:record :events trial0]
                      #(merge % (wells/wide-info-picked wells picked))))
 
