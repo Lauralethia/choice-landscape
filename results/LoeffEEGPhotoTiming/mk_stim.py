@@ -18,8 +18,8 @@ np.set_printoptions(suppress=True)
 
 
 ### files we're using
-bdf='./data/launch.bdf'
-tsv='./data/launch.tsv'
+bdf='./data/remotebtn.bdf'
+tsv='./data/remotebtn.tsv'
 #bdf='./data/pdint3.bdf'
 #tsv='./data/pdtest3.tsv'
 
@@ -31,7 +31,10 @@ tsv='./data/launch.tsv'
 eeg = mne.io.read_raw_bdf(bdf)
 #eeg.describe() # 247808 (484.0 s) == 512Hz
 
-events = mne.find_events(eeg, shortest_event=2)
+# events = mne.find_events(eeg, shortest_event=2)
+util.add_stim_corrected(eeg)
+events = mne.find_events(eeg,stim_channel='StatusCorrected',shortest_event=2)
+
 
 first_iti_idx = np.where(np.bitwise_and(events[:,2] >= 10, events[:,2]<=15))[0][0]
 e_timed = events[first_iti_idx:,[0,2]].astype('float')
@@ -61,20 +64,30 @@ plt.plot(t_light, np.repeat(1,len(t_light)), 'ro')
          #task_onsets.value, np.repeat(0,len(task_onsets)), 'k.',
          #t_task,   np.repeat(3,len(t_task)), 'g^')
 
+iti_ttl = ttl_df[ttl_df.e == 'iti'].onset.values
+iti_task = task_onsets[task_onsets.name=='iti'].value.values
+iti_task_trunc = iti_task[iti_task < iti_ttl[-1] + .1]
+iti_ttl - iti_task_trunc
+# [0.   ,  0.023,  0.034,  0.011,  0.019,  0.031,  0.011,  0.016, -0.007]
 # line for each new trial
 for xi in iti_task_trunc:
     plt.axvline(x=xi, color='b')
 
-factors = np.unique(task_onsets.name.values).tolist()
+task_onsets.iloc['name',task_onsets.name.values == None] = 'None'
+ttl_df = pd.DataFrame([util.taskttl_event_side(x) for x in t_task[:,1]],
+                      columns=['e','sides','picked','score']).\
+        assign(ttl=t_task[:,1],
+               onset=t_task[:,0])
+
+ttl_df.loc[ttl_df.e.values == None, 'e'] = 'None'
+
+factors = np.unique(np.concatenate([ttl_df.e.values,
+                                   task_onsets.name.values])).tolist()
 cvals = [factors.index(f) for f in task_onsets.name.values]
 plt.scatter(task_onsets.value,
             np.repeat(0,len(task_onsets)),
             c=cvals)
 
-ttl_df = pd.DataFrame([util.taskttl_event_side(x) for x in t_task[:,1]],
-                      columns=['e','sides','picked','score']).\
-        assign(ttl=t_task[:,1],
-               onset=t_task[:,0])
 cvals = [factors.index(f) for f in ttl_df.e]
 plt.scatter(ttl_df.onset, np.repeat(3,len(ttl_df)), c=cvals)
 #plt.scatter(t_task[:,0], np.repeat(2.7,len(t_task)))
@@ -94,11 +107,6 @@ for i in range(40):
 plt.show()
 
 
-iti_ttl = ttl_df[ttl_df.e == 'iti'].onset.values
-iti_task = task_onsets[task_onsets.name=='iti'].value.values
-iti_task_trunc = iti_task[iti_task < iti_ttl[-1] + .1]
-iti_ttl - iti_task_trunc
-# [0.   ,  0.023,  0.034,  0.011,  0.019,  0.031,  0.011,  0.016, -0.007]
 
 
 #### OFFSET
