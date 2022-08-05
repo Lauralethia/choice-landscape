@@ -82,7 +82,11 @@ iti_task = task_onsets[task_onsets.name == "iti"].value.values
 iti_task_trunc = iti_task[iti_task < iti_ttl[-1] + 0.1]
 
 # difference between task and Stim channel
-iti_ttl - iti_task_trunc
+print(iti_ttl - iti_task_trunc)
+
+# 20220805: are overlapping
+# but missing first iti in ttl?
+np.stack([np.diff(iti_ttl).T, np.diff(iti_task[1:]).T])[:,0:3]
 
 ## plot
 plt.close()
@@ -134,3 +138,4 @@ for iti in iti_with_pd:
 iti_to_pd = pd_match - iti_with_pd[0 : len(pd_match)]
 np.mean(iti_to_pd) * 1000  # 48.915
 np.std(iti_to_pd) * 1000  #  6.009
+
