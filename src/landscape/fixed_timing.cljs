@@ -42,23 +42,47 @@ see core/gen-well-list")
    :up   {:step 1, :open true, :prob 75},
    :right{:step 2, :open true, :prob 75},
    :iti-dur 1000}],
-:practice
- [{:left {:step 1, :open true, :prob 100},
-   :up   {:step 1, :open true, :prob 100},
-   :right{:step 2, :open false, :prob 100},
-   :iti-dur 2000}
-  {:left {:step 1, :open true, :prob 100},
-   :up   {:step 1, :open false, :prob 100},
-   :right{:step 2, :open true, :prob 100},
-   :iti-dur 2500}
-  {:left {:step 1, :open false, :prob 100},
-   :up   {:step 1, :open true, :prob 100},
-   :right{:step 2, :open true, :prob 100},
-   :iti-dur 2300}
-  {:left {:step 1, :open false, :prob 100},
-   :up   {:step 1, :open true, :prob 100},
-   :right{:step 2, :open true, :prob 100},
-   :iti-dur 2700}],
+:practice                                 ;; good     V  bad
+ [{:left {:step 1, :open true, :prob 100},;; left|up  V none
+   :up   {:step 2, :open true, :prob 100},
+   :right{:step 1, :open false, :prob 0},
+   :iti-dur 1000}
+  {:left {:step 1, :open true, :prob 0},  ;; none    V left|right
+   :up   {:step 2, :open false, :prob 100},
+   :right{:step 1, :open true, :prob 0},
+   :iti-dur 1000}
+  {:left {:step 1, :open false, :prob 0}, ;; up      V right
+   :up   {:step 2, :open true, :prob 100},
+   :right{:step 1, :open true, :prob 0},
+   :iti-dur 1000}
+  {:left {:step 1, :open false, :prob 0}, ;; up      V right
+   :up   {:step 2, :open true, :prob 100},
+   :right{:step 1, :open true, :prob 0},
+   :iti-dur 1000}
+  {:left {:step 1, :open true, :prob 100},;; left    V up
+   :up   {:step 2, :open true, :prob 0},
+   :right{:step 1, :open false, :prob 0},
+   :iti-dur 1000}
+  {:left {:step 1, :open false, :prob 0}, ;; right   V up
+   :up   {:step 2, :open true, :prob 0},
+   :right{:step 1, :open true, :prob 100},
+   :iti-dur 1000}
+  {:left {:step 1, :open true, :prob 0}, ;; right    V left
+   :up   {:step 2, :open false, :prob 0},
+   :right{:step 1, :open true, :prob 100},
+   :iti-dur 1000}
+  {:left {:step 1, :open true, :prob 0}, ;; right    V left
+   :up   {:step 2, :open false, :prob 0},
+   :right{:step 1, :open true, :prob 100},
+   :iti-dur 1000}
+  {:left {:step 1, :open true, :prob 100},;; up      V left
+   :up   {:step 2, :open true, :prob 0},
+   :right{:step 1, :open false, :prob 100},
+   :iti-dur 1000}
+  {:left {:step 1, :open false, :prob 100},;; up|right V none
+   :up   {:step 2, :open true, :prob 100},
+   :right{:step 1, :open true, :prob 100},
+   :iti-dur 1000}],
 :practice-orig
  [{:left {:step 1, :open true, :prob 100},
    :up   {:step 1, :open true, :prob 100},

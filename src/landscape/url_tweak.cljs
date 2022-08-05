@@ -84,7 +84,9 @@
 
        (update-settings u #"norev" [:reversal-block] false)
 
-       ;; MRI settings
+       ;;; LOCATION settings
+       (update-settings u #"where=practice" [:where] :practice)
+       ;; MRI
        (update-settings u #"where=mr" [:where] :mri)
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
        (update-settings u #"where=mr" [:skip-captcha] true)
@@ -94,9 +96,11 @@
        ; unlike to be need. iti is specfied for all trials in well-list for mr when using timing=
        ; here for testing with randomly generated timings
        (update-settings u #"where=mr" [:times :iti-dur] 2000)
-
+       ;; EEG
        (update-settings u #"where=eeg" [:where] :eeg)
        (update-settings u #"where=eeg" [:skip-captcha] true)
+       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
+
        ;; fixed timing
        (update-settings u #"timing=randomA" [:left-best] false) ; A=right
        (update-settings u #"timing=randomB" [:left-best] true)  ; B=left
@@ -107,10 +111,11 @@
        (update-settings u #"timing=mrb1" [:timing-method] :mrB1) ; left best
        (update-settings u #"timing=mrb2" [:timing-method] :mrB2)
        (update-settings u #"timing=quickrandom" [:nTrials] {:pairsInBlock 2 :devalue 2 :devalue-good 0})
-       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
+
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
+       ;;; landscapes wellcoin and ocean are spread out
        ;; wellcoin should match ocean in postions
        (update-settings u #"landscape=wellcoin"  [:bottom-y] 300)
        (update-settings u #"landscape=wellcoin"  [:avatar-home :y] 300)

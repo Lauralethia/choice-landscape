@@ -261,7 +261,7 @@
                        "Save it for your records." [:br]]
              [:span "You can close this page."]])
          ;; when mri, offer to download json
-         (if (contains? #{:mri :eeg} (get-in state [:record :settings :where]))
+         (if (contains? #{:mri :eeg :practice} (get-in state [:record :settings :where]))
            [:div [:a
                   ;; make a useful name for the json output that we could save
                   ;; includes url params and current timestep

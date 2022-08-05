@@ -81,7 +81,8 @@ nil if timout"
         next (cond
                (<= trial (count well-list)) :chose  ; next trail
                ;; :survey okay forced, but w/:iti->:survey, not responsive to keys
-               (contains? #{:mri :eeg} where) :done     ; TODO: :survey (buttonbox Qs)
+               (contains? #{:mri :eeg :practice} where) :done
+               ; TODO: could also send to :survey (for buttonbox Qs)
                (contains? #{:online} where) :forum ; freeform text w/full keyboard
                :else :forum)]
     (set-phase-fresh next time-cur)))
