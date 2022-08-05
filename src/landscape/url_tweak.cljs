@@ -4,7 +4,9 @@
    [landscape.settings :as settings]
    [clojure.string]))
 
-(defn get-url-map [] (-> js/window .-location .-href url/url))
+(defn get-url-map
+  ([] (-> js/window .-location .-href get-url-map))
+  ([url]  (url/url url)))
 
 (defn vis-type-from-url [u]
   "desert or mountain from url :anchor. default to desert"
@@ -36,7 +38,7 @@
   "create a unique id using url-path-info output"
   [{:keys [id task timepoint run] :as url-map}]
   (if id
-    (str id "_" task "_" timepoint "_" run)
+    (str "sub-" id "_task-" task "_ses-" timepoint "_run-" run)
     "unlabeled_run"))
 
 (defn update-walktime

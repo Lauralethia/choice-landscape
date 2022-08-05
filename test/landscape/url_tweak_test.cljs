@@ -41,7 +41,7 @@
 
 (deftest url-to-id-test
   (let [url-map (url-path-info {:path "url/i/t/v/r"})]
-    (is (= "i_t_v_r" (path-info-to-id url-map)))
+    (is (= "sub-i_task-t_ses-v_run-r" (path-info-to-id url-map)))
     (is (= "unlabeled_run" (path-info-to-id nil)))))
 
 (deftest update-walktime-test

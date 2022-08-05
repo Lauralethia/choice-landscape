@@ -269,9 +269,9 @@
                   ;; but wont have a useful url path in that case!
                   ;; maybe set id= and pull from path anchor?
                   {:download (str (landscape.url-tweak/path-info-to-id
-                                   (get-in state [:record :path-info]))
+                                   (get-in state [:record :settings :path-info]))
                                   "_"
-                                  (:time-cur state)
+                                  (get-in state [:record :start-time :browser])
                                   ".json")
                    :href (-> state :record create-json-url)
                    } "download task data"]
