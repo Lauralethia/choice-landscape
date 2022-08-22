@@ -10,11 +10,12 @@ rsync --size-only -urvLhi ../choice-landscape/ /mnt/usb/task/choice-landscape/ \
    --exclude .cpcache \
    --exclude 'clojure-tools*' \
    --exclude '*.sqlite3' \
+   --exclude '*.json' \
    --exclude '*.cljs.cache.json'\
    --exclude 'out/landscape' \
    --exclude 'out/cljs*' \
-   --exclude 'out/*/' \
    --include 'out/imgs/' \
    --include 'out/audio/' \
    --include 'out/extra/' \
+   --exclude 'out/*/' \
    "$@"
