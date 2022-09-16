@@ -1,7 +1,7 @@
 .PHONY: .ALWAYS all
 .ALWAYS:
 
-all: summary.csv
+all: summary.csv data_all.tsv
 
 #mkifdiff from lncdtools
 raw.json: .ALWAYS
@@ -15,7 +15,15 @@ raw.tsv: raw.json
 survey.tsv: raw.json
 	./extra_info.jq < $<  > $@
 
-data.tsv data_id-hidden.tsv: raw.tsv
+bea_res_concat.tsv: $(wildcard /Volumes/L/bea_res/Data/Tasks/Habit/MR/1*_2*/*tsv)
+	cat_skiphead $? > $@
+
+data_id-hidden.tsv: data.tsv
+data.tsv: raw.tsv
 	Rscript -e "source('./read.R'); fix_and_save()"
+
 summary.csv: data.tsv survey.tsv
 	./summary.R
+
+data_all.tsv: data.tsv bea_res_concat.tsv
+	cat_skiphead $? > $@
