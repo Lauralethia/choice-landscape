@@ -17,4 +17,5 @@ rsync --size-only -urvLhi ../choice-landscape/ /mnt/usb/task/choice-landscape/ \
    --include 'out/imgs/' \
    --include 'out/audio/' \
    --include 'out/extra/' \
+   --exclude  .mypy_cache \
    "$@"
