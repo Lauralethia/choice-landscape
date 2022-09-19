@@ -319,7 +319,8 @@
 (defn show-events [initial keys show-ttl-codes? times]
   [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
     [:td (get-in times [:trial-choices] "NA")]
-    [:td (str (get-in times [:picked] "NA"))]
+    [:td (str (get-in times [:picked] "NA") "" (get-in times [:picked-prob] "0"))]
+    [:td (str (get-in times [:score] "NA"))]
    (html [(map #(html [:td (fmt-ms-s (- (get times (str % "-time"), initial) initial))])
                keys)
           [:td (fmt-ms-s (- (get times "waiting-time") (get times "chose-time")))]
@@ -351,7 +352,7 @@
           iti-dur 0]
       [:table {:border "1px" :style {:background "white"}}
        [:tr (map #(html [:td %])
-                 (concat ["choices" "picked"] time-keys
+                 (concat ["choices" "picked" "score"] time-keys
                          ["rt" "itidur" "itiorig" "itiend"
                           (when show-ttl-codes? ["t:i" "t:chose" "t:wait" "t:timeout" "t:fbk"])])) ]
        (map  (partial show-events start-time time-keys show-ttl-codes?)
