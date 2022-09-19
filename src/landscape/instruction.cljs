@@ -345,7 +345,7 @@
                    "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
                    ;; dont be harsh about payment when participant is in person
                    ;; (instead RA/RS can give a nice "wake up" reminder
-                   (when (not(contains? #{:mri :eeg}
+                   (when (not(contains? #{:mri :eeg :practice}
                                         (get-in state [:record :settings :where])))
                     [:b "You will not get paid if you do not respond!"])
                    ]))
