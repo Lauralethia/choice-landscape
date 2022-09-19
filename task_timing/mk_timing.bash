@@ -13,8 +13,16 @@ warn(){ echo "$@" >&2; }
 
 TR=1.3
 MEAN_RT=0.580     # but can be up to 1.5
-WALK_TIME=0.534   # always take the same time to walk to feedback
-FBK_TIME=1        # always 1 second of feedback
+
+#WALK_TIME=0.534   # always take the same time to walk to feedback
+#FBK_TIME=1        # always 1 second of feedback
+
+# 20220728 - walk and fbk time were combined into walk
+#            feedback is the second half of walk
+#            using clock mean times. can be off by SAMPLERATE
+#            ~30ms either direction
+WALK_TIME=0.2679
+FBK_TIME=0.2414  
 
 # would like 6s but b/c we're combining all into one
 # dont model this extra time
