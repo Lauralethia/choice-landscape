@@ -11,9 +11,6 @@ BLOCK_RAT <- c(1/3, 1/3, 1/3)
 # use rev(choice_order) to swap. (NB. up is never good b/c it feels different)
 CHOICE_ORDER <- c("left","up","right")
 
-GLIST <- list(c("true","true","false"),
-              c("true","false","true"))
-NGLIST <-list(c("true","false","true"))
 ISIDUR <- 1000
 
 FIRSTITI <- 3 # in seconds
@@ -46,14 +43,10 @@ read_events <- function(fname='out/500s/v1_102_31234/events.txt'){
   return(d)
 }
 
+
 "%||%" <- function(x, y) if(is.null(x)||length(x)==0L) y else x
-gen_edn <- function(files, leftgood=FALSE){
-  # read in each file, and combine. could shuffle but not done here
-  d <- lapply(files, read_events) %>% bind_rows
-
-  # iti is first event of trial for task, but modeled as last in 3dDeconvolve
-  d <- d %>% mutate(iti=c(FIRSTITI, iti[1:(n()-1)]))
-
+gen_seq <- function(d){
+  # d is a dataframe representing events. should have an 'event' column w/event name
   d_tally <- d %>% group_by(event) %>% tally
   n_events <- t(d_tally %>% select(n)) %>% as.list() %>% `names<-`(d_tally$event)
   # event    |  n
@@ -68,18 +61,39 @@ gen_edn <- function(files, leftgood=FALSE){
   # good   115
   # nogood  55
 
-  opens <- list(good    =sample(rep(GLIST, ceiling(n_events$good/2))),
-                g_catch =sample(rep(GLIST, ceiling(n_events$g_catch/2)%||%0)),
-                nogood  =rep(NGLIST, n_events$nogood),
-                ng_catch=rep(NGLIST, n_events$ng_catch%||%0))
+  # see CHOICE_ORDER <- c("left","up","right")
+  # default good is right, rev(CHOICE_ORDER) will make left good
+  # 20220919 BUG! there is no false true true
+  glist <- list(c("false","true","true"), #prev incorrectly: list(c("true","false","true"))
+                c("true","false","true"))
+  nglist <-list(c("true","true","false"))
+
+  opens <- list(good    =sample(rep(glist, ceiling(n_events$good/2))),
+                g_catch =sample(rep(glist, ceiling(n_events$g_catch/2)%||%0)),
+                nogood  =rep(nglist, n_events$nogood),
+                ng_catch=rep(nglist, n_events$ng_catch%||%0))
+}
+read_files_with_iti <- function(files, firstiti){
+  # read in each file, and combine. could shuffle but not done here
+  d <- lapply(files, read_events) %>% bind_rows
+  # iti is first event of trial for task, but modeled as last in 3dDeconvolve
+  d <- d %>% mutate(iti=c(FIRSTITI, iti[1:(n()-1)]))
+}
+
+gen_probs <- function(n, block_rat=BLOCK_RAT, probs=PROB_BLOCKS){
+  trials_per_block <- ceiling(block_rat*n)
+  trial_probs <- mapply(function(prob,n) rep(prob,each=n), probs, trials_per_block)
+}
+gen_edn <- function(files, leftgood=FALSE){
+  d <- read_files_with_iti(files, FIRSTITI)
+  opens <- gen_seq(d)
 
   # order is: left, up, right. unless reversed. up never "good"
   choice_order <- CHOICE_ORDER
   if(leftgood) choice_order <- rev(CHOICE_ORDER)
 
   # repeat for each
-  trials_per_block <- ceiling(BLOCK_RAT*nrow(d))
-  trial_probs <- mapply(function(prob,n) rep(prob,each=n), PROB_BLOCKS, trials_per_block)
+  trial_probs <- gen_probs(nrow(d), BLOCK_RAT, PROB_BLOCKS)
 
   res <- c()
   cnts <- sapply(unique(d$event),function(x) 0)
@@ -114,7 +128,44 @@ if (sys.nframe() == 0) {
     gen_edn(argv, leftgood=leftgood)
 }
 
-quicktests <- function(){
+seq_test <- function(){
+    files <- c("/Volumes/Hera/Projects/Habit/task/task_timing/out/280s/v1.5_53_10987/events.txt")
+    d <- read_files_with_iti(files, FIRSTITI)
+    o <- gen_seq(d)
+    l <- rle(sort(sapply(c(o$good, o$nogood),paste,collapse="_")))$lengths
+
+    # have all 3 combos in equal counts
+    testthat::expect_true(length(l)==3)
+    testthat::expect_true(all(l==12))
+    
+    # default order is left,up,right. and right is "good"
+    # good: (x,x,true)    # two ways
+    # bad: is (t,t,false) # only one way
+
+    # good or bad is based on last of 3 values ("is well open" true for good, false for bad
+    testthat::expect_true(all("true"==sapply(o$good,`[`,3)))
+    testthat::expect_true(all("false"==sapply(o$nogood,`[`,3)))
+    # 2 ways to do good. 1 way to do bad
+    testthat::expect_equal(length(unique(o$good)),2)
+    testthat::expect_equal(length(unique(o$nogood)),1)
+    # bad has to be t,t,f
+    testthat::expect_equal(unlist(unique(o$nogood)),c("true","true","false"))
+}
+gen_prob_test <- function(){
+  trial_probs <- gen_probs(54*3, BLOCK_RAT, PROB_BLOCKS)
+  x <- rle(apply(trial_probs,1, paste,collapse="_"))
+  testthat::expect_equal(x$values,  c("50_20_100","20_50_100","100_100_100"))
+  testthat::expect_true(all(x$lenghts==54))
+}
+
+build_trial_test <- function(){
+   res <- build_trial(c(10,20,30), c("true","false","justfortesting"), iti=1000, catch=0, choices=c("left","up","right"))
+   testthat::expect_true(grepl(res,pattern=':left.:step 1, :open true, :prob 10'))
+   testthat::expect_true(grepl(res,pattern=':up.:step 1, :open false, :prob 20'))
+   testthat::expect_true(grepl(res,pattern=':right.:step 1, :open justfortesting, :prob 30'))
+}
+
+demo_gen_edn <- function(){
  files <- sprintf(sprintf("out/280s/v1.5_53_%s/events.txt", c("10987", 32226, 24271)))
  x <- gen_edn(files, leftgood=TRUE)
 

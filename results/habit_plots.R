@@ -49,7 +49,8 @@ read_raw <- function(fname="data.tsv") {
 
   rawdata <- read.csv(fname, sep='\t') %>% 
     filter(!grepl(BAD_IDS, id)) %>%
-    mutate(vdate=lubridate::ymd_hms(vdate),
+    mutate(vdate=ifelse(is.na(vdate)|vdate=="", paste0(timepoint, " 00:00:00"), vdate),
+           vdate=lubridate::ymd_hms(vdate),
            age = as.numeric(age),
            survey_age = as.numeric(survey_age),
            age=ifelse(is.na(age),survey_age,age))
@@ -96,12 +97,12 @@ rawdata <<- NULL
 summary_data <<- NULL
 update_data  <- function(runMake=FALSE){
    if(runMake) system("make summary.csv")
-   rawdata <<- read_raw()
+   rawdata <<- read_raw("bea_res_concat.tsv")
    summary_data <<- read_summary()
 }
 
 # modifies globals rawdata and summary_data
-update_data(runMake=FALSE) 
+update_data(runMake=FALSE)
 
 MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
 

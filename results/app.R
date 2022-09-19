@@ -6,8 +6,9 @@
 source('habit_plots.R') # reads rawdata, sets MAXTRIALS
 library(shiny)
 
-MINDATE <-min(rawdata$vdate)
-MAXDATE <- ymd_hms(max(rawdata$vdate))+days(1)
+MINDATE <- ymd(min(rawdata$vdate,na.rm=T))
+MAXDATE <- ymd(max(rawdata$vdate,na.rm=T))+days(1)
+print(glue::glue("#date slider: from {MINDATE} to {MAXDATE}"))
 TASKS <- unique(rawdata$task)
 BLKSQ <- unique(rawdata$blockseq)
 VERS <- unique(rawdata$ver)
@@ -16,7 +17,7 @@ ui <- fluidPage(
     sidebarLayout(
      sidebarPanel(
       sliderInput("date_range", label="dates", min=MINDATE, max=MAXDATE,
-                  value=c(ymd_hms("2022-04-09T00:00:00"),MAXDATE)),
+                  value=c(MINDATE,MAXDATE)),
       selectInput("blockseq_select", label="block types",
                   choices=BLKSQ, selected=BLKSQ, multiple = TRUE),
       selectInput("task_selection", label="tasks (each mturk is new task; shift click for multiple)",
