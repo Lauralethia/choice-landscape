@@ -353,8 +353,10 @@
       [:table {:border "1px" :style {:background "white"}}
        [:tr (map #(html [:td %])
                  (concat ["choices" "picked" "score"] time-keys
-                         ["rt" "itidur" "itiorig" "itiend"
-                          (when show-ttl-codes? ["t:i" "t:chose" "t:wait" "t:timeout" "t:fbk"])])) ]
+                         ["rt" "itidur" "itiorig" "itiend"]
+                         (when show-ttl-codes?
+                           ["t:i" "t:chose" "t:wait"
+                            "t:timeout" "t:fbk"]))) ]
        (map  (partial show-events start-time time-keys show-ttl-codes?)
              (get-in state [:record :events]))])]
    ))
@@ -364,7 +366,7 @@
   [{:keys [phase avatar] :as state}]
   (let [avatar-pos (get-in state [:avatar :pos])
         vis-class (-> @current-settings :vis-type name)
-        show-ttl-codes? false]
+        show-ttl-codes? (get-in state [:record :settings :local-ttl-server])]
     (sab/html
      [:div#background {:class vis-class}
       (progress-bar state)
