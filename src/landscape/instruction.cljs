@@ -449,7 +449,7 @@
                         " when there is " (item-name :water)
                         " is the same for all " (item-name :well) "s."]
 
-                       (when (not(contains? #{:mri :eeg}
+                       (when (not(contains? #{:mri :eeg :practice}
                                             (get-in state [:record :settings :where])))
                          [:li  [:b "You must respond to be paid"]])
                        [:li "Respond faster to finish sooner."]
