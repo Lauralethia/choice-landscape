@@ -6,11 +6,13 @@
 
 
 (deftest photodiode-color-test
-  ;; default color
-  (is (= "black" (photodiode-color {:name "dasfsafd"})))
-  ;; neighboring phases do not have the same color
-  (is (not (= (photodiode-color {:name :iti})
-              (photodiode-color {:name :chose})))))
+  (let [state {:phase{:name "notaknownstate" :start-at 0} :time-cur 0}
+        state-sometime (assoc state :time-cur 1000 )]
+    ;; default color
+    (is (= "white" (photodiode-color state)))
+    ;; color changes after some time
+    (is (not= (photodiode-color state)
+              (photodiode-color state-sometime)))))
 
 (deftest encode-url-test
   "only confirms function runs. does not check output makes sense"
