@@ -14,8 +14,31 @@
 (defn get-lens [tid]
   (-> ft/trials tid get-choices cnt-reps))
 (deftest check-sides-represented
-  (let [idea [34 34 34]]
-    (is (= (vals (get-lens :mrA1)) [34 34 34]))
-    (is (= (vals (get-lens :mrA2)) [34 34 34]))
-    (is (= (vals (get-lens :mrB1)) [34 34 34]))
-    (is (= (vals (get-lens :mrB2)) [34 34 34]))))
+  (let [ideal [34 34 34]]
+    (is (= (vals (get-lens :mrA1)) ideal))
+    ;; (is (= (vals (get-lens :mrA2)) ideal))
+    (is (= (vals (get-lens :mrB1)) ideal))
+    ;; (is (= (vals (get-lens :mrB2)) ideal))
+    ))
+
+(defn block-counts
+  "get count of block(up prob value) and open (left u right) like
+   50truefalsetrue 12,
+   50truetruefalse  11,
+   100falsetruetrue  13,
+   100truetruefalse  11, ..." 
+  [tid]
+  (reduce
+   (fn [m [k v]] (assoc m k (count v)))
+   {}
+   (group-by (fn [x]
+               (str
+                (get-in x [:up :prob])
+                (get-in x [:left :open])
+                (get-in x [:up :open])
+                (get-in x [:right :open])))
+             (tid ft/trials))))
+
+(deftest nearly-balenced 
+  (is (= #{11 12} (set (vals (block-counts :mrA1))))) 
+  (is (= #{11 12} (set (vals (block-counts :mrB1))))))
