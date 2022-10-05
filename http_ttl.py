@@ -88,22 +88,23 @@ class LPT(Hardware):
 
 class DAQ(Hardware):
     """
-    see 
-     https://github.com/wjasper/Linux_Drivers/blob/master/USB/python/test-usb1208FS.py
-     https://github.com/wjasper/Linux_Drivers +
-     https://pypi.org/project/usb1208fs/
-       Vs
-     https://github.com/rlaboiss/python-usb-1208fs
-    (both last commit 2017 as of 2022)
+    using USB 1208FS
+    see https://github.com/wjasper/Linux_Drivers
     """
-    def __init__(self):
-        import usb1208FS
-        # self.usb = usb_1208FS.usb_1208FS()
-        # self.fd = PMD_Find (MCC_VID, USB1208FS_PID)
+    def __init__(self, verbose=False):
+        # git clone https://github.com/wjasper/Linux_Drivers.git /home/abel/luna_habit/usb1208fs-linux-drivers/
+        # make install usbs, add udevrules
+        sys.path.insert(0,'/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python') # or PYTHONPATH=~/luna_habit/RTBox/python
+        from usb_1208FS import usb_1208FS
+        self.verbose = verbose
+        self.dev = usb_1208FS()
+        print('wMaxPacketSize =', self.dev.wMaxPacketSize)  
+        self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
+        self.dev.DOut(self.dev.DIO_PORTA, 0)
         pass
 
-    def send_todo(self, ttl, zero=True):
-        usb1208FS.DOut(usb1208FS.DIO_PORTA, ttl)
+    def send(self, ttl, zero=True):
+        self.dev.DOut(self.dev.DIO_PORTA, ttl)
         # TODO: do we need to zero?
         if zero:
             self.wait_and_zero()
@@ -172,11 +173,16 @@ class Cedrus():
 
 
 class RTBox():
-    def __init__(self, hw):
+    def __init__(self, hw, kb=None, verbose=False):
         self.run = True
+        self.verbose = True
+        self.kb = kb
         self.hw = hw
         self.keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
+        self.sendLUR = [Key.left, Key.up, Key.right]
 
+
+        # git clone https://github.com/xiangruili/RTBox_py /home/abel/luna_habit/RTBox_py/
         sys.path.insert(0,'/home/abel/luna_habit/RTBox_py') # or PYTHONPATH=~/luna_habit/RTBox/python
         import RTBox
         box = RTBox.RTBox()
@@ -194,18 +200,42 @@ class RTBox():
         self._ser = _ser
 
     def trigger(self, index):
-        response = self.keys[index]
-        self.hw.send(f"{response}")
+        # buttons send 2-4, light is 1
+        # index is 0-based but keys start at 1. so add one to what we send if in range
+        key = None
+        ttl = None
+        if index > 5:
+            self.hw.send(1)
+        elif index > 1 and index < 4:
+            key = self.sendLUR[index-1]
+            ttl = index + 1
+            self.kb.push(key)
+            self.hw.send(ttl)
+
+        if self.verbose:
+            response = self.keys[index]
+            print(f"have: {response}. send key {key} and ttl {ttl}")
+        
 
     async def watch(self):
         while self.run:
-            b = bin(ord(self._ser.read(1)))[::-1]
+            res = self._ser.read(1)
+            b = None
+            if res:
+                b = bin(ord(res))[::-1]
+
+            # too verbose
+            #if self.verbose:
+            #    print(res)
+
             # do we actually want to ignore?
             # we can work directly on the bits? -- maybe just pull the first
             # dont want to miss a PD trigger b/c a button was pushed
             # also... how fast is counting and finding?
-            if b.count('1') == 1:  # ignore if +1 bits set
+            if b and b.count('1') == 1:  # ignore if +1 bits set
                 self.trigger(b.find('1'))
+
+            await asyncio.sleep(.0001)
 
 
 class KB():
@@ -253,6 +283,14 @@ async def loeffeeg(verbose=False):
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
+async def seeg(verbose=False):
+    hw = DAQ(verbose=verbose)
+    kb = KB()
+    rb = RTBox(hw, kb, verbose)
+    http_run(hw)
+    await asyncio.create_task(rb.watch())
+
+
 async def fakeeeg(usekeyboard=False, verbose=False):
     hw = Hardware(verbose=verbose)
     kb = KB()
@@ -279,7 +317,8 @@ if __name__ == "__main__":
     if args.place == "loeff":
         asyncio.run(loeffeeg(verbose=args.verbose))
     elif args.place == "seeg":
-        print("NOT IMPLEMENTED!")
+        asyncio.run(seeg(verbose=args.verbose))
+        #print("NOT IMPLEMENTED!")
     elif args.place == "test":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
     else:
