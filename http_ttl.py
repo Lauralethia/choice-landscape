@@ -87,10 +87,22 @@ class LPT(Hardware):
 
 
 class DAQ(Hardware):
-    def __init__():
+    """
+    see 
+     https://github.com/wjasper/Linux_Drivers/blob/master/USB/python/test-usb1208FS.py
+     https://github.com/wjasper/Linux_Drivers +
+     https://pypi.org/project/usb1208fs/
+       Vs
+     https://github.com/rlaboiss/python-usb-1208fs
+    (both last commit 2017 as of 2022)
+    """
+    def __init__(self):
         import usb1208FS
+        # self.usb = usb_1208FS.usb_1208FS()
+        # self.fd = PMD_Find (MCC_VID, USB1208FS_PID)
         pass
-    def send_todo(ttl, zero=True):
+
+    def send_todo(self, ttl, zero=True):
         usb1208FS.DOut(usb1208FS.DIO_PORTA, ttl)
         # TODO: do we need to zero?
         if zero:
@@ -176,15 +188,14 @@ class RTBox():
 
         _ser = box._ser
         _ser.open()
-        _ser.write(b'x') # simple mode: 1 byte per event
-        _ser.write(bytearray([101, 0b111101])) # e, all except release
+        _ser.write(b'x')  # simple mode: 1 byte per event
+        _ser.write(bytearray([101, 0b111101]))  # e, all except release
         _ser.read(1)
         self._ser = _ser
 
     def trigger(self, index):
         response = self.keys[index]
         self.hw.send(f"{response}")
-
 
     async def watch(self):
         while self.run:
@@ -193,7 +204,7 @@ class RTBox():
             # we can work directly on the bits? -- maybe just pull the first
             # dont want to miss a PD trigger b/c a button was pushed
             # also... how fast is counting and finding?
-            if b.count('1')==1: # ignore if +1 bits set
+            if b.count('1') == 1:  # ignore if +1 bits set
                 self.trigger(b.find('1'))
 
 
