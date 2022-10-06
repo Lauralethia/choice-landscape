@@ -316,22 +316,28 @@
     html))
 
 (defn fmt-ms-s [ms] (format "%.2f" (/ ms 1000)))
-(defn show-events [initial keys times]
+(defn show-events [initial keys show-ttl-codes? times]
   [:tr {:style {:padding "3px" :margin "1px" :background "gray"}}
+    [:td (get-in times [:trial-choices] "NA")]
+    [:td (str (get-in times [:picked] "NA") "" (get-in times [:picked-prob] "0"))]
+    [:td (str (get-in times [:score] "NA"))]
    (html [(map #(html [:td (fmt-ms-s (- (get times (str % "-time"), initial) initial))])
                keys)
           [:td (fmt-ms-s (- (get times "waiting-time") (get times "chose-time")))]
           [:td (fmt-ms-s (:iti-dur times))]
           [:td (fmt-ms-s (:iti-orig times))]
           [:td (fmt-ms-s (:iti-ideal-end times))]
-          [:td (get-in times [:ttl :iti :code] "NA")]
-          [:td (get-in times [:ttl :chose :code] "NA")]
-          [:td (get-in times [:ttl :waiting :code] "NA")]
-          [:td (get-in times [:ttl :timeout :code] "NA")]
-          [:td (get-in times [:ttl :feedback :code] "NA")]
+          (when show-ttl-codes?
+            (html [
+                   [:td (get-in times [:ttl :iti :code] "NA")]
+                   [:td (get-in times [:ttl :chose :code] "NA")]
+                   [:td (get-in times [:ttl :waiting :code] "NA")]
+                   [:td (get-in times [:ttl :timeout :code] "NA")]
+                   [:td (get-in times [:ttl :feedback :code] "NA")]
+                   [:td (get-in times [:ttl :feedback :code] "NA")]]))
           ])])
 
-(defn debug-timing-table [{:keys [phase] :as state}]
+(defn debug-timing-table [{:keys [phase] :as state} show-ttl-codes?]
   (html
    [:div
     {:style {:color "white" :background-color "black"
@@ -346,10 +352,12 @@
           iti-dur 0]
       [:table {:border "1px" :style {:background "white"}}
        [:tr (map #(html [:td %])
-                 (concat time-keys
-                         ["rt" "itidur" "itiorig" "itiend"
-                          "t:i" "t:chose" "t:wait" "t:timeout" "t:fbk"])) ]
-       (map  (partial show-events start-time time-keys)
+                 (concat ["choices" "picked" "score"] time-keys
+                         ["rt" "itidur" "itiorig" "itiend"]
+                         (when show-ttl-codes?
+                           ["t:i" "t:chose" "t:wait"
+                            "t:timeout" "t:fbk"]))) ]
+       (map  (partial show-events start-time time-keys show-ttl-codes?)
              (get-in state [:record :events]))])]
    ))
 
@@ -357,12 +365,13 @@
   "html to render for display. updates for any change in display"
   [{:keys [phase avatar] :as state}]
   (let [avatar-pos (get-in state [:avatar :pos])
-        vis-class (-> @current-settings :vis-type name)]
+        vis-class (-> @current-settings :vis-type name)
+        show-ttl-codes? (get-in state [:record :settings :local-ttl-server])]
     (sab/html
      [:div#background {:class vis-class}
       (progress-bar state)
 
-      (if DEBUG (debug-timing-table state))
+      (if DEBUG (debug-timing-table state show-ttl-codes?))
       (if (-> state :phase :name (= :instruction) not)
         (view-score (get-in state [:water :score])))
       (if (contains? #{:mountain :desert :wellcoin} (get @current-settings :vis-type))
