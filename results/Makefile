@@ -26,4 +26,4 @@ summary.csv: data.tsv survey.tsv
 	./summary.R
 
 data_all.tsv: data.tsv bea_res_concat.tsv
-	cat_skiphead $? > $@
+	cat_skiphead $^ > $@
