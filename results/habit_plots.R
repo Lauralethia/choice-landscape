@@ -45,7 +45,7 @@ read_raw <- function(fname="data.tsv") {
 
   # exclude testing runs (IDs with our initials, or 'x')
   BAD_IDS <- c("WWF|ACP|^x$")
-  MIN_TRIALS <- 120
+  MIN_TRIALS <- 90
 
   rawdata <- read.csv(fname, sep='\t') %>% 
     filter(!grepl(BAD_IDS, id)) %>%
