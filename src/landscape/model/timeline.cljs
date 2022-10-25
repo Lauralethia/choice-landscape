@@ -93,3 +93,55 @@
       ((partial mapcat #'gen-prob-maps))
       ((partial mapv #'well-trial))))
 
+
+;; 20221025 use with landscape.mr-times
+;; (defn fill-mr-times-block [seq probs]
+;;   (for seq (map #(assoc % :prob (% probs) :step 1) (keys probs))))
+(defn reduce-time-fill [trial p goodnogood-side]
+  (-> (reduce
+       (fn [acc side]
+         (assoc acc (get goodnogood-side side side)
+                (if-let [sideprob (side p)]
+                  (assoc (side trial) :prob sideprob :step 1)
+                  (side trial))))
+       trial (keys trial))
+      (dissoc :good :nogood)))
+;; (reduce-time-fill {:itidur 500 :good {:open true}, :nogood {:open false}, :up {:open true}} {:good 100 :nogood 20 :up 50} {:good :left :nogood :right})
+;; {:itidur 500,
+;; ;;  :up {:open true, :prob 50, :step 1},
+;; ;;  :left {:open true, :prob 100, :step 1},
+;; ;;  :right {:open false, :prob 20, :step 1}}
+(defn abs [x] (max x (- x)))
+(defn mean [x] (/ (apply + x) (count x)))
+(defn max-from-mean [x] (let [m (mean x)] (apply max (map #(abs (- m %)) x))))
+(defn count-open [trials] (map (fn[side] (count (filter (fn[t](get-in t [side :open])) trials))) [:good :nogood :up]))
+(defn shuffle-blocks
+  "generated blocks with 50 trials.
+  blocks cannot have equal options for all 3 choices.
+  make sure when we combined, we don't compound differences"
+  [tdict n]
+  (loop [blocks []]
+    (let [diffcnt (max-from-mean (count-open (flatten blocks)))]
+      (println diffcnt)
+      (if (or (empty? blocks) (>= diffcnt 2))
+        (recur (take n (shuffle (vals tdict))))
+        blocks))))
+
+(defn fill-mr-times
+  "mk_edn_goodnogood.bash created dict of seeded timing info in mr_times.cljs
+  values are vector (ordered) open wells and itidur
+  {:seed_12345 [{:good{:open true} :up{:open false} :nogood {:open true} :itidur 1.5}]}
+  TODO: should :up always start as the worst?
+  "
+  [tdict & {:keys [goodnogood probs] :or
+            {goodnogood (zipmap [:good :nogood] (shuffle [:left :right]))
+             probs [{:good 100 :nogood  50 :up  20 }
+                    {:good 100 :nogood  20 :up  50 }
+                    {:good 100 :nogood 100 :up 100 }]}}]
+  (let [blocks (shuffle-blocks tdict (count probs))]
+    ;; for each bseq-p pair, add prob to each side in each trial
+    (flatten
+     (map (fn [bseq p]
+            (map (fn[trial] (reduce-time-fill trial p goodnogood))
+                 bseq))
+          blocks probs))))
