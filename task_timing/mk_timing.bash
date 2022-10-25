@@ -27,7 +27,7 @@ FBK_TIME=0.2414
 # would like 6s but b/c we're combining all into one
 # dont model this extra time
 PRE_TIME=.5
-POST_TIME=.5
+POST_TIME=1.5
 
 MINITI=1.5
 

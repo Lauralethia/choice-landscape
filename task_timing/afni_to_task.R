@@ -22,11 +22,21 @@ build_trial <- function(probs, open, iti,
     # ":catch-dur XX" absent on normal trials
     catchdur <- ifelse(catch>0,paste0(':catch-dur ', catch),'')
 
+    probs <- paste(":prob", probs)
+    steps <- paste(":step", steps)
+    # dont care about probs and steps if only doing good/nogood
+    # will set timing later
+    if('nogood' %in% choices) {
+       probs <- c("","","")
+       steps <- c("","","")
+    }
+    
+
     # "edn" (similiar to json but for clojure) output
     x <- glue::glue(.open="(",.close=")", "
-{:(choices[1]){:step (steps[1]), :open (open[1]), :prob (probs[1])},
- :(choices[2]){:step (steps[2]), :open (open[2]), :prob (probs[2])},
- :(choices[3]){:step (steps[3]), :open (open[3]), :prob (probs[3])},
+{:(choices[1]){:open (open[1]), (steps[1]), (probs[1])},
+ :(choices[2]){:open (open[2]), (steps[2]), (probs[2])},
+ :(choices[3]){:open (open[3]), (steps[3]), (probs[3])},
  :iti-dur (iti*1000), (catchdur)}")
     return(x)
 }
@@ -84,13 +94,14 @@ gen_probs <- function(n, block_rat=BLOCK_RAT, probs=PROB_BLOCKS){
   trials_per_block <- ceiling(block_rat*n)
   trial_probs <- mapply(function(prob,n) rep(prob,each=n), probs, trials_per_block)
 }
-gen_edn <- function(files, leftgood=FALSE){
+gen_edn <- function(files, leftgood=FALSE, goodnogood_names=FALSE){
   d <- read_files_with_iti(files, FIRSTITI)
   opens <- gen_seq(d)
 
   # order is: left, up, right. unless reversed. up never "good"
   choice_order <- CHOICE_ORDER
   if(leftgood) choice_order <- rev(CHOICE_ORDER)
+  if(goodnogood_names) choice_order <- c("good","up","nogood")
 
   # repeat for each
   trial_probs <- gen_probs(nrow(d), BLOCK_RAT, PROB_BLOCKS)
@@ -116,16 +127,19 @@ if (sys.nframe() == 0) {
     if(length(args)==0L) {
         cat("want input files to be combined after ./show_times.bash and turned into edn string for clojure\n like out/240s/v1_53_17/events.txt\n")
         cat("use --left to set left as the first good well\n")
+        cat("use --goodnogood to use 'good' and 'nogood' for names\n")
         quit(status=1,save="no")
     }
-    leftgood_i <-grep("--left",argv)
-    leftgood <- length(leftgood_i)>=1L
+    leftgood <- grepl("--left",argv)
+    goodnogood_names <- grepl("--goodnogood",argv)
     #print(argv)
     #print(leftgood)
-    if(leftgood) argv <- argv[-leftgood_i]
+
+    # remove any input args that aren't files
+    argv <- argv[!(leftgood|goodnogood_names)]
     #print(argv)
 
-    gen_edn(argv, leftgood=leftgood)
+    gen_edn(argv, leftgood=any(leftgood), goodnogood_names=any(goodnogood_names))
 }
 
 seq_test <- function(){
