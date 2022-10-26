@@ -49,8 +49,9 @@
   (let [s @current-settings]
     (is (= 70 (get-in s [:step-sizes 0])))
     (is (= 10 (get-in s [:avatar-step-size])))
-    (is (= 420 (get-in s [:times :timeout-dur])))
-    ;; and recalc on defaults has no effect
+    ;; walk time default is mr
+    (is (= 520 (get-in s [:times :timeout-dur])))
+    ;; otherwise calclulate
     (is (= 420 (get-in (update-walktime s) [:times :timeout-dur])))
     (is (= 420 (get-in (update-walktime {}) [:times :timeout-dur]))))
   (let [s (-> @current-settings

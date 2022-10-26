@@ -102,19 +102,19 @@
     ;; go through phases until we get to next trail (iti-time 1 is start of 2nd trial)
     ;; 1. timeout
     (is (= 4500) (get-in @state [:well-list 1 :iti-ideal-end]))
-    (is (= 3500 (let [record (:events (step-state state :step 500))]
+    (is (= 4000 (let [record (:events (step-state state :step 500))]
                   (get-in record [1 "iti-time"]))))
     ;; 2. pushed key. using 43 to off from expected 30ms betwen frames for tests
-    (is (= 8505 (let [record (:events (step-state state :simkey 37 :step 43))]
+    (is (= 9505 (let [record (:events (step-state state :simkey 37 :step 43))]
                   (get-in record [1 "iti-time"]))))
 
     ;;  check out second trial
     ;; 1. timeout
-    (is (= 5000 (get-in @state [:well-list 2 :iti-ideal-end])))
+    (is (= 5200 (get-in @state [:well-list 2 :iti-ideal-end])))
     (is (< 7000 (let [record (:events (step-state state :ntrials 2 :step 43))]
                   (get-in record [2 "iti-time"]))))
     ;; 2. pushed key
-    (is (> 20000 (let [record (:events (step-state state :step 43 :ntrials 2 :simkey 37))]
+    (is (= 21244 (let [record (:events (step-state state :step 43 :ntrials 2 :simkey 37))]
              (get-in record [2 "iti-time"]))))
 
     ;; third
@@ -247,6 +247,8 @@
 
 
 (deftest is-time-test
+  "is-time checks an ideal flip time against the absolute-start-time
+   using (utils/now)"
   (let [step 30
         now (utils/now)
         early (- now step)

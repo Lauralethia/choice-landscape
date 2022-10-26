@@ -48,12 +48,12 @@
   (map :iti-ideal-end (iti-ideal-end 2 [{:iti-dur 1} {:iti-dur 2} {}] 1))
   (1 5 8)
   TODO: if :catch-dur, ideal-trial-time will be different (no feedback or walk)
-  TODO: need to add iti+end to last ideal-end "
+  IGNORE: need to add iti+end to last ideal-end -- handled by phase "
   [ideal-trial-time well-list default-iti-time]
   (let
       [iti-durs  (map #(or (:iti-dur %) default-iti-time) well-list)
        end-times (cumsum (map #(+ % ideal-trial-time) iti-durs))
        ;; first iti happens before ideal-trial-time
-       ;; rmoe that from all elements
+       ;; rm that from all elements
        end-times (map #(- %  ideal-trial-time) end-times)]
       (vec (map #(merge %1 {:iti-ideal-end %2}) well-list end-times))))

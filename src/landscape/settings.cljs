@@ -24,8 +24,15 @@ used by MR to adjust ITI dur"
 
   intially 70px total/10px avatar * 30ms sampling (210ms).
   ocean is 140/15*30  (280ms)
-  but time-diff caled at 534 (walk there and back) set to 210 for original"
-  (* 2 210))
+  but time-diff caled at 534 (walk there and back) set to 210 for original
+
+  20221026 after 150 trials, off by about a minute.
+           only 15s of that can be attributed to 420 vs 520
+           but might as well match what afni's 3dDeconvolve used to model
+  "
+  ;; (* 2 210)
+  (+ 270 250)
+  )
 
 (def ITIDUR 1000)
 (def MR-FIRST-ITI "enough time to get a stable hrf" 3000)

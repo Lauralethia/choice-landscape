@@ -47,7 +47,11 @@
   [s]
   (let [first-well-step (get-in s [:step-sizes 0], 70)
         avatar-step-size (get-in s [:avatar-step-size], 10)
-        new-walktime (* 2 settings/SAMPLERATE (/ first-well-step avatar-step-size))]
+        ;; MR walktime is whatever is hardcoded
+        mr? (contains? #{:mri} (get-in @settings/current-settings [:where]))
+        new-walktime (if mr? settings/WALKTIME
+                         (* 2 settings/SAMPLERATE (/ first-well-step avatar-step-size)))]
+    (println "# setting walktime to " new-walktime "hardcoded is" settings/WALKTIME)
     (-> s
         (assoc-in [:times :timeout-dur] new-walktime)
         (assoc-in [:times :walk-dur] new-walktime))))
