@@ -106,10 +106,12 @@
        (update-settings u #"timing=randomB" [:left-best] true)  ; B=left
        (update-settings u #"timing=debug" [:timing-method] :debug)
        (update-settings u #"timing=practice" [:timing-method] :practice)
-       (update-settings u #"timing=mra1" [:timing-method] :mrA1) ; right best
-       (update-settings u #"timing=mra2" [:timing-method] :mrA2)
-       (update-settings u #"timing=mrb1" [:timing-method] :mrB1) ; left best
-       (update-settings u #"timing=mrb2" [:timing-method] :mrB2)
+       (update-settings u #"timing=mra10min" [:timing-method] :mrA) ; right best
+       (update-settings u #"timing=mrb10min" [:timing-method] :mrB) ; left best
+       (update-settings u #"timing=mra1-short" [:timing-method] :mrA1) ; right best
+       (update-settings u #"timing=mra2-short" [:timing-method] :mrA2)
+       (update-settings u #"timing=mrb1-short" [:timing-method] :mrB1) ; left best
+       (update-settings u #"timing=mrb2-short" [:timing-method] :mrB2)
        (update-settings u #"timing=quickrandom" [:nTrials] {:pairsInBlock 2 :devalue 2 :devalue-good 0})
 
 
