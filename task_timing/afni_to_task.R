@@ -43,6 +43,7 @@ build_trial <- function(probs, open, iti,
 
 read_events <- function(fname='out/500s/v1_102_31234/events.txt'){
   d <- read.table(text=system(intern=T,glue::glue("./show_times.bash {fname}")))
+  # event is "good" or "nogood"; previously could have also been g/ng catch
   names(d) <- c("event", "iti")
   d$catch <- 0
   # fixied isi duration
@@ -74,9 +75,9 @@ gen_seq <- function(d){
   # see CHOICE_ORDER <- c("left","up","right")
   # default good is right, rev(CHOICE_ORDER) will make left good
   # 20220919 BUG! there is no false true true
-  glist <- list(c("false","true","true"), #prev incorrectly: list(c("true","false","true"))
+  glist <- list(c("true","true","false"), #prev incorrectly: list(c("true","false","true")), and again by including bad
                 c("true","false","true"))
-  nglist <-list(c("true","true","false"))
+  nglist <-list(c("false","true","true"))
 
   opens <- list(good    =sample(rep(glist, ceiling(n_events$good/2))),
                 g_catch =sample(rep(glist, ceiling(n_events$g_catch/2)%||%0)),
@@ -88,6 +89,7 @@ read_files_with_iti <- function(files, firstiti){
   d <- lapply(files, read_events) %>% bind_rows
   # iti is first event of trial for task, but modeled as last in 3dDeconvolve
   d <- d %>% mutate(iti=c(FIRSTITI, iti[1:(n()-1)]))
+  # returns data.frame(event, iti)
 }
 
 gen_probs <- function(n, block_rat=BLOCK_RAT, probs=PROB_BLOCKS){
