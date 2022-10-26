@@ -164,7 +164,9 @@
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
 
-  (let [time-trial (+ settings/RT-EXPECTED (get @settings/current-settings [:times :walk-dur]))
+  (let [time-trial (+ settings/RT-EXPECTED
+                      (get-in @settings/current-settings [:times :walk-dur],
+                              settings/WALKTIME))
         time-iti   (get-in @settings/current-settings [:times :iti-dur] settings/ITIDUR)
         well-ideal-end (utils/iti-ideal-end time-trial (:well-list @STATE) time-iti)]
      (swap! STATE assoc :well-list well-ideal-end))
