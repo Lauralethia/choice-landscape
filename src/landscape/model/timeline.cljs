@@ -120,12 +120,26 @@
   blocks cannot have equal options for all 3 choices.
   make sure when we combined, we don't compound differences"
   [tdict n]
-  (loop [blocks []]
-    (let [diffcnt (max-from-mean (count-open (flatten blocks)))]
+  (loop [blocks []
+         seeds []]
+    (let [diffcnt (max-from-mean (count-open (flatten blocks)))
+          seeds (take n (shuffle (keys tdict)))]
       (println diffcnt)
       (if (or (empty? blocks) (>= diffcnt 2))
-        (recur (take n (shuffle (vals tdict))))
-        blocks))))
+        (recur (map #(% tdict) seeds) seeds)
+        [seeds blocks]))))
+
+(defn default-probabilities
+  "for MR. probability defines default blocks: init, switch, devalue.
+  random if up or nogood side is higher (50) or lower (20) initially"
+  [& up-ng-init]
+  (let [up-ng-init (or up-ng-init (shuffle [50 20]))
+        up-init (first up-ng-init)
+        ng-init (second up-ng-init)]
+    [{:good 100 :nogood  ng-init :up  up-init }
+     {:good 100 :nogood  up-init :up  ng-init }
+     {:good 100 :nogood 100 :up 100 }]))
+
 
 (defn fill-mr-times
   "mk_edn_goodnogood.bash created dict of seeded timing info in mr_times.cljs
@@ -135,11 +149,11 @@
   "
   [tdict & {:keys [goodnogood probs] :or
             {goodnogood (zipmap [:good :nogood] (shuffle [:left :right]))
-             probs [{:good 100 :nogood  50 :up  20 }
-                    {:good 100 :nogood  20 :up  50 }
-                    {:good 100 :nogood 100 :up 100 }]}}]
-  (let [blocks (shuffle-blocks tdict (count probs))]
+             probs nil}}]
+  (let [probs (or probs (default-probabilities))
+        [seeds blocks] (shuffle-blocks tdict (count probs))]
     ;; for each bseq-p pair, add prob to each side in each trial
+    (println "# MR using seeds:" seeds)
     (flatten
      (map (fn [bseq p]
             (map (fn[trial] (reduce-time-fill trial p goodnogood))

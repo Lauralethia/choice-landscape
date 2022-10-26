@@ -1,7 +1,9 @@
 (ns landscape.timeline-test
   (:require  [cljs.test :as t :include-macros true]
              [landscape.mr-times]
-             [landscape.model.timeline :refer [side-probs gen-wells reduce-time-fill fill-mr-times]]
+             [landscape.model.timeline :refer
+              [side-probs gen-wells reduce-time-fill
+               fill-mr-times default-probabilities shuffle-blocks]]
              [clojure.test :refer [is deftest]]))
 
 (deftest side-probs-test
@@ -62,3 +64,28 @@
     (is (= 3 (count leftcnt)))
     (is (every? #(= 50 %) leftcnt))
     ))
+
+(deftest mr-prob-test
+  "good is only ever 100.
+  nogood and up should trade off starting low
+  and should have a different value for each of the 3 blocks"
+  (let [d (default-probabilities)]
+    (is (= 3 (-> (map  #(get-in d [0 %]) [:good :up :nogood]) distinct count)))
+    (is (= 3 (-> (map #(get-in d [% :up]) [0 1 2]) distinct count)))
+    (is (= 3 (-> (map  #(get-in d [% :nogood]) [0 1 2]) distinct count)))
+    (is (= 1 (-> (map  #(get-in d [% :good]) [0 1 2]) distinct count))))
+  ;; is randomly assign
+  (is (= 2 (-> (map #(get-in (default-probabilities) [0 :nogood])  (range 100))
+               distinct
+               count))))
+
+(deftest use-all-mr-seeds
+  (is (= 9 (->
+            (map #(let [[seeds blocks] (shuffle-blocks landscape.mr-times/mr-seeds 3)]
+                    seeds)
+                 (range 50))
+            ;; 48 if we dont flatten 9C3 == 84
+            ;; about half of the combos dont match right/left evenly
+               flatten
+               distinct
+               count))))
