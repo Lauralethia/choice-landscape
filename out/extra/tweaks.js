@@ -31,7 +31,7 @@ function qs(name) {
 function tenpad(n) { return(String(n).padStart(2,'0')); }
 function yyyymmdd(){
     d = new Date();
-    return (d.getFullYear() + tenpad(d.getMonth()) + tenpad(d.getDay()))
+    return (d.getFullYear() + tenpad(d.getMonth()+1) + tenpad(d.getDate()))
 }
 
 // settings to append to anchor of url
