@@ -1,0 +1,51 @@
+@startuml
+!pragma teoz true
+' mainframe Loef EEG
+participant "Recording" as RecordCPU
+participant "USB Reciever/\nGrapevine" as USBReciever
+
+ box "Task Computer" #cccccc
+ participant "Parallel Port/\nDAQ Box" as TaskCPULPT
+ participant EventToTTLServer
+ participant Task #purple
+ endbox
+
+ box "EEG Room" #eeeeee
+ participant "Cedrus/\nRTBox Button" as CedrusButtonBox
+ participant PhotoSensor
+ participant Speakers
+ participant "ADBox/\nsEEG input" as ADBox
+ endbox
+
+
+note over EventToTTLServer: usb & http =>\nTTL to LPT & keysim \n<b><font color=red>unmeasurable latency?</font></b>
+& note over Task: web based \nimprecise timing
+
+Task -->> EventToTTLServer: browser to hardware
+& EventToTTLServer -->> TaskCPULPT: Trigger to TLL
+& TaskCPULPT -->> USBReciever: TTL to Stim Channel
+CedrusButtonBox -->> EventToTTLServer: serial over USB (cedrus claims fixed 2ms delay)
+& PhotoSensor -->> CedrusButtonBox: Photodiode\nluminosity change as\nunique button push
+USBReciever <- ADBox: EEG Channels
+USBReciever <[#red]- PhotoSensor: <font color=red> ideal but do not have: direct to channel measure of luminosity</font>
+USBReciever -> RecordCPU: stream/save
+
+group #lightgreen Task Event Onset
+Task --> Speakers: play audio
+Task -[#blue]> PhotoSensor: change screen
+& Task -[#01451b]> EventToTTLServer: Event Trigger
+note right Task: fast?\n(screen flip, usb/serial, TTL)
+& note left Task: slow?\n(http, TTL)
+EventToTTLServer -[#01451b]> TaskCPULPT: TTL event type
+PhotoSensor --[#blue]> CedrusButtonBox: Luminocity Trigger
+CedrusButtonBox -[#blue]> EventToTTLServer: Light Trigger
+EventToTTLServer -[#blue]> TaskCPULPT: TTL for screen change
+end group
+
+group #lightblue Button Push
+CedrusButtonBox -> EventToTTLServer: Physical key push
+EventToTTLServer -> TaskCPULPT: TTL for button
+& EventToTTLServer --> Task: simulate keypush
+Task->Task: advance to next event
+end group
+@enduml
