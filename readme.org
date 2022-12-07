@@ -1,16 +1,17 @@
-* Landscape choice
+* Reward Learning and Habituation Task
+(aka Landscape choice)
 
  * see running version: https://labneurocogdevel.github.io/choice-landscape/
+ * see [[doc/]] for a setup guide and images
  * aesthetic motivated by [[https://elifesciences.org/articles/59907][Dubois et al 2021 elife]] task: [[https://iiif.elifesciences.org/lax/59907%2Felife-59907-fig1-v2.tif/full/1500,/0/default.jpg][landscape with choices]]
- * task responses recorded at
-https://lncdwells.herokuapp.com/testid/habitv1/1/1/
+ * +task responses recorded at https://lncdwells.herokuapp.com/testid/habitv1/1/1/+ (20221128 - no free heroku)
 
 * Hosting
 
 ** Local-only
 
   * clone and open out/index.html to start the task in a web browser (responses not saved).
-  * save [[https://github.com/LabNeuroCogDevel/psiclj][psiclj]] (.jar or .exe) in the root directory and as a local service to save to a sqlite3 file. (e.g. [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/loeffeeg.bat][loeffeeg.bat]])
+  * save [[https://github.com/LabNeuroCogDevel/psiclj][psiclj]] ([[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.jar][.jar]] or [[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.exe][.exe]]) in the root directory and as a local service to save to a sqlite3 file. (e.g. [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/loeffeeg.bat][loeffeeg.bat]])
  
 ** Heroku
  Using [[./Procfile][~Procfile~]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
