@@ -56,4 +56,4 @@ both the cedrus button box and RTBox support adapters for a photodiode. Task tim
 
 [[file:o1_triggers.gif]]
 [[file:eeg_trigger_hist.png]]
-
+[[file:./timing_diagram.png]]
