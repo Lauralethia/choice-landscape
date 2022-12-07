@@ -6,19 +6,23 @@
 The easiest way to use this task for EEG (Windows, Cedrus button box, TTL Status Channel triggers via Parallel Port/LPT):
   1. install [[https://www.psychopy.org/download.html][psychopy]]
   2. place [[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.exe][psiclj.exe]] in the task root directory (for Win7/macOS, see [[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.jar][psiclj.jar]]. Linux can use the [[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj-heroku][heroku binary]])
-  3. double click ~loeffegg.bat~ in the root directory
-  4. drag loefeeg.bat onto the desktop as a shortcut (hold shift). inspect properties and ensure it's launching in the task root directory
+  3. clone or [[https://github.com/LabNeuroCogDevel/choice-landscape/archive/refs/heads/master.zip][download]]+extract this repository 
+  4. double click ~loeffegg.bat~ in the root directory ([[../loeffeeg.bat]]) to confirm everything is setup
+  5. drag loefeeg.bat onto the desktop as a shortcut (hold shift). inspect properties and ensure it's launching in the task root directory
      * optionally: change icon
-[[file:eeg.png]]
 
 ** Timing and triggers
-A photodiode is important to get accurate timing. http_ttl.py translates button box PD signals to a TTL value of 1.** Alternative ways to run
-  * a http server is not strictly needed. It is possible to open index.html from the local filesystem. http_ttl.py will still be needed to translate button pushes and send TTL. Will need to manually save data at the finish screen using the download link
+A photodiode is important to get accurate timing. Web browsers do not provide precision timing. [[../http_ttl.py]] translates button box PD signals to a TTL value of 1. see [[*TTL values]]
+
+** Alternative ways to run
+  * a http server (like psiclj) is not strictly needed. It is possible to open out/index.html from the local filesystem with the anchors you want (~out/index.html#where=eeg&ttl=local~). http_ttl.py will still be needed to translate button pushes and send TTL. You will also need to manually save data at the finish screen using the download link
   * web browser security may block the task from sending data to http_ttl.py if index.html is hosted on the wider internet. If external queries to localhost are allowed, this is also viable. That is, you can run the task from https://labneurocogdevel.github.io/choice-landscape/. You still need to manually save at the end and have http_ttl.py running.
 
 * Overview
 The task's logic is written in clojurescript and compiled to javascript to be run by a web browser. 
 As a result, the task can recruit from and be presented to amazaon turk users but requires additional infrastructure to interface with hardware and record responses when run locally (within the lab). Multi-site compatibility is handled by "tweaking" the anchor part of the URL given to browser (ending the address location with e.g. ~#where=mri~)
+
+[[file:eeg.png]]
 
 ** Launching
 The anchor part of the URL is used specify where and how the task is being run. The URL can also encode participant identification, visit number, and other task settings like the background landscape to use.
@@ -32,7 +36,7 @@ At the end of the task, the "Finished" slide presents a link to download a ~.jso
 ** TTL and Button boxes
 The browser has no mechanism to communicate with button boxes nor parallel port interfaces. A separate program ~http_ttl.py~ listens for http messages sent by the task at specific event/times and translates them to TTL Status Channel triggers. ~http_ttl.py~ also translates Cedrus or RTBox button pushes to simulated keyboard keypress. ~loeffeeg.bat~ launches this by depending on [[https://www.psychopy.org/download.html][psychopy]].
 
-*** values
+*** TTL values
  * http_ttl.py sets PD and buttons:
    * PD is 1. 
    * Button pushes are 2-4.
