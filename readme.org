@@ -10,10 +10,11 @@ https://lncdwells.herokuapp.com/testid/habitv1/1/1/
 ** Local-only
 
   * clone and open out/index.html to start the task in a web browser (responses not saved).
-  * save [[https://github.com/LabNeuroCogDevel/psiclj][psiclj]] (.jar or .exe) in the root directory and as a local service to save to a sqlite3 file. (e.g. [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/loeffeeg.bat][loeffeeg.bat]])
+    * NB. for where=mri and where=eeg, task ends presents "Download Data" with link to json file that can be saved locally/manually.
+  * save [[https://github.com/LabNeuroCogDevel/psiclj][psiclj]] (.jar or .exe) in the root directory and launch for a local service to save to a sqlite3 file. (e.g. [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/loeffeeg.bat][loeffeeg.bat]])
  
 ** Heroku
- Using [[./Procfile][~Procfile~]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
+ Using [[./Procfile][Procfile]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
  
 * EEG Stimulus Channel triggers, Button Box responses
   * [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/http_ttl.py][http_ttl.py]] can be launched as a second service to capture button box responses, simulate keyboard events, and translate http requests from the task into TTL triggers in the EEG recording.
