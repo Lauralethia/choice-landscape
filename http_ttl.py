@@ -85,6 +85,17 @@ class LPT(Hardware):
         if zero:
             self.wait_and_zero()
 
+class TTL_Logger(Hardware):
+    """ log ttl code instead of sending to recording computer"""
+    def __init__(self, verbose=True):
+        tstr = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M.%S")
+        self.fid = open(f"{tstr}_ttllog.txt")
+        self.verbose = verbose
+
+    def send(self, ttl, zero=True):
+        self.print_timestamp(ttl)
+        fid.write(f"{datetime.datetime.now()}\t{ttl}\n")
+
 
 class DAQ(Hardware):
     """
@@ -94,21 +105,21 @@ class DAQ(Hardware):
     NB!! binary on (>=128) or off (<128)
     DOES NOT encode 0-255, but 0/1
     """
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, daq_path='/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python'):
         # git clone https://github.com/wjasper/Linux_Drivers.git /home/abel/luna_habit/usb1208fs-linux-drivers/
         # make install usbs, add udevrules
-        sys.path.insert(0, '/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python')
+        sys.path.insert(0, daq_path)
         from usb_1208FS import usb_1208FS
         self.verbose = verbose
         self.dev = usb_1208FS()
         print('wMaxPacketSize =', self.dev.wMaxPacketSize)
         self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
         self.dev.DOut(self.dev.DIO_PORTA, 0)
-        pass
 
     def send(self, ttl, zero=True):
-        self.dev.DOut(self.dev.DIO_PORTA, ttl)
-        # TODO: do we need to zero?
+        actual_ttl = 250  # always high
+        self.dev.DOut(self.dev.DIO_PORTA, actual_ttl)
+        # always zero. we'll only ever send hi
         if zero:
             self.wait_and_zero()
 
@@ -153,7 +164,7 @@ class Cedrus():
         # {'port': 0, 'key': 7, 'pressed': True, 'time': 13594}
         # {'port': 2, 'key': 3, 'pressed': True, 'time': 3880}
 
-        if response['pressed'] == True:
+        if response['pressed']:
             if response['port'] == 2:
                 self.hw.send(self.light_ttl)
             if self.kb and response['port'] == 0:
@@ -177,7 +188,7 @@ class Cedrus():
 
 
 class RTBox():
-    def __init__(self, hw, kb=None, verbose=False):
+    def __init__(self, hw, kb=None, verbose=False, lib='/home/abel/luna_habit/RTBox_py'):
         self.run = True
         self.verbose = True
         self.kb = kb
@@ -185,9 +196,8 @@ class RTBox():
         self.keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
         self.sendLUR = [Key.left, Key.up, Key.right]
 
-
         # git clone https://github.com/xiangruili/RTBox_py /home/abel/luna_habit/RTBox_py/
-        sys.path.insert(0,'/home/abel/luna_habit/RTBox_py') # or PYTHONPATH=~/luna_habit/RTBox/python
+        sys.path.insert(0, lib)  # or PYTHONPATH=~/luna_habit/RTBox/python
         import RTBox
         box = RTBox.RTBox()
         box.enable('light')
@@ -294,7 +304,17 @@ async def seeg(verbose=False):
     hw = DAQ(verbose=verbose)
     kb = KB()
     rb = RTBox(hw, kb, verbose)
-    http_run(hw)
+
+    logger = TTL_Logger(verbose=verbose)
+    http_run(logger)
+    await asyncio.create_task(rb.watch())
+
+
+async def rtbox_test(verbose=False):
+    "no http server, no DAQ. just RTBox with generic hardware class"
+    hw = Hardware(verbose=verbose)
+    kb = KB()
+    rb = RTBox(hw, kb, verbose)
     await asyncio.create_task(rb.watch())
 
 
@@ -313,8 +333,8 @@ async def fakeeeg(usekeyboard=False, verbose=False):
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', help='one of: "loeff","test","seeg"')
-    p.add_argument('-k','--keyboard', help='use keyboard (only for testing)', action='store_true', dest="usekeyboard")
+    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox"], help='where (also how) to use button and ttl')
+    p.add_argument('-k','--keyboard', help='use keyboard (only for "test")', action='store_true', dest="usekeyboard")
     p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
 
@@ -328,5 +348,7 @@ if __name__ == "__main__":
         asyncio.run(seeg(verbose=args.verbose))
     elif args.place == "test":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
+    elif args.place == "test_rtbox":
+        asyncio.run(rtbox_test(verbose=args.verbose))
     else:
-        print(f"unkown place '{args.place}'!")
+        print(f"unkown place '{args.place}'! -- argparse should have caught this")
