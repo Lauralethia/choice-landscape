@@ -71,6 +71,10 @@ used by MR to adjust ITI dur"
    ;; 20220527 - location to send ttl for placing event info in recorded data
    ;; NB. timing will probably be terrible
    :local-ttl-server nil
+
+   ;; 20230110
+   ;; show flash white every phase or hold specified color per phase type
+   :pd-type :whiteflash ; vs :phasecolor
    ;; 20220606 where coins/water will accumulate
    :pile-y nil
    })
@@ -88,7 +92,7 @@ used by MR to adjust ITI dur"
     :step-wise false        ;; make far well additional clicks
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal
-    :where :online          ;; :mri :eeg :seeg
+    :where :online          ;; :mri :eeg :seeg :practice
     :iti+end   0            ;; probably want e.g. 6000 for MRI
 })
 

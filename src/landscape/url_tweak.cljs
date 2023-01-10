@@ -62,7 +62,6 @@
   ([settings u]
    (-> settings 
        (assoc :path-info (url-path-info u))
-       (update-settings u #"photodiode"  [:use-photodiode?] true)
        (update-settings u #"mx95"  [:prob :high] 95)
        (update-settings u #"nofar"  [:step-sizes 1] 0)
        (update-settings u #"yesfar"  [:step-sizes 1] 150)
@@ -103,8 +102,24 @@
        ;; EEG
        (update-settings u #"where=eeg" [:where] :eeg)
        (update-settings u #"where=eeg" [:skip-captcha] true)
-       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
+       ;; sEEG
+       (update-settings u #"where=seeg" [:where] :seeg)
+       (update-settings u #"where=seeg" [:skip-captcha] true)
+       (update-settings u #"where=seeg" [:use-photodiode?] true)
+       (update-settings u #"where=seeg" [:pd-type] :phasecolor) ; vs :whiteflash
 
+       ;; EEG,sEEG: sending ttl (but could use for anywhere)
+       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
+       (update-settings u #"ttl=none"  [:local-ttl-server] nil)
+
+       ;; photodiode
+       (update-settings u #"photodiode"       [:use-photodiode?] true)
+       (update-settings u #"photodiode"       [:pd-type] :whiteflash) ; vs :phasecolor
+       (update-settings u #"photodiode=none"  [:use-photodiode?] false)
+       (update-settings u #"photodiode=phase" [:pd-type] :phasecolor)
+       (update-settings u #"photodiode=flash" [:pd-type] :whiteflash)
+
+       ;; EEG,sEEG: sending ttl (but could use for anywhere)
        ;; fixed timing
        (update-settings u #"timing=randomA" [:left-best] false) ; A=right
        (update-settings u #"timing=randomB" [:left-best] true)  ; B=left

@@ -17,9 +17,16 @@
   (is (= :desert (vis-type-from-url (-> js/window .-location .-href url/url)))))
 
 (deftest url-photodiode
-  (is (:use-photodiode? (task-parameters-url {} {:anchor "mountain&photodiode"}))
-  (is (not (:use-photodiode? (task-parameters-url @current-settings {:anchor "desert"})))))
-  (is (not (:use-photodiode? (task-parameters-url @current-settings {})))))
+  (is (:use-photodiode? (task-parameters-url {} {:anchor "mountain&photodiode"})))
+  (is (= :whiteflash (:pd-type (task-parameters-url {} {:anchor "photodiode"}))))
+  (is (not (:use-photodiode? (task-parameters-url @current-settings {:anchor "desert"}))))
+  (is (not (:use-photodiode? (task-parameters-url @current-settings {}))))
+
+  (is (:use-photodiode? (task-parameters-url {} {:anchor "where=seeg"})))
+  (is (= :phasecolor (:pd-type (task-parameters-url {} {:anchor "where=seeg"}))))
+  (is (:use-photodiode? (task-parameters-url {} {:anchor "photodiode=phase"})))
+  (is (= :phasecolor (:pd-type (task-parameters-url {} {:anchor "photodiode=phase"}))))
+  (is (= :whiteflash (:pd-type (task-parameters-url {} {:anchor "where=seeg&photodiode=white"})))))
 
 (deftest url-fewtrials
   (is 10 (get-in (task-parameters-url {} {:anchor ""}) [:nTrials :devalue]))
