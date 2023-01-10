@@ -31,6 +31,8 @@ from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
 from pynput.keyboard import Controller, Key
+import os
+import os.path
 
 
 class Hardware():
@@ -85,16 +87,20 @@ class LPT(Hardware):
         if zero:
             self.wait_and_zero()
 
+
 class TTL_Logger(Hardware):
     """ log ttl code instead of sending to recording computer"""
     def __init__(self, verbose=True):
         tstr = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M.%S")
-        self.fid = open(f"{tstr}_ttllog.txt")
+        if not os.path.exists("log"):
+            os.makedirs("log")
+        # NB. never closed!
+        self.fid = open(f"log/{tstr}_ttllog.txt")
         self.verbose = verbose
 
     def send(self, ttl, zero=True):
         self.print_timestamp(ttl)
-        fid.write(f"{datetime.datetime.now()}\t{ttl}\n")
+        self.fid.write(f"{datetime.datetime.now()}\t{ttl}\n")
 
 
 class DAQ(Hardware):
