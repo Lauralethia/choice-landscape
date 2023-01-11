@@ -99,7 +99,10 @@ class DAQ(Hardware):
         self.verbose = verbose
         self.dev = usb_1208FS()
         print('wMaxPacketSize =', self.dev.wMaxPacketSize)  
-        self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
+
+        # set to output
+        #self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
+        # zero
         self.dev.DOut(self.dev.DIO_PORTA, 0)
         pass
 
