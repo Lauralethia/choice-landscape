@@ -93,3 +93,69 @@
       ((partial mapcat #'gen-prob-maps))
       ((partial mapv #'well-trial))))
 
+
+;; 20221025 use with landscape.mr-times
+;; (defn fill-mr-times-block [seq probs]
+;;   (for seq (map #(assoc % :prob (% probs) :step 1) (keys probs))))
+(defn reduce-time-fill [trial p goodnogood-side]
+  (-> (reduce
+       (fn [acc side]
+         (assoc acc (get goodnogood-side side side)
+                (if-let [sideprob (side p)]
+                  (assoc (side trial) :prob sideprob :step 1)
+                  (side trial))))
+       trial (keys trial))
+      (dissoc :good :nogood)))
+;; (reduce-time-fill {:itidur 500 :good {:open true}, :nogood {:open false}, :up {:open true}} {:good 100 :nogood 20 :up 50} {:good :left :nogood :right})
+;; {:itidur 500,
+;; ;;  :up {:open true, :prob 50, :step 1},
+;; ;;  :left {:open true, :prob 100, :step 1},
+;; ;;  :right {:open false, :prob 20, :step 1}}
+(defn abs [x] (max x (- x)))
+(defn mean [x] (/ (apply + x) (count x)))
+(defn max-from-mean [x] (let [m (mean x)] (apply max (map #(abs (- m %)) x))))
+(defn count-open [trials] (map (fn[side] (count (filter (fn[t](get-in t [side :open])) trials))) [:good :nogood :up]))
+(defn shuffle-blocks
+  "generated blocks with 50 trials.
+  blocks cannot have equal options for all 3 choices.
+  make sure when we combined, we don't compound differences"
+  [tdict n]
+  (loop [blocks []
+         seeds []]
+    (let [diffcnt (max-from-mean (count-open (flatten blocks)))
+          seeds (take n (shuffle (keys tdict)))]
+      (println diffcnt)
+      (if (or (empty? blocks) (>= diffcnt 2))
+        (recur (map #(% tdict) seeds) seeds)
+        [seeds blocks]))))
+
+(defn default-probabilities
+  "for MR. probability defines default blocks: init, switch, devalue.
+  random if up or nogood side is higher (50) or lower (20) initially"
+  [& up-ng-init]
+  (let [up-ng-init (or up-ng-init (shuffle [50 20]))
+        up-init (first up-ng-init)
+        ng-init (second up-ng-init)]
+    [{:good 100 :nogood  ng-init :up  up-init }
+     {:good 100 :nogood  up-init :up  ng-init }
+     {:good 100 :nogood 100 :up 100 }]))
+
+
+(defn fill-mr-times
+  "mk_edn_goodnogood.bash created dict of seeded timing info in mr_times.cljs
+  values are vector (ordered) open wells and itidur
+  {:seed_12345 [{:good{:open true} :up{:open false} :nogood {:open true} :itidur 1.5}]}
+  TODO: should :up always start as the worst?
+  "
+  [tdict & {:keys [goodnogood probs] :or
+            {goodnogood (zipmap [:good :nogood] (shuffle [:left :right]))
+             probs nil}}]
+  (let [probs (or probs (default-probabilities))
+        [seeds blocks] (shuffle-blocks tdict (count probs))]
+    ;; for each bseq-p pair, add prob to each side in each trial
+    (println "# MR using seeds:" seeds)
+    (flatten
+     (map (fn [bseq p]
+            (map (fn[trial] (reduce-time-fill trial p goodnogood))
+                 bseq))
+          blocks probs))))

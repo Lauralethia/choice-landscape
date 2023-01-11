@@ -45,7 +45,7 @@ read_raw <- function(fname="data.tsv") {
 
   # exclude testing runs (IDs with our initials, or 'x')
   BAD_IDS <- c("WWF|ACP|^x$")
-  MIN_TRIALS <- 120
+  MIN_TRIALS <- 90
 
   rawdata <- read.csv(fname, sep='\t') %>% 
     filter(!grepl(BAD_IDS, id)) %>%
@@ -339,7 +339,8 @@ plot_idv_wf <- function(data){
       geom_point(aes(y=picked_unified,color=optimal_choice,shape=score)) +
       facet_grid(facet~.) +
       scale_shape_manual(values=c(4,5,20)) +
-      ylab('side') + theme(strip.text.x = element_text(hjust = -0.02))
+      theme(strip.text.x = element_text(hjust = -0.02)) +
+      labs(shape="scored?", colour="optimal?", y="side")
 }
  
 plot_age_hist<-function(data){
@@ -350,3 +351,6 @@ plot_age_hist<-function(data){
         ggplot() + aes(age.x) %>%
         geom_histogram
 }
+
+# single plot
+plot_idv_fname <- function(fname="data.tsv") plot_idv_wf(read_raw(fname))

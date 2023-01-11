@@ -1,18 +1,75 @@
-* Landscape choice
+* Reward Learning and Habituation Task
+(aka Landscape choice)
 
  * see running version: https://labneurocogdevel.github.io/choice-landscape/
+ * see [[doc/]] for a setup guide and images
  * aesthetic motivated by [[https://elifesciences.org/articles/59907][Dubois et al 2021 elife]] task: [[https://iiif.elifesciences.org/lax/59907%2Felife-59907-fig1-v2.tif/full/1500,/0/default.jpg][landscape with choices]]
- * task responses recorded at
-https://lncdwells.herokuapp.com/testid/habitv1/1/1/
+ * +task responses recorded at https://lncdwells.herokuapp.com/testid/habitv1/1/1/+ (20221128 - no free heroku)
 
 * Hosting
 
+** Local-only
+
+  * clone and open out/index.html to start the task in a web browser (responses not saved).
+    * NB. for where=mri and where=eeg, task ends presents "Download Data" with link to json file that can be saved locally/manually.
+  * save [[https://github.com/LabNeuroCogDevel/psiclj][psiclj]] ([[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.jar][.jar]] or [[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.exe][.exe]]) in the root directory and launch as a local service to save to a sqlite3 file. (e.g. [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/loeffeeg.bat][loeffeeg.bat]])
+ 
 ** Heroku
- Using [[./Procfile][~Procfile~]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
+ Using [[./Procfile][Procfile]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
+ 
+* EEG Stimulus Channel triggers, Button Box responses
+  * [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/http_ttl.py][http_ttl.py]] can be launched as a second service to capture button box responses, simulate keyboard events, and translate http requests from the task into TTL triggers in the EEG recording.
+    * run without arguments for help
+    * supported button boxes
+      * Cedrus (XidDevice) via pyxid2
+      * RTBox via  https://github.com/xiangruili/RTBox_py
+    * TTL via
+      * LPT via psychopy.parallel
+      * USB 1208FS (DAQ) via https://github.com/wjasper/Linux_Drivers
+    * async tornado to listen for http and async.sleep to wait for button push
+ 
+* Analysis
+see results/ directory, esp. [[Makefile][results/Makefile]].
 
-* implementation
+  1. DB stores 'json' column that can be converted to row per trail text file with dbjsontotsv.jq
+  2. read.R::fix_and_save cleans up the output
+  3. summary.R summarizes
+  4. app.R is a shinny app to explore results
 
-** TODO consistent MR timing
+* Task Code
+
+This project is clojurescript that transpiles to javascript (see the [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/Makefile#L15][Makefile]]). The final assets are in the out/ directory.
+
+** Highlights
+  * model/STATE is a giant data structure containing everything that might need to be displayed or calculated
+    * time-cur is incremented every animation step
+    * phase iterates through instructions | iti, chose, [catch, timeout, or] waiting, feedback | done
+  * parameters can be "tweaked" with url. see [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/src/landscape/url_tweak.cljs#L65][url-tweaks.cljs]]
+  * code path: enter in [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/src/landscape/core.cljs#L202][core.cljs]] and follow to loop.cljs/run-loop and display-state
+    * model updating with [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/src/landscape/model.cljs#L123][model.cljs/next-step]] and
+    * displayed with [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/src/landscape/view.cljs#L364][view.cljs/display-state]]
+  * EEG status channel TTL codes are generated with [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/src/landscape/model/phase.cljs#L96][phase/gen-ttl]]
+
+* Debugging
+Using e.g. CIDER with figwheel-main:dev (C-c M-J in emacs on core.cljs)  
+** figwheel urls
+ * http://localhost:9500/ cards.html
+ * http://localhost:9500/figwheel-extra-main/auto-testing
+** with repl
+#+begin_src clojure
+  (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
+
+  ; go to the end and dont spam terminal with STATE
+  (do(swap! landscape.model/STATE assoc-in [:phase :name] :done) nil)
+
+  ; use local psiclj. need to disable browser CORS
+  (set! landscape.http/HTTP-DEBUG "0.0.0.0:3001")
+
+#+end_src
+
+* Implementation Notes
+
+** consistent MR timing
 <2022-07-06 Wed>
 create iti-start-at key in well-list
 check that against start time if it exists instead of looking at duration
@@ -30,7 +87,7 @@ should implement phase tests that progress through each step (maybe with for loo
     * +/- reversal
 ** instructions/state advance
    instructions step through individual actions (sprites, buckets, etc)
-** TODO [#A] allow for fixed timing
+** allow for fixed timing
   scanner will be given explicit onset targets
 ** update well probabilities on fixed schedule
    currently generated by model.timeline/gen-wells with fixed 20/50 probs
@@ -39,7 +96,7 @@ should implement phase tests that progress through each step (maybe with for loo
 
 ** integrated with http server
    POST requests are made before the transition from feedback to iti. intended to be picked up by ~psiclj~ tool/server
-** TODO [#B] use full screen
+** [#B] use full screen
    NB. mturk /ad w/psiclj or psiturk uses a popup window
 *** zoom body?
     ~translation: scale(1.5)~ works for content but does not scale background.
@@ -59,8 +116,9 @@ https://gist.github.com/bigfive/4256993
    works on wells and instruction button. BUT there is no indication that's what happened.
 *** TODO [#C] include :touch true in keypress
     this looks like it'd be hard to integrate
-** TODO [#B] set scale of water relative to total points needed
+** set scale of water relative to total points needed
    partially implemented. could still use math to make sure we don't get to 100% until last trial (exp decay?)
+   <2022-11-27 Sun> - okay with current setup. also have coin images that accumulate for ocean landscape
 ** TODO [#C] visual to indicate/collect status history of wells
    not necissary. maybe problematic. would be useful for debugging though
    debugging with probability text over well would be useful too
@@ -133,21 +191,4 @@ https://gist.github.com/bigfive/4256993
 ** TODO add animation to devcards
    still haven't figured out. but animating for the instruction choice screen helped debug bad frames
 ** TODO record start and end volume (did anyone turn it down?)
-
-* Debugging
-  
-** figwheel urls
- * http://localhost:9500/ cards.html
- * http://localhost:9500/figwheel-extra-main/auto-testing
-** with repl
-#+begin_src clojure
-  (swap! landscape.model/STATE assoc :well-list (landscape.model.timeline/gen-wells {:prob-low 100 :prob-high 100 :reps-each-side 1 :side-best :left}))
-
-  ; go to the end and dont spam terminal with STATE
-  (do(swap! landscape.model/STATE assoc-in [:phase :name] :done) nil)
-
-  ; use local psiclj. need to disable browser CORS
-  (set! landscape.http/HTTP-DEBUG "0.0.0.0:3001")
-
-#+end_src
 

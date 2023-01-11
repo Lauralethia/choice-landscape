@@ -6,6 +6,7 @@
    [landscape.utils :as utils]
    [landscape.sound :as sound]
    [landscape.fixed-timing :as fixed-timing]
+   [landscape.mr-times :refer [mr-seeds]]
    [landscape.model.timeline :as timeline]
    [landscape.model.wells :as wells]
    [landscape.model :as model :refer [STATE]]
@@ -116,6 +117,20 @@
   (let [vis-class (-> @current-settings :vis-type name)]
     (.. js/document -body (setAttribute "class" vis-class))))
 
+(defn list-from-timing-method
+  "set timing schedule based on fixed-timing dict or random.
+  special case for mrA and mrB: pseudorandom from combining 3 of 9 50-trial preset blocks"
+  [timing-method left-best]
+  (case timing-method
+    :mrA (timeline/fill-mr-times mr-seeds :goodnogood {:good :right :nogood :left})
+    :mrB (timeline/fill-mr-times mr-seeds :goodnogood {:good :left :nogood :right})
+    ;; this is not implemented
+    :mr  (timeline/fill-mr-times mr-seeds :goodnogood (if left-best
+                                                        {:good :left :nogood :right}
+                                                        {:good :right :nogood :left}))
+    ;; NB. :random is not in fixed-timiing but is the default
+    (get fixed-timing/trials timing-method (gen-well-list left-best))))
+
 (defn -main []
   (gev/listen (KeyHandler. js/document)
               (-> KeyHandler .-EventType .-KEY) ; "key", not same across browsers?
@@ -143,15 +158,15 @@
 
   (let [timing-method (get @settings/current-settings :timing-method, :random)
         left-best (get @settings/current-settings :left-best)
-        well-list-random (gen-well-list left-best)
-        well-list (wells/list-add-pos
-                   (get fixed-timing/trials timing-method, well-list-random))]
+        well-list (wells/list-add-pos (list-from-timing-method timing-method left-best))]
     ;; (println "using left-best" left-best "with method" timing-method)
     (swap! STATE assoc :well-list well-list)
     ;; update well so well in insturctions matches
     (swap! STATE assoc :wells (first well-list)))
 
-  (let [time-trial (+ settings/RT-EXPECTED (get @settings/current-settings [:times :walk-dur]))
+  (let [time-trial (+ settings/RT-EXPECTED
+                      (get-in @settings/current-settings [:times :walk-dur],
+                              settings/WALKTIME))
         time-iti   (get-in @settings/current-settings [:times :iti-dur] settings/ITIDUR)
         well-ideal-end (utils/iti-ideal-end time-trial (:well-list @STATE) time-iti)]
      (swap! STATE assoc :well-list well-ideal-end))

@@ -31,6 +31,9 @@ from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
 from pynput.keyboard import Controller, Key
+import os
+import os.path
+
 
 class Hardware():
     """
@@ -73,7 +76,6 @@ class LPT(Hardware):
     """ set TTL on parallel port (LPT) """
     def __init__(self, address, verbose=False):
         from psychopy import parallel
-        import time
         self.port = parallel.ParallelPort(address=address)
         self.verbose = verbose
         self.start = datetime.datetime.now()
@@ -86,39 +88,56 @@ class LPT(Hardware):
             self.wait_and_zero()
 
 
+class TTL_Logger(Hardware):
+    """ log ttl code instead of sending to recording computer"""
+    def __init__(self, verbose=True):
+        tstr = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M.%S")
+        if not os.path.exists("log"):
+            os.makedirs("log")
+        # NB. never closed!
+        self.fid = open(f"log/{tstr}_ttllog.txt")
+        self.verbose = verbose
+
+    def send(self, ttl, zero=True):
+        self.print_timestamp(ttl)
+        self.fid.write(f"{datetime.datetime.now()}\t{ttl}\n")
+
+
 class DAQ(Hardware):
     """
     using USB 1208FS
     see https://github.com/wjasper/Linux_Drivers
+
+    NB!! binary on (>=128) or off (<128)
+    DOES NOT encode 0-255, but 0/1
     """
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, daq_path='/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python'):
         # git clone https://github.com/wjasper/Linux_Drivers.git /home/abel/luna_habit/usb1208fs-linux-drivers/
         # make install usbs, add udevrules
-        sys.path.insert(0,'/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python') # or PYTHONPATH=~/luna_habit/RTBox/python
+        sys.path.insert(0, daq_path)
         from usb_1208FS import usb_1208FS
         self.verbose = verbose
         self.dev = usb_1208FS()
-        print('wMaxPacketSize =', self.dev.wMaxPacketSize)  
-
-        # set to output
-        #self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
-        # zero
+        #print('wMaxPacketSize =', self.dev.wMaxPacketSize)
+        self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
         self.dev.DOut(self.dev.DIO_PORTA, 0)
-        pass
 
     def send(self, ttl, zero=True):
-        self.dev.DOut(self.dev.DIO_PORTA, ttl)
-        # TODO: do we need to zero?
-        if zero:
+        actual_ttl = 250  # always high
+        self.dev.DOut(self.dev.DIO_PORTA, actual_ttl)
+        # zero
+        # always zero. we'll only ever send hi
+        #self.dev.DOut(self.dev.DIO_PORTA, 0)
+        if True or zero:
             self.wait_and_zero()
 
 
-
-### BUTTON BOXES
+# ## BUTTON BOXES ##
 class FakeButton():
     def __init__(self, hw, kb):
         self.hw = hw
         self.kb = kb
+
     def trigger(self, msg):
         self.kb.push("a")
         self.hw.send(msg)
@@ -127,6 +146,7 @@ class FakeButton():
         while True:
             await asyncio.sleep(5)
             self.trigger("5 sec trigger")
+
 
 class Cedrus():
     """ cedrus response box (RB-x40)
@@ -152,7 +172,7 @@ class Cedrus():
         # {'port': 0, 'key': 7, 'pressed': True, 'time': 13594}
         # {'port': 2, 'key': 3, 'pressed': True, 'time': 3880}
 
-        if response['pressed'] == True:
+        if response['pressed']:
             if response['port'] == 2:
                 self.hw.send(self.light_ttl)
             if self.kb and response['port'] == 0:
@@ -176,7 +196,7 @@ class Cedrus():
 
 
 class RTBox():
-    def __init__(self, hw, kb=None, verbose=False):
+    def __init__(self, hw, kb=None, verbose=False, lib='/home/abel/luna_habit/RTBox_py'):
         self.run = True
         self.verbose = True
         self.kb = kb
@@ -184,9 +204,8 @@ class RTBox():
         self.keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
         self.sendLUR = [Key.left, Key.up, Key.right]
 
-
         # git clone https://github.com/xiangruili/RTBox_py /home/abel/luna_habit/RTBox_py/
-        sys.path.insert(0,'/home/abel/luna_habit/RTBox_py') # or PYTHONPATH=~/luna_habit/RTBox/python
+        sys.path.insert(0, lib)  # or PYTHONPATH=~/luna_habit/RTBox/python
         import RTBox
         box = RTBox.RTBox()
         box.enable('light')
@@ -218,7 +237,7 @@ class RTBox():
         if self.verbose:
             response = self.keys[index]
             print(f"have: {response}. send key {key} and ttl {ttl}")
-        
+
 
     async def watch(self):
         while self.run:
@@ -243,16 +262,17 @@ class RTBox():
 
 class KB():
     def __init__(self):
-        keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
-        self._kb = Controller() # make key press and release
+        self._kb = Controller()  # make key press and release
 
     def push(self, k):
         self._kb.press(k)
         self._kb.release(k)
 
+
 class HttpTTL(RequestHandler):
     """ http server (tornado request handler)
-    recieve CORS get from task and translate to TTL to record in stim channel"""
+    recieve CORS get from task and translate to TTL to record in stim channel
+    """
     # https://www.tornadoweb.org/en/stable/web.html
     def initialize(self, hardware):
         self.hardware = hardware
@@ -268,6 +288,7 @@ class HttpTTL(RequestHandler):
         # TODO: return string. no need to do interpolation
         self.write(f"ttl: {ttl} @ global {datetime.datetime.now()}")
 
+
 def http_run(this_hardware):
 
     # 128 starts recording in loeff eeg
@@ -279,6 +300,7 @@ def http_run(this_hardware):
     server = HTTPServer(app)
     server.listen(8888)
 
+
 async def loeffeeg(verbose=False):
     hw = LPT(address=0xD010, verbose=verbose)
     kb = KB()
@@ -286,11 +308,22 @@ async def loeffeeg(verbose=False):
     http_run(hw)
     await asyncio.create_task(rb.watch())
 
+
 async def seeg(verbose=False):
     hw = DAQ(verbose=verbose)
     kb = KB()
     rb = RTBox(hw, kb, verbose)
-    http_run(hw)
+
+    logger = TTL_Logger(verbose=verbose)
+    http_run(logger)
+    await asyncio.create_task(rb.watch())
+
+
+async def rtbox_test(verbose=False):
+    "no http server, no DAQ. just RTBox with generic hardware class"
+    hw = Hardware(verbose=verbose)
+    kb = KB()
+    rb = RTBox(hw, kb, verbose)
     await asyncio.create_task(rb.watch())
 
 
@@ -298,18 +331,19 @@ async def fakeeeg(usekeyboard=False, verbose=False):
     hw = Hardware(verbose=verbose)
     kb = KB()
     http_run(hw)
-    rb = FakeButton(hw,kb)
+    rb = FakeButton(hw, kb)
     # kludge. disable trigger function so we dont send the 'a' key every 5 seconds
     if not usekeyboard:
         rb.trigger = lambda a: 1
     # need this await or we'll exit as soon as we send the first trigger
     await asyncio.create_task(rb.watch())
 
+
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', help='one of: "loeff","test","seeg"')
-    p.add_argument('-k','--keyboard', help='use keyboard (only for testing)', action='store_true', dest="usekeyboard")
+    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox"], help='where (also how) to use button and ttl')
+    p.add_argument('-k','--keyboard', help='use keyboard (only for "test")', action='store_true', dest="usekeyboard")
     p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
 
@@ -321,9 +355,9 @@ if __name__ == "__main__":
         asyncio.run(loeffeeg(verbose=args.verbose))
     elif args.place == "seeg":
         asyncio.run(seeg(verbose=args.verbose))
-        #print("NOT IMPLEMENTED!")
     elif args.place == "test":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
+    elif args.place == "test_rtbox":
+        asyncio.run(rtbox_test(verbose=args.verbose))
     else:
-        print(f"unkown place '{args.place}'!")
-
+        print(f"unkown place '{args.place}'! -- argparse should have caught this")

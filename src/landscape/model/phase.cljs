@@ -31,7 +31,7 @@
         tmax (get-in @settings/current-settings [:times :choice-timeout])
         can-timeout? (:enforce-timeout @settings/current-settings)
         rt (or rt-prev tmax)
-        texp settings/RT-EXPECTED]
+        texp settings/RT-EXPECTED]      ;; 580ms
     ;; no adjustment when not mr
     (if (and mr? can-timeout?)
       (do
@@ -81,7 +81,7 @@ nil if timout"
         next (cond
                (<= trial (count well-list)) :chose  ; next trail
                ;; :survey okay forced, but w/:iti->:survey, not responsive to keys
-               (contains? #{:mri :eeg :practice} where) :done
+               (contains? #{:mri :eeg :practice :seeg} where) :done
                ; TODO: could also send to :survey (for buttonbox Qs)
                (contains? #{:online} where) :forum ; freeform text w/full keyboard
                :else :forum)]
@@ -284,6 +284,25 @@ nil if timout"
     ;; (assoc  state :time-cur (- time-cur adjust))
     state
     ))
+
+(defn mr-end-time-or-0 [state trial]
+  (let [ntrials (count (:well-list state))
+        mr-end (get-in state [:record :settings :iti+end])]
+    (if (> trial ntrials) mr-end 0)))
+
+(defn check-iti-time [state phase trial time-since]
+  (let [is-mr (contains? #{:mri} (get-in @settings/current-settings [:where]))
+        mr-extra-end (mr-end-time-or-0 state trial)
+        ideal-end (get-in state [:well-list (dec trial) :iti-ideal-end])
+        abs-start (get-in state [:record :start-time :browser])
+        past-ideal (and is-mr (is-time ideal-end abs-start))]
+
+    ;; 20221026 - reports 2-12ms difference
+    ;; (when past-ideal (println "# iti past ideal"
+    ;;                           ideal-end (- (utils/now) abs-start ideal-end)))
+
+    (or past-ideal
+      (>= time-since (+ (:iti-dur phase) mr-extra-end)))))
    
 (defn phase-update
   "update :phase of STATE when phase critera meet (called by model/step-task
@@ -343,8 +362,8 @@ nil if timout"
                      ;; instruction update gets first iti
                      (= pname :instruction)
                      (assoc phase :name :iti :start-at time-cur :hit nil :scored false :picked nil
-                              :iti-dur (get-in state [:well-list 0 :iti-dur],
-                                               (get-in @settings/current-settings [:times :iti], settings/ITIDUR)))
+                            :iti-dur (get-in state [:well-list 0 :iti-dur],
+                                             (get-in @settings/current-settings [:times :iti], settings/ITIDUR)))
 
                      ;; move onto iti or start the task: instruction -> iti
                      ;; might be comming from feedback, timeout, or instructions
@@ -367,22 +386,9 @@ nil if timout"
                               :iti-dur (adjust-iti-time (get-rt state) iti-dur)))
 
                      ;; restart at chose when iti is over
-                     (or 
-                      (and (= pname :iti)
-                           (contains? #{:mri} (get-in @settings/current-settings [:where]))
-                           (is-time (get-in state [:well-list trial0 :iti-ideal-end])
-                                                   (get-in state [:record :start-time :browser])))
-                      ;; TODO: do we want to skip dur check below if we have iti-ideal-end time?
-                      ;;       dur check might be true before iti ideal
-                      (and (= pname :iti)
-                           (>= time-since (+ (:iti-dur phase)
-                                            ;; TODO: if timeout and MR, append walktime
-                                            ;; if last iti, add a iti+end
-                                            (if (> trial (count (:well-list state)))
-                                              (get-in state [:record :settings :iti+end])
-                                              0)))))
+                     (and (= pname :iti) (check-iti-time state phase trial time-since))
                      (phase-done-or-next-trial state)
-                     ;; alternative use adjust-over-iti to see print how far off we are
+                     ;; alternative use adjust-over-iti to print how far off we are
                      ;; (phase-done-or-next-trial (adjust-over-iti state))
 
                      ;; no change if none needed

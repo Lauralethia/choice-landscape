@@ -47,7 +47,11 @@
   [s]
   (let [first-well-step (get-in s [:step-sizes 0], 70)
         avatar-step-size (get-in s [:avatar-step-size], 10)
-        new-walktime (* 2 settings/SAMPLERATE (/ first-well-step avatar-step-size))]
+        ;; MR walktime is whatever is hardcoded
+        mr? (contains? #{:mri} (get-in s [:where]))
+        new-walktime (if mr? settings/WALKTIME
+                         (* 2 settings/SAMPLERATE (/ first-well-step avatar-step-size)))]
+    ;; (println "# setting walktime to" new-walktime "hardcoded is" settings/WALKTIME "mr?" mr?)
     (-> s
         (assoc-in [:times :timeout-dur] new-walktime)
         (assoc-in [:times :walk-dur] new-walktime))))
@@ -58,7 +62,6 @@
   ([settings u]
    (-> settings 
        (assoc :path-info (url-path-info u))
-       (update-settings u #"photodiode"  [:use-photodiode?] true)
        (update-settings u #"mx95"  [:prob :high] 95)
        (update-settings u #"nofar"  [:step-sizes 1] 0)
        (update-settings u #"yesfar"  [:step-sizes 1] 150)
@@ -99,17 +102,35 @@
        ;; EEG
        (update-settings u #"where=eeg" [:where] :eeg)
        (update-settings u #"where=eeg" [:skip-captcha] true)
-       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
+       ;; sEEG
+       (update-settings u #"where=seeg" [:where] :seeg)
+       (update-settings u #"where=seeg" [:skip-captcha] true)
+       (update-settings u #"where=seeg" [:use-photodiode?] true)
+       (update-settings u #"where=seeg" [:pd-type] :phasecolor) ; vs :whiteflash
 
+       ;; EEG,sEEG: sending ttl (but could use for anywhere)
+       (update-settings u #"ttl=local" [:local-ttl-server] "http://127.0.0.1:8888")
+       (update-settings u #"ttl=none"  [:local-ttl-server] nil)
+
+       ;; photodiode
+       (update-settings u #"photodiode"       [:use-photodiode?] true)
+       (update-settings u #"photodiode"       [:pd-type] :whiteflash) ; vs :phasecolor
+       (update-settings u #"photodiode=none"  [:use-photodiode?] false)
+       (update-settings u #"photodiode=phase" [:pd-type] :phasecolor)
+       (update-settings u #"photodiode=flash" [:pd-type] :whiteflash)
+
+       ;; EEG,sEEG: sending ttl (but could use for anywhere)
        ;; fixed timing
        (update-settings u #"timing=randomA" [:left-best] false) ; A=right
        (update-settings u #"timing=randomB" [:left-best] true)  ; B=left
        (update-settings u #"timing=debug" [:timing-method] :debug)
        (update-settings u #"timing=practice" [:timing-method] :practice)
-       (update-settings u #"timing=mra1" [:timing-method] :mrA1) ; right best
-       (update-settings u #"timing=mra2" [:timing-method] :mrA2)
-       (update-settings u #"timing=mrb1" [:timing-method] :mrB1) ; left best
-       (update-settings u #"timing=mrb2" [:timing-method] :mrB2)
+       (update-settings u #"timing=mra10min" [:timing-method] :mrA) ; right best
+       (update-settings u #"timing=mrb10min" [:timing-method] :mrB) ; left best
+       (update-settings u #"timing=mra1-short" [:timing-method] :mrA1) ; right best
+       (update-settings u #"timing=mra2-short" [:timing-method] :mrA2)
+       (update-settings u #"timing=mrb1-short" [:timing-method] :mrB1) ; left best
+       (update-settings u #"timing=mrb2-short" [:timing-method] :mrB2)
        (update-settings u #"timing=quickrandom" [:nTrials] {:pairsInBlock 2 :devalue 2 :devalue-good 0})
 
 

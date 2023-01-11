@@ -24,8 +24,15 @@ used by MR to adjust ITI dur"
 
   intially 70px total/10px avatar * 30ms sampling (210ms).
   ocean is 140/15*30  (280ms)
-  but time-diff caled at 534 (walk there and back) set to 210 for original"
-  (* 2 210))
+  but time-diff caled at 534 (walk there and back) set to 210 for original
+
+  20221026 after 150 trials, off by about a minute.
+           only 15s of that can be attributed to 420 vs 520
+           but might as well match what afni's 3dDeconvolve used to model
+  "
+  ;; (* 2 210)
+  (+ 270 250)
+  )
 
 (def ITIDUR 1000)
 (def MR-FIRST-ITI "enough time to get a stable hrf" 3000)
@@ -64,6 +71,10 @@ used by MR to adjust ITI dur"
    ;; 20220527 - location to send ttl for placing event info in recorded data
    ;; NB. timing will probably be terrible
    :local-ttl-server nil
+
+   ;; 20230110
+   ;; show flash white every phase or hold specified color per phase type
+   :pd-type :whiteflash ; vs :phasecolor
    ;; 20220606 where coins/water will accumulate
    :pile-y nil
    })
@@ -81,7 +92,7 @@ used by MR to adjust ITI dur"
     :step-wise false        ;; make far well additional clicks
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal
-    :where :online          ;; :mri :eeg :seeg
+    :where :online          ;; :mri :eeg :seeg :practice
     :iti+end   0            ;; probably want e.g. 6000 for MRI
 })
 

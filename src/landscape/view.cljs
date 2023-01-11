@@ -69,25 +69,34 @@
   "white at onset of new phase. cleared after 100ms (is it ms? feels like it)"
   [{:keys [start-at] :as phase} time-cur]
   (if (< (- time-cur start-at) 100) "white" "black"))
-(defn photodiode-color [{:keys [phase time-cur] :as state}]
+
+(def PHASEPDCOLOR
+  "set each phase to a color. used by photodiode-color-steps.
+   expect to send high trigger on to-white. and on button push (why waiting matches chose)."
+ {:chose "white" :waiting "white" :timeout "white" :feedback "white" :iti "black"  :survey "black"})
+(defn photodiode-color-steps
+  "one color for a phase
+   20220624: use black to white after 100ms (photodoice-color) for most
+   optionally this if we only have on/off (high/low) instead of all 255 for TTL"
+  [{:keys [name] :as phase}]
+  (println "pd phase for" name (get PHASEPDCOLOR name "white"))
+  (get PHASEPDCOLOR name "white"))
+ 
+;(defn is-seeg [state] (contains? #{:seeg} (get-in state [:record :settings :where])))
+(defn is-pd-phase?
+  "whiteflash is default" 
+ [state] (= :phasecolor (get-in state [:record :settings :pd-type] :whiteflash)))
+(defn photodiode-color
+  "when instructions. flash white than go back to black
+   when using phase colors (seeg default) white for chose and wait, black otherwise
+   otherwise flash white and back to black for every phase change"
+  [{:keys [phase time-cur] :as state}]
   (if (= (:name phase) :instruction)
     (photodiode-instructions (get phase :idx 0))
-    (photodiode-white-on phase time-cur)))
+    (if (is-pd-phase? state)
+        (photodiode-color-steps phase)
+        (photodiode-white-on phase time-cur))))
 
-(defn photodiode-color-steps
-  "define colors for each phase. DEPRICATED 20220624. but keeping incase RTBox can use"
-  [{:keys [name] :as phase}]
-  (cond
-     ; RTBox maybe on any step (untested 20220624)
-     (= name :waiting)     "white"
-     (= name :chose)       "#333"
-     (= name :iti)         "#666"
-     (= name :feedback)    "black"
-
-     ;; switch every other instruction
-     (= name :instruction) (photodiode-instructions phase)
-     (= name :survey)      "#999"
-     :else                 "black"))
 
 (defn photodiode
   "display block to position photodiode over. for percision timing.
@@ -261,7 +270,7 @@
                        "Save it for your records." [:br]]
              [:span "You can close this page."]])
          ;; when mri, offer to download json
-         (if (contains? #{:mri :eeg :practice} (get-in state [:record :settings :where]))
+         (if (contains? #{:mri :eeg :practice :seeg} (get-in state [:record :settings :where]))
            [:div [:a
                   ;; make a useful name for the json output that we could save
                   ;; includes url params and current timestep

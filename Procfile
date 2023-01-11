@@ -1,1 +1,1 @@
-web: psiclj-heroku -t habit -r out/ -v 20220919v13_mrsidefix
+web: psiclj-heroku -t habit -r out/ -v 20221028v14_mr10min
