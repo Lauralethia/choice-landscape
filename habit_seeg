@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")" || exit
-./psiclj & # TODO: maybe launch in separate terminal?
+#./psiclj & # TODO: maybe launch in separate terminal?
+java -cp psiclj.jar clojure.main -m psiclj &
 psiclj=$!
 
 echo "$(tput setaf 10)manually fullscreen browser (F11, or alt+v f) and ensure zoom 120% $(tput sgr0)"
-firefox http://127.0.0.1:3001/seeg.html
+DISPLAY=:0.1 firefox http://127.0.0.1:3001/seeg.html
 python ./http_ttl.py seeg
 
 # done with everything. dont keep psiclj around
