@@ -95,7 +95,7 @@ class TTL_Logger(Hardware):
         if not os.path.exists("log"):
             os.makedirs("log")
         # NB. never closed!
-        self.fid = open(f"log/{tstr}_ttllog.txt")
+        self.fid = open(f"log/{tstr}_ttllog.txt", "w")
         self.verbose = verbose
 
     def send(self, ttl, zero=True):
@@ -111,8 +111,8 @@ class DAQ(Hardware):
     NB!! binary on (>=128) or off (<128)
     DOES NOT encode 0-255, but 0/1
     """
-    def __init__(self, verbose=False, daq_path='/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python'):
-        # git clone https://github.com/wjasper/Linux_Drivers.git /home/abel/luna_habit/usb1208fs-linux-drivers/
+    def __init__(self, verbose=False, daq_path='/home/lncd/luna_habit/usb1208fs-linux-drivers/USB/python'):
+        # git clone https://github.com/wjasper/Linux_Drivers.git /home/lncd/luna_habit/usb1208fs-linux-drivers/
         # make install usbs, add udevrules
         sys.path.insert(0, daq_path)
         from usb_1208FS import usb_1208FS
@@ -128,7 +128,7 @@ class DAQ(Hardware):
         # zero
         # always zero. we'll only ever send hi
         #self.dev.DOut(self.dev.DIO_PORTA, 0)
-        if True or zero:
+        if zero:
             self.wait_and_zero()
 
 
@@ -196,15 +196,16 @@ class Cedrus():
 
 
 class RTBox():
-    def __init__(self, hw, kb=None, verbose=False, lib='/home/abel/luna_habit/RTBox_py'):
+    def __init__(self, hw, kb=None, verbose=False, lib='/home/lncd/luna_habit/RTBox_py'):
         self.run = True
         self.verbose = True
         self.kb = kb
         self.hw = hw
         self.keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
-        self.sendLUR = [Key.left, Key.up, Key.right]
+        # numbers as they are on the button box instead of as an array
+        self.sendLUR = {1:Key.left, 2:Key.up, 3:Key.up, 4:Key.right}
 
-        # git clone https://github.com/xiangruili/RTBox_py /home/abel/luna_habit/RTBox_py/
+        # git clone https://github.com/xiangruili/RTBox_py /home/lncd/luna_habit/RTBox_py/
         sys.path.insert(0, lib)  # or PYTHONPATH=~/luna_habit/RTBox/python
         import RTBox
         box = RTBox.RTBox()
@@ -212,7 +213,8 @@ class RTBox():
         box.info()
         box.threshold(4)
         print(f"using threshold {box.threshold()} (1-4)")
-        box.close()
+        box.close() # switches to serial mode
+        self.box = box
 
         _ser = box._ser
         _ser.open()
@@ -226,17 +228,26 @@ class RTBox():
         # index is 0-based but keys start at 1. so add one to what we send if in range
         key = None
         ttl = None
-        if index > 5:
+        if index >= 5:
             self.hw.send(1)
-        elif index > 1 and index < 4:
-            key = self.sendLUR[index-1]
-            ttl = index + 1
-            self.kb.push(key)
+            ttl = 250
+            self.box.disable("light")
+        elif index >= 0 and index < 4:
+            key = self.sendLUR.get(index+1, None)
+            # does't actually matter what we send. DAQ will send high
+            # but update here so verbose printing is consistant
+            ttl = 250 # was index + 1, but only have high and low. so always send high. will e 0'ed
             self.hw.send(ttl)
+            self.kb.push(key)
+            # after a key push reset the trial. should be black screen
+            self.box.enable("light")
+            # also consider
+            #self.box.clear()
+
 
         if self.verbose:
             response = self.keys[index]
-            print(f"have: {response}. send key {key} and ttl {ttl}")
+            print(f"have: {response} (i: {index}). send key {key} and ttl {ttl}")
 
 
     async def watch(self):

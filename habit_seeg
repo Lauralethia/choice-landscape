@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
-cd "$(dirname "$0")" || exit
+trap '[ -n "$psiclj" ] && kill $psiclj && echo killed psiclj; test -n "$foxpid" && kill $_ && echo killed firefox;' EXIT SIGKILL
+cd "$(dirname "$(readlink -f "$0")")" || exit
 #./psiclj & # TODO: maybe launch in separate terminal?
 java -cp psiclj.jar clojure.main -m psiclj &
 psiclj=$!
+echo "sleeping while java launches"
+sleep 1
 
 echo "$(tput setaf 10)manually fullscreen browser (F11, or alt+v f) and ensure zoom 120% $(tput sgr0)"
-DISPLAY=:0.1 firefox http://127.0.0.1:3001/seeg.html
+firefox http://127.0.0.1:3001/seeg.html &
+foxpid=$!
+
+echo "# launching buttonbox/keyboard bridge"
 python ./http_ttl.py seeg
 
 # done with everything. dont keep psiclj around
-kill $psiclj
+# kills run by trap
+#kill $psiclj
+#kill $foxpid
