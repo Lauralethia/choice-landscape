@@ -69,7 +69,10 @@
   "white at onset of new phase. cleared after 100ms (is it ms? feels like it)"
   [{:keys [start-at] :as phase} time-cur]
   (if (< (- time-cur start-at) 100) "white" "black"))
-(defn photodiode-color [{:keys [phase time-cur] :as state}]
+(defn photodiode-color
+  "update photodiode square color based on how far into a phase we are
+  instructions toggle every other"
+  [{:keys [phase time-cur] :as state}]
   (if (= (:name phase) :instruction)
     (photodiode-instructions (get phase :idx 0))
     (photodiode-white-on phase time-cur)))
