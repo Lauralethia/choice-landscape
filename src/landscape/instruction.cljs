@@ -147,7 +147,7 @@
       (assoc :key (key/key-state-fresh))))
 
 (defn buttonbox? [state]
-  (contains? #{:mri :eeg}
+  (contains? #{:mri :eeg :seeg}
              (get-in state [:record :settings :where])))
 
 (def INSTRUCTION
@@ -274,7 +274,7 @@
                    [:br]
                    "Pick a " (item-name :well) " by walking to it!"
                    [:br]
-                   (if (contains? #{:mri :eeg}
+                   (if (contains? #{:mri :eeg :seeg}
                                   (get-in state [:record :settings :where]))
                      "Use the button box to choose."
                      "Use the arrow keys on the keyboard: left, up, and right"
@@ -286,7 +286,7 @@
                    [:br]
                    [:b "Do not hold keys down."]
                    [:br] [:br]
-                   (when (not(contains? #{:mri :eeg}
+                   (when (not(contains? #{:mri :eeg :seeg} ;(contains? #{:online :practice})
                                         (get-in state [:record :settings :where])))
                      "Held keys misrepresent choice timing, leading to study disqualification."
                    )]
@@ -345,7 +345,7 @@
                    "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
                    ;; dont be harsh about payment when participant is in person
                    ;; (instead RA/RS can give a nice "wake up" reminder
-                   (when (not(contains? #{:mri :eeg :practice}
+                   (when (not(contains? #{:mri :eeg :practice :seeg}
                                         (get-in state [:record :settings :where])))
                     [:b "You will not get paid if you do not respond!"])
                    ]))
@@ -449,7 +449,7 @@
                         " when there is " (item-name :water)
                         " is the same for all " (item-name :well) "s."]
 
-                       (when (not(contains? #{:mri :eeg :practice}
+                       (when (not(contains? #{:mri :eeg :practice :seeg}
                                             (get-in state [:record :settings :where])))
                          [:li  [:b "You must respond to be paid"]])
                        [:li "Respond faster to finish sooner."]
