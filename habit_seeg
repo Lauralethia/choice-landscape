@@ -12,7 +12,7 @@ firefox http://127.0.0.1:3001/seeg.html &
 foxpid=$!
 
 echo "# launching buttonbox/keyboard bridge"
-python ./http_ttl.py seeg
+python ./http_ttl.py -v seeg
 
 # done with everything. dont keep psiclj around
 # kills run by trap
