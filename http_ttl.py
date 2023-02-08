@@ -123,7 +123,7 @@ class DAQ(Hardware):
         self.dev.DOut(self.dev.DIO_PORTA, 0)
 
     def send(self, ttl, zero=True):
-        actual_ttl = 250  # always high
+        actual_ttl = 250 if ttl > 0 else 0  # always high 250. unless 0 (low)
         self.dev.DOut(self.dev.DIO_PORTA, actual_ttl)
         # zero
         # always zero. we'll only ever send hi
@@ -229,9 +229,10 @@ class RTBox():
         key = None
         ttl = None
         if index >= 5:
-            self.hw.send(1)
+            self.hw.send(1) # 1 for eeg, but 'high' for seeg
             ttl = 250
             self.box.disable("light")
+            self.box.enable("light") # WARNING: this is against the suggestion. might be noisy PD
         elif index >= 0 and index < 4:
             key = self.sendLUR.get(index+1, None)
             # does't actually matter what we send. DAQ will send high
@@ -329,6 +330,13 @@ async def seeg(verbose=False):
     http_run(logger)
     await asyncio.create_task(rb.watch())
 
+async def test_DAQ(verbose=False):
+    hw = DAQ(verbose=verbose)
+    while True:
+        await asyncio.sleep(1)
+        print(f"sending high and zeroing")
+        hw.send(250) # 250 just has to be non-zero
+
 
 async def rtbox_test(verbose=False):
     "no http server, no DAQ. just RTBox with generic hardware class"
@@ -353,7 +361,7 @@ async def fakeeeg(usekeyboard=False, verbose=False):
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox"], help='where (also how) to use button and ttl')
+    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox", "test_DAQ"], help='where (also how) to use button and ttl')
     p.add_argument('-k','--keyboard', help='use keyboard (only for "test")', action='store_true', dest="usekeyboard")
     p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
@@ -368,6 +376,9 @@ if __name__ == "__main__":
         asyncio.run(seeg(verbose=args.verbose))
     elif args.place == "test":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
+    elif args.place == "test_DAQ":
+        asyncio.run(test_DAQ(verbose=args.verbose))
+
     elif args.place == "test_rtbox":
         asyncio.run(rtbox_test(verbose=args.verbose))
     else:
