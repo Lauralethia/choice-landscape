@@ -7,12 +7,17 @@
 
 (deftest photodiode-color-test
   (let [state {:phase{:name "notaknownstate" :start-at 0} :time-cur 0}
-        state-sometime (assoc state :time-cur 1000 )]
+        state-sometime (assoc state :time-cur 1000 )
+        state-phasecolor (assoc-in state [:record :settings :pd-type] :phasecolor)]
     ;; default color
     (is (= "white" (photodiode-color state)))
     ;; color changes after some time
     (is (not= (photodiode-color state)
-              (photodiode-color state-sometime)))))
+              (photodiode-color state-sometime)))
+    ;; even 1second in colors are fixed if pd-type is phasecolor
+    (is (= "white" (photodiode-color (assoc-in state-phasecolor [:phase :name] :choice))))
+    (is (= "white" (photodiode-color (assoc-in state-phasecolor [:phase :name] :waiting))))
+    (is (= "black" (photodiode-color (assoc-in state-phasecolor [:phase :name] :iti))))))
 
 (deftest encode-url-test
   "only confirms function runs. does not check output makes sense"

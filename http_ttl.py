@@ -31,6 +31,8 @@ from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
 from pynput.keyboard import Controller, Key
+import os
+import os.path
 
 
 class Hardware():
@@ -85,16 +87,20 @@ class LPT(Hardware):
         if zero:
             self.wait_and_zero()
 
+
 class TTL_Logger(Hardware):
     """ log ttl code instead of sending to recording computer"""
     def __init__(self, verbose=True):
         tstr = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M.%S")
-        self.fid = open(f"{tstr}_ttllog.txt")
+        if not os.path.exists("log"):
+            os.makedirs("log")
+        # NB. never closed!
+        self.fid = open(f"log/{tstr}_ttllog.txt", "w")
         self.verbose = verbose
 
     def send(self, ttl, zero=True):
         self.print_timestamp(ttl)
-        fid.write(f"{datetime.datetime.now()}\t{ttl}\n")
+        self.fid.write(f"{datetime.datetime.now()}\t{ttl}\n")
 
 
 class DAQ(Hardware):
@@ -105,26 +111,30 @@ class DAQ(Hardware):
     NB!! binary on (>=128) or off (<128)
     DOES NOT encode 0-255, but 0/1
     """
-    def __init__(self, verbose=False, daq_path='/home/abel/luna_habit/usb1208fs-linux-drivers/USB/python'):
-        # git clone https://github.com/wjasper/Linux_Drivers.git /home/abel/luna_habit/usb1208fs-linux-drivers/
+    def __init__(self, verbose=False, daq_path='/home/lncd/luna_habit/usb1208fs-linux-drivers/USB/python'):
+        # git clone https://github.com/wjasper/Linux_Drivers.git /home/lncd/luna_habit/usb1208fs-linux-drivers/
         # make install usbs, add udevrules
         sys.path.insert(0, daq_path)
         from usb_1208FS import usb_1208FS
         self.verbose = verbose
         self.dev = usb_1208FS()
-        print('wMaxPacketSize =', self.dev.wMaxPacketSize)
+        #print('wMaxPacketSize =', self.dev.wMaxPacketSize)
         self.dev.DConfig(self.dev.DIO_PORTA, self.dev.DIO_DIR_OUT)
         self.dev.DOut(self.dev.DIO_PORTA, 0)
 
     def send(self, ttl, zero=True):
-        actual_ttl = 250  # always high
+        # always high 250. unless 0 (low)
+        actual_ttl = 250 if ttl > 0 else 0
         self.dev.DOut(self.dev.DIO_PORTA, actual_ttl)
+        # zero
         # always zero. we'll only ever send hi
-        wait=.002
-        # to ID start and end, wait twice as long
-        if ttl in [128,129]:
-            wait=.005
+        #self.dev.DOut(self.dev.DIO_PORTA, 0)
         if zero:
+            # to ID start and end, wait twice as long
+            if ttl in [128,129]:
+                wait=.005
+            else:
+                wait=.002
             self.wait_and_zero(wait=wait)
 
 
@@ -192,15 +202,16 @@ class Cedrus():
 
 
 class RTBox():
-    def __init__(self, hw, kb=None, verbose=False, lib='/home/abel/luna_habit/RTBox_py'):
+    def __init__(self, hw, kb=None, verbose=False, lib='/home/lncd/luna_habit/RTBox_py'):
         self.run = True
         self.verbose = True
         self.kb = kb
         self.hw = hw
         self.keys = ['1', '2', '3', '4', 'S', 'L', '5', 'A']
-        self.sendLUR = [Key.left, Key.up, Key.right]
+        # numbers as they are on the button box instead of as an array
+        self.sendLUR = {1:Key.left, 2:Key.up, 3:Key.up, 4:Key.right}
 
-        # git clone https://github.com/xiangruili/RTBox_py /home/abel/luna_habit/RTBox_py/
+        # git clone https://github.com/xiangruili/RTBox_py /home/lncd/luna_habit/RTBox_py/
         sys.path.insert(0, lib)  # or PYTHONPATH=~/luna_habit/RTBox/python
         import RTBox
         box = RTBox.RTBox()
@@ -208,7 +219,8 @@ class RTBox():
         box.info()
         box.threshold(4)
         print(f"using threshold {box.threshold()} (1-4)")
-        box.close()
+        box.close() # switches to serial mode
+        self.box = box
 
         _ser = box._ser
         _ser.open()
@@ -222,17 +234,28 @@ class RTBox():
         # index is 0-based but keys start at 1. so add one to what we send if in range
         key = None
         ttl = None
-        if index > 5:
-            self.hw.send(1)
-        elif index > 1 and index < 4:
-            key = self.sendLUR[index-1]
-            ttl = index + 1
-            self.kb.push(key)
+        if index >= 5:
+            self.hw.send(1) # 1 for eeg, but 'high' for seeg
+            ttl = 250
+            self.box.disable("light")
+            self.box.enable("light") # WARNING: this is against the suggestion. might be noisy PD
+        elif index >= 0 and index < 4:
+            key = self.sendLUR.get(index+1, None)
+            # does't actually matter what we send. DAQ will send high
+            # but update here so verbose printing is consistant
+            ttl = 250 # was index + 1, but only have high and low. so always send high. will e 0'ed
             self.hw.send(ttl)
+            self.kb.push(key)
+            # after a key push reset the trial. should be black screen
+            self.box.enable("light")
+            # also consider
+            #self.box.clear()
+
 
         if self.verbose:
             response = self.keys[index]
-            print(f"have: {response}. send key {key} and ttl {ttl}")
+            print(f"have: {response} (i: {index}). send key {key} and ttl {ttl}")
+
 
     async def watch(self):
         while self.run:
@@ -313,6 +336,13 @@ async def seeg(verbose=False):
     http_run(logger)
     await asyncio.create_task(rb.watch())
 
+async def test_DAQ(verbose=False):
+    hw = DAQ(verbose=verbose)
+    while True:
+        await asyncio.sleep(1)
+        print(f"sending high and zeroing")
+        hw.send(250) # 250 just has to be non-zero
+
 
 async def rtbox_test(verbose=False):
     "no http server, no DAQ. just RTBox with generic hardware class"
@@ -337,7 +367,7 @@ async def fakeeeg(usekeyboard=False, verbose=False):
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox"], help='where (also how) to use button and ttl')
+    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox", "test_DAQ"], help='where (also how) to use button and ttl')
     p.add_argument('-k','--keyboard', help='use keyboard (only for "test")', action='store_true', dest="usekeyboard")
     p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
@@ -352,6 +382,9 @@ if __name__ == "__main__":
         asyncio.run(seeg(verbose=args.verbose))
     elif args.place == "test":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
+    elif args.place == "test_DAQ":
+        asyncio.run(test_DAQ(verbose=args.verbose))
+
     elif args.place == "test_rtbox":
         asyncio.run(rtbox_test(verbose=args.verbose))
     else:

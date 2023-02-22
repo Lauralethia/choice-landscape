@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Landscape Choice Loeffler sEEG</title>
+<script src="tweaks.js"> </script>
+<!-- // qs, yyyymmdd, get_anchor, add_timing_choices -->
+
+<script>
+
+
+  function make_url(){
+      let id = qs("id");
+      let runnum = qs("runnum");
+      /* important trailing slash */
+      return("/" + id + "/seeg_habit/" + yyyymmdd() +"/" + runnum +"/");
+  }
+
+  function go_url(){
+      let url = make_url() + get_anchor() + "&ttl=local&where=seeg&nocaptcha"
+      //window.location.assign(url);
+      popup = window.open(url,"Popup",
+                          "toolbar=no,location=no,status=no,menubar=no,"+
+                          "scrollbars=no,width=1920,height=1080");//,resizable=no
+      return(false);
+  }
+
+
+  function add_choices(){
+      // reorder preferend  landscapes
+      landscapes = ['wellcoin', 'ocean', 'desert','mountain']
+      add_landscape_choices();
+      timing_choices = ['randomA','randomB']
+      add_timing_choices();
+  }
+</script>
+   </head>
+   <body onload="add_choices()">
+     <h1> Task specifications </h1>
+      <form onsubmit="go_url(); return false"> <!-- return false supresses form action -->
+        <table id="task_setting_tweaks">
+      <tr><td><label for="id">ID:</label></td>
+         <td><input name=id type="text" size=5> </td></tr>
+      <tr><td><label for="run">run number:</label></td>
+         <td><input name="runnum" type="text" size=1 value=1> </td></tr>
+
+      </table>
+      <input type="submit" value="Go!">
+   </form>
+
+   <small style="position:absolute; bottom:0px"> redirect to
+     <span id="urltxt">/id/mr_habit/timepoint/run/ </span>
+     <a href="/">more options</a>
+   </small>
+   </body>
+</html>

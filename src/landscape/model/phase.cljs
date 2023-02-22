@@ -81,7 +81,7 @@ nil if timout"
         next (cond
                (<= trial (count well-list)) :chose  ; next trail
                ;; :survey okay forced, but w/:iti->:survey, not responsive to keys
-               (contains? #{:mri :eeg :practice} where) :done
+               (contains? #{:mri :eeg :practice :seeg} where) :done
                ; TODO: could also send to :survey (for buttonbox Qs)
                (contains? #{:online} where) :forum ; freeform text w/full keyboard
                :else :forum)]
