@@ -61,9 +61,9 @@ class Hardware():
         print(f"{ttl} {diff.total_seconds():.03f}")
         return True
 
-    def wait_and_zero(self):
+    def wait_and_zero(self, wait=.002):
         # TODO: more percise sleeping psychopy.core.wait(.005) or psychtoolbox.WaitSecs(.005)
-        time.sleep(.002)  # wait 2ms and send zero. not precise enough?
+        time.sleep(wait)  # wait 2ms and send zero. not precise enough?
         self.send(0, False)
         #  if we're lucky setData zero's pins that aren't used
         # self.port.setData(0)
@@ -120,8 +120,12 @@ class DAQ(Hardware):
         actual_ttl = 250  # always high
         self.dev.DOut(self.dev.DIO_PORTA, actual_ttl)
         # always zero. we'll only ever send hi
+        wait=.002
+        # to ID start and end, wait twice as long
+        if ttl in [128,129]:
+            wait=.005
         if zero:
-            self.wait_and_zero()
+            self.wait_and_zero(wait=wait)
 
 
 # ## BUTTON BOXES ##
