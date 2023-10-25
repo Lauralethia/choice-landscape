@@ -336,12 +336,14 @@ async def seeg(verbose=False):
     http_run(logger)
     await asyncio.create_task(rb.watch())
 
+
 async def test_DAQ(verbose=False):
+    "only test DAQ. loop forever: send high and auto reset"
     hw = DAQ(verbose=verbose)
     while True:
         await asyncio.sleep(1)
-        print(f"sending high and zeroing")
-        hw.send(250) # 250 just has to be non-zero
+        print("sending high and zeroing")
+        hw.send(250)  # 250 just has to be non-zero
 
 
 async def rtbox_test(verbose=False):
@@ -349,10 +351,12 @@ async def rtbox_test(verbose=False):
     hw = Hardware(verbose=verbose)
     kb = KB()
     rb = RTBox(hw, kb, verbose)
+    print("push button box keys. should see events here")
     await asyncio.create_task(rb.watch())
 
 
 async def fakeeeg(usekeyboard=False, verbose=False):
+    "listen on port, but don't interface with DAQ or RTBox"
     hw = Hardware(verbose=verbose)
     kb = KB()
     http_run(hw)
@@ -360,6 +364,9 @@ async def fakeeeg(usekeyboard=False, verbose=False):
     # kludge. disable trigger function so we dont send the 'a' key every 5 seconds
     if not usekeyboard:
         rb.trigger = lambda a: 1
+
+    print("listening for ttl on http. no RTBox or DAQ")
+    print("in new term try sending code: curl http://127.0.0.1:8888/1")
     # need this await or we'll exit as soon as we send the first trigger
     await asyncio.create_task(rb.watch())
 
@@ -367,8 +374,8 @@ async def fakeeeg(usekeyboard=False, verbose=False):
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox", "test_DAQ"], help='where (also how) to use button and ttl')
-    p.add_argument('-k','--keyboard', help='use keyboard (only for "test")', action='store_true', dest="usekeyboard")
+    p.add_argument('place', choices=["loeff", "seeg", "test_http", "test_rtbox", "test_DAQ"], help='where (also how) to use button and ttl')
+    p.add_argument('-k','--keyboard', help='use keyboard (only for "test_http")', action='store_true', dest="usekeyboard")
     p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
 
@@ -380,7 +387,7 @@ if __name__ == "__main__":
         asyncio.run(loeffeeg(verbose=args.verbose))
     elif args.place == "seeg":
         asyncio.run(seeg(verbose=args.verbose))
-    elif args.place == "test":
+    elif args.place == "test_http":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
     elif args.place == "test_DAQ":
         asyncio.run(test_DAQ(verbose=args.verbose))
