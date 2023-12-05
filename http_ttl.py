@@ -63,9 +63,9 @@ class Hardware():
         print(f"{ttl} {diff.total_seconds():.03f}")
         return True
 
-    def wait_and_zero(self):
+    def wait_and_zero(self, wait=.002):
         # TODO: more percise sleeping psychopy.core.wait(.005) or psychtoolbox.WaitSecs(.005)
-        time.sleep(.002)  # wait 2ms and send zero. not precise enough?
+        time.sleep(wait)  # wait 2ms and send zero. not precise enough?
         self.send(0, False)
         #  if we're lucky setData zero's pins that aren't used
         # self.port.setData(0)
@@ -123,13 +123,19 @@ class DAQ(Hardware):
         self.dev.DOut(self.dev.DIO_PORTA, 0)
 
     def send(self, ttl, zero=True):
-        actual_ttl = 250 if ttl > 0 else 0  # always high 250. unless 0 (low)
+        # always high 250. unless 0 (low)
+        actual_ttl = 250 if ttl > 0 else 0
         self.dev.DOut(self.dev.DIO_PORTA, actual_ttl)
         # zero
         # always zero. we'll only ever send hi
         #self.dev.DOut(self.dev.DIO_PORTA, 0)
         if zero:
-            self.wait_and_zero()
+            # to ID start and end, wait twice as long
+            if ttl in [128,129]:
+                wait=.005
+            else:
+                wait=.002
+            self.wait_and_zero(wait=wait)
 
 
 # ## BUTTON BOXES ##
@@ -330,23 +336,45 @@ async def seeg(verbose=False):
     http_run(logger)
     await asyncio.create_task(rb.watch())
 
+
 async def test_DAQ(verbose=False):
+    "only test DAQ. loop forever: send high and auto reset (seeg)"
     hw = DAQ(verbose=verbose)
     while True:
         await asyncio.sleep(1)
-        print(f"sending high and zeroing")
-        hw.send(250) # 250 just has to be non-zero
+        print("sending high and zeroing")
+        hw.send(250)  # 250 just has to be non-zero
+
+
+async def test_LPT(verbose=False, address=0xD010):
+    "only test LPT. loop forever: send high and auto reset (loef eeg)"
+    hw = LPT(address=address, verbose=verbose)
+    while True:
+        await asyncio.sleep(1)
+        print("sending high and zeroing")
+        hw.send(250)
 
 
 async def rtbox_test(verbose=False):
-    "no http server, no DAQ. just RTBox with generic hardware class"
+    "no http server, no DAQ. just RTBox with generic hardware class (seeg)"
     hw = Hardware(verbose=verbose)
     kb = KB()
     rb = RTBox(hw, kb, verbose)
+    print("push button box keys. should see events here")
+    await asyncio.create_task(rb.watch())
+
+
+async def cedrus_test(verbose=False):
+    "test cedrus response button box  (loef eeg)"
+    hw = Hardware(verbose=verbose)
+    kb = KB()
+    rb = Cedrus(hw, kb)
+    http_run(hw)
     await asyncio.create_task(rb.watch())
 
 
 async def fakeeeg(usekeyboard=False, verbose=False):
+    "listen on port, but don't interface with DAQ or RTBox"
     hw = Hardware(verbose=verbose)
     kb = KB()
     http_run(hw)
@@ -354,6 +382,9 @@ async def fakeeeg(usekeyboard=False, verbose=False):
     # kludge. disable trigger function so we dont send the 'a' key every 5 seconds
     if not usekeyboard:
         rb.trigger = lambda a: 1
+
+    print("listening for ttl on http. no RTBox or DAQ")
+    print("in new term try sending code: curl http://127.0.0.1:8888/1")
     # need this await or we'll exit as soon as we send the first trigger
     await asyncio.create_task(rb.watch())
 
@@ -361,8 +392,11 @@ async def fakeeeg(usekeyboard=False, verbose=False):
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', choices=["loeff", "seeg", "test", "test_rtbox", "test_DAQ"], help='where (also how) to use button and ttl')
-    p.add_argument('-k','--keyboard', help='use keyboard (only for "test")', action='store_true', dest="usekeyboard")
+    p.add_argument('place', choices=["loeff", "seeg", "test_http",
+                                     "test_rtbox", "test_DAQ",
+                                     "test_cedrus", "test_lpt"],
+                   help='where (also how) to use button and ttl')
+    p.add_argument('-k','--keyboard', help='use keyboard (only for "test_http")', action='store_true', dest="usekeyboard")
     p.add_argument('-v','--verbose', help='additonal printing', action='store_true', dest="verbose")
     return p.parse_args(args)
 
@@ -374,12 +408,17 @@ if __name__ == "__main__":
         asyncio.run(loeffeeg(verbose=args.verbose))
     elif args.place == "seeg":
         asyncio.run(seeg(verbose=args.verbose))
-    elif args.place == "test":
+    elif args.place == "test_http":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
+
     elif args.place == "test_DAQ":
         asyncio.run(test_DAQ(verbose=args.verbose))
-
     elif args.place == "test_rtbox":
         asyncio.run(rtbox_test(verbose=args.verbose))
+
+    elif args.place == "test_cedrus":
+        asyncio.run(cedrus_test(verbose=args.verbose))
+    elif args.place == "test_lpt":
+        asyncio.run(test_LPT(verbose=args.verbose))
     else:
         print(f"unkown place '{args.place}'! -- argparse should have caught this")
