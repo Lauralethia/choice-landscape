@@ -5,7 +5,8 @@
 
 source('habit_plots.R') # reads rawdata, sets MAXTRIALS
 library(shiny)
-
+library(shinyTime) # 20231204 prev worked without, need now?
+head(rawdata)
 MINDATE <- ymd(min(rawdata$vdate,na.rm=T))
 MAXDATE <- ymd(max(rawdata$vdate,na.rm=T))+days(1)
 print(glue::glue("#date slider: from {MINDATE} to {MAXDATE}"))
@@ -46,7 +47,7 @@ ui <- fluidPage(
 server <- function(input, output){
     # rerun fetch and update global vars
     observeEvent(input$reload_data,{
-      update_data(runMake=TRUE) # update globals raw_data, summary_data
+      update_data(runMake=TRUE) # update globals raw_data, task_summary_data
       #NB MAXDATE likely still off
     })
 
@@ -80,4 +81,4 @@ server <- function(input, output){
 }
 
 # options(browser="firefox")
-shinyApp(ui, server)
+shinyApp(ui, server, options=list(host="0.0.0.0", port=3989))
