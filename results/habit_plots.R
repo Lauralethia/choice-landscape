@@ -41,7 +41,7 @@ add_choice_cols <- function(data) {
      blocknum = blocktype_to_num(blocktype),
      choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
 }
-read_raw <- function(fname="data.tsv") {
+read_raw <- function(fname="lab.data.tsv") {
 
   # exclude testing runs (IDs with our initials, or 'x')
   BAD_IDS <- c("WWF|ACP|^x$")
@@ -90,18 +90,18 @@ read_raw <- function(fname="data.tsv") {
   add_choice_cols 
 }
 
-read_summary <- function() read.csv("summary.csv", comment.char="")
+read_summary <- function() read.csv("lab.summary.csv", comment.char="")
 
 
 rawdata <<- NULL
-summary_data <<- NULL
+task_summary_data <<- NULL
 update_data  <- function(runMake=FALSE){
-   if(runMake) system("make summary.csv")
-   rawdata <<- read_raw("bea_res_concat.tsv")
-   summary_data <<- read_summary()
+   if(runMake) system("make all")
+   rawdata <<- read_raw("lab.data.tsv")
+   task_summary_data <<- read_summary()
 }
 
-# modifies globals rawdata and summary_data
+# modifies globals rawdata and task_summary_data
 update_data(runMake=FALSE)
 
 MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
@@ -129,7 +129,7 @@ subset_data <- function(rawdata, date_range, versions, task_selection, blockseq_
 
 all_runs <- function(rawdata){
     # TODO: better summary meterics. maybe use habit number
-    smry <- summary_data %>%
+    smry <- task_summary_data %>%
        select(id, ver, end=endtime, n_trials=n, perm,
               rt_mean,rt_sd,score,n_miss, n_keys_mean,
               avatar,understand,fun,feedback) %>%
@@ -295,7 +295,7 @@ plot_grp_rt_trace_mvavg <- function(data){
 pHabit_deval100 <- function(data) {
    # how often the "good" well is preferend
    # in the devalue_all_100 block
-   habitBeh <- data %>% merge(summary_data %>% select(id,ver,timepoint,perm),
+   habitBeh <- data %>% merge(task_summary_data %>% select(id,ver,timepoint,perm),
                               by=c("id","ver","timepoint")) %>%
        filter(grepl("devalue_all_100",blocktype)) %>%
        group_by(id, age.x, blockseq, task, perm) %>% 
