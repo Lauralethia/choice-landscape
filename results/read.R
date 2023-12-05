@@ -63,7 +63,7 @@ labpilot_id_age_sex <- function(d) d %>%
              '^([A-Za-z]+)(\\d{2})([MmFf_])',
              remove=F) %>%
     # trust survey age if it exists over age that maybe wasn't extracted from id
-    mutate(age=as.numeric(ifelse(is.na(age), survey_age, age)))
+    mutate(age=as.numeric(ifelse(!is.na(survey_age), survey_age, age)))
 
 # might not want to share that data online
 obscure_id <- function(d) d %>% mutate(id=sapply(id,digest::digest))  %>% select(-initials)
@@ -170,13 +170,16 @@ inspect_one <- function(ex_id='WWF',ex_ver='v6'){
 # tie it all together. could all this "main"
 # two version. one for using locally and another without ids
 # sourced and run by Makefile (and pilot_plot.R)
-fix_and_save <- function(fname="raw.tsv") {
-    read_taskdata(fname) %>%
-        write.table(file="data.tsv",
-                    sep="\t", row.names=F, quote=F)
+fix_and_save <- function(infile="raw.tsv", outname="data.tsv") {
+    read_taskdata(infile) %>%
+        write.table(file=outname, sep="\t", row.names=F, quote=F)
+    #read_taskdata(infile) %>%
+    #    obscure_id %>%
+    #    write.table(file="data_id-hidden.tsv",
+    #                sep="\t", row.names=F, quote=F)
+}
 
-    read_taskdata(fname) %>%
-        obscure_id %>%
-        write.table(file="data_id-hidden.tsv",
-                    sep="\t", row.names=F, quote=F)
+#' READ_TASK_STDIN - used with jq parsing to write file for single run
+read_task_stdin <- function() {
+   file('stdin') %>% read_taskdata() %>% write.table(sep="\t", row.names=F, quote=F)
 }
