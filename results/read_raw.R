@@ -18,7 +18,7 @@ read_raw <- function(fname="lab.data.tsv") {
   #   init-switch1-devalue_all_100
   #   init-switch1-devalue_all_100-devalue_all_low
   blockseq_df <-
-      rawdata %>% group_by(id,ver,timepoint) %>%
+      rawdata %>% group_by(id,vdate, task, ver,timepoint) %>%
       arrange(trial) %>%
       summarise(blockseq=paste0(unique(blocktype),collapse="-"))
   
@@ -30,19 +30,19 @@ read_raw <- function(fname="lab.data.tsv") {
           farWell = ifelse(left_prob == farProb, 1, ifelse(up_prob==farProb, 2, ifelse(right_prob==farProb, 3, NA))),
           # side that was first high (likely of 50/20) 
           initHigh = ifelse(left_prob == 50, 1, ifelse(up_prob==50, 2, 3))) %>%
-      select(id, farWell, initHigh)
+      select(id, vdate, ver, task, farWell, initHigh)
 
   # make sure we have enough trials to use
   total_trials <- rawdata %>%
-       group_by(id, vdate, age=survey_age) %>%
+       group_by(id, vdate, task, ver, age=survey_age) %>%
        summarize(ntrials = max(trial)) %>%
        filter(ntrials > MIN_TRIALS)
    
    
-  perSubj <- merge(total_trials, first_trial_wellnames, by='id')
+  perSubj <- merge(total_trials, first_trial_wellnames, by=c('id','vdate','ver','task'))
 
   rawdata %>%
-      merge(perSubj, by=c('id','vdate')) %>%
-      left_join(blockseq_df, by=c("id","ver","timepoint")) %>%
+      merge(perSubj, by=c('id','vdate', 'ver', 'task')) %>%
+      left_join(blockseq_df, by=c("id","vdate","ver","task","timepoint")) %>%
   add_choice_cols 
 }
