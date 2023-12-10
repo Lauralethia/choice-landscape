@@ -4,6 +4,8 @@
 .ALWAYS: /Volumes/Hera/Projects/Habit/mr/habit/txt/all_habit.json
 
 all: lab.summary.csv # prev data_all.tsv, no longer need to update heroku.summary.csv
+check:
+	Rscript run_tests.R
 
 #mkifdiff from lncdtools
 heroku.raw.json: .ALWAYS

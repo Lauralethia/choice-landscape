@@ -6,43 +6,6 @@ source('read_raw.R') # read_raw()
 theme_set(theme_cowplot())
 select <- dplyr::select
 
-side_label_to_num <- function(side) ifelse(side == 'left', 1, ifelse(side=='up', 2, ifelse(side=='right', 3, NA)))
-blocktype_to_num <- function(blocktype)
-    ifelse(   blocktype == 'init',                1,
-     ifelse(  blocktype == 'switch1',             2,
-      ifelse( blocktype %in% c("rev2","switch2"), 3,
-       ifelse(grepl('devalue', blocktype),        4,
-                                                  NA))))
-
-# make sure we get the blocks correctly
-test_blocktypenum<-function(){
-    testthat::expect_equal(blocktype_to_num('switch1'), 2)
-    testthat::expect_equal(blocktype_to_num('devalue_all_100'), 4)
-    testthat::expect_equal(blocktype_to_num('devalue_good_75'), 4)
-    testthat::expect_equal(blocktype_to_num(c('switch1','devalue_all_low')), c(2,4))
-    testthat::expect_false(rawdata$blocktype %>% unique %>% blocktype_to_num %>% is.na %>% any)
-}
-
-true.na <- function(x) !is.na(x) & x
-add_choice_cols <- function(data) {
-   data %>%
-   mutate(
-     choiceWell  = side_label_to_num(picked),
-     avoidedWell = side_label_to_num(avoided),
-     # what wells be chosen
-     farAvailable = choiceWell == farWell | avoidedWell == farWell,
-     initHighAval = choiceWell == initHigh | avoidedWell == initHigh,
-     # only care about high and best decisions
-     # NA needed for subsetting? cant use e.g.: choseFar = farAvailable & choiceWell == farWell,
-     choseFar        = ifelse(farAvailable, choiceWell == farWell, NA),
-     avoidedFar      = ifelse(farAvailable, avoidedWell == farWell, NA),
-     choseInitHigh   = ifelse(initHighAval, choiceWell == initHigh,NA),
-     avoidedInitHigh = ifelse(initHighAval, avoidedWell == initHigh,NA),
-     # 
-     blocknum = blocktype_to_num(blocktype),
-     choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
-}
-
 read_summary <- function() read.csv("lab.summary.csv", comment.char="")
 
 
