@@ -30,7 +30,7 @@ import time
 from tornado.httpserver import HTTPServer
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
-from pynput.keyboard import Controller, Key
+from pynput.keyboard import Controller, Key, Listener
 import os
 import os.path
 
@@ -152,6 +152,39 @@ class FakeButton():
         while True:
             await asyncio.sleep(5)
             self.trigger("5 sec trigger")
+
+
+class KeyboardListener():
+    """ watch a real keyboard (cf. Cedrus, RTBox)
+    send ttl if approprate key pushed
+    left,right,up to ttl 2,3,4 matching cedrus (as of 20240510)
+    (1 reserved for photodiode)
+    """
+    def __init__(self, hw, verbose=False):
+        self.hw = hw
+        self.verbose = verbose
+        self.keys_ttl = {'left': 2,'right': 3, 'up': 4}
+        self.keys = self.keys_ttl.keys()
+
+    def parse_key(self, key):
+        "send key if key is in "
+        try:
+            k = key.name  # 'left', 'right', 'up'
+        except AttributeError:
+            k = key.char   # single-char keys 'a'
+
+        if k in self.keys:
+            ttl = self.keys_ttl[k]
+            self.hw.send(ttl)
+
+        if self.verbose:
+            print(f"[{datetime.datetime.now()}] {k} pushed")
+
+    async def watch(self):
+        "watch keypresses in background. forward key on to see if button should be pushed"
+        listener = Listener(on_press=self.parse_key)
+        listener.start()
+        listener.join()
 
 
 class Cedrus():
@@ -320,6 +353,10 @@ def http_run(this_hardware):
 
 
 async def loeffeeg(verbose=False):
+    """settings for Luna Lab EEG in Loeffler building
+    uses Cedrus response box (+attached photodiode)
+    and TTL over LPT (biosemi)
+    """
     hw = LPT(address=0xD010, verbose=verbose)
     kb = KB()
     rb = Cedrus(hw, kb)
@@ -327,7 +364,24 @@ async def loeffeeg(verbose=False):
     await asyncio.create_task(rb.watch())
 
 
+async def ar_eeg(verbose=False):
+    """
+    button pushes directly from they keyboard.
+    TTL over LPT (biosemi)
+    20240510WF - init for LAF
+    """
+    port = 0xCFE8
+    hw = LPT(address=port, verbose=verbose)
+    rb = KeyboardListener(hw, verbose=verbose)
+    http_run(hw)
+    await asyncio.create_task(rb.watch())
+
+
 async def seeg(verbose=False):
+    """
+    sEEG at childrens hospital using USB 1208FS (binary TTL!) attached to grapevine
+    responses from RTBox with attached photodiode
+    """
     hw = DAQ(verbose=verbose)
     kb = KB()
     rb = RTBox(hw, kb, verbose)
@@ -344,6 +398,14 @@ async def test_DAQ(verbose=False):
         await asyncio.sleep(1)
         print("sending high and zeroing")
         hw.send(250)  # 250 just has to be non-zero
+
+async def test_keyboard(verbose=True):
+    "confirm keyboard responses are registered (for ar_eeg)"
+    hw = Hardware(verbose=verbose)
+    rb = KeyboardListener(hw, verbose=True)
+    http_run(hw)
+    print("push arrow keys. should see events here")
+    await asyncio.create_task(rb.watch())
 
 
 async def test_LPT(verbose=False, address=0xD010):
@@ -392,7 +454,8 @@ async def fakeeeg(usekeyboard=False, verbose=False):
 def parser(args):
     import argparse
     p = argparse.ArgumentParser(description="Intercept http queries and watch ButtonBox/PhotoDiode")
-    p.add_argument('place', choices=["loeff", "seeg", "test_http",
+    p.add_argument('place', choices=["loeff", "seeg", "areeg",
+                                     "test_http", "test_keyboard",
                                      "test_rtbox", "test_DAQ",
                                      "test_cedrus", "test_lpt"],
                    help='where (also how) to use button and ttl')
@@ -408,6 +471,10 @@ if __name__ == "__main__":
         asyncio.run(loeffeeg(verbose=args.verbose))
     elif args.place == "seeg":
         asyncio.run(seeg(verbose=args.verbose))
+    elif args.place == "areeg":
+        asyncio.run(ar_eeg(verbose=args.verbose))
+    elif args.place == "seeg":
+        asyncio.run(seeg(verbose=args.verbose))
     elif args.place == "test_http":
         asyncio.run(fakeeeg(args.usekeyboard, verbose=args.verbose))
 
@@ -415,7 +482,8 @@ if __name__ == "__main__":
         asyncio.run(test_DAQ(verbose=args.verbose))
     elif args.place == "test_rtbox":
         asyncio.run(rtbox_test(verbose=args.verbose))
-
+    elif args.place == "test_keyboard":
+        asyncio.run(test_keyboard(verbose=args.verbose))
     elif args.place == "test_cedrus":
         asyncio.run(cedrus_test(verbose=args.verbose))
     elif args.place == "test_lpt":

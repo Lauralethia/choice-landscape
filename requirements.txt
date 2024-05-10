@@ -1,0 +1,5 @@
+# 20240510 - psychopy cant run on newest python. using pyenv for
+#   pypy3.10-7.3.15
+#   git+https://github.com/psychopy/psychopy
+tornado
+pynput
