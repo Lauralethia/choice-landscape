@@ -3,3 +3,8 @@
 #   git+https://github.com/psychopy/psychopy
 tornado
 pynput
+
+# other modules:
+# pyxid2      # Cedrus response box (loef EEG)
+# usb_1208FS  # DAQ (sEEG)
+# RTBox       # RTBox response box (sEEG)
