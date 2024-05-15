@@ -58,15 +58,18 @@
     (-> well :pos (update :x #(+ (:width sprite/well) 5 %)))))
 
 (def items {
-            :desert   {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry" :carry "carry"}
-            :mountain {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty" :carry "dig"}
-            :wellcoin {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty" :carry "carry"}
-            :ocean {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty" :carry "unlock"}
+            :desert   {:en {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry" :carry "carry"}
+                       :es {:pond "estanque" :water "agua" :well "pozos" :fed "llena" :bucket "un balde" :dry "seco" :carry "llevan"}}
+
+            :mountain {:en {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty" :carry "dig"}}
+            :wellcoin {:en {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty" :carry "carry"}}
+            :ocean    {:en {:pond "DNE" :water "gold"  :well "chest" :fed "filled" :bucket "key" :dry "empty" :carry "unlock"}}
             })
 (defn item-name [item]
   "use current-settings state to determine what words to use"
-  (let [vis (or (get @settings/current-settings :vis-type) "desert")]
-    (get-in items [(keyword vis) (keyword item)])))
+  (let [vis (or (get @settings/current-settings :vis-type) "desert")
+        lang (or (get @settings/current-settings :lang) "en")]
+    (get-in items [(keyword vis) (keyword lang) (keyword item)])))
 
 
 (declare INSTRUCTION)
