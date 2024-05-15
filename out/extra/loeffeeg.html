@@ -7,7 +7,7 @@
 <!-- // qs, yyyymmdd, get_anchor, add_timing_choices -->
 
 <script>
-
+  var browser_lang = navigator.language || navigator.userLanguage;
 
   function make_url(){
       let id = qs("id");
@@ -32,6 +32,7 @@
       add_landscape_choices();
       timing_choices = ['randomA','randomB']
       add_timing_choices();
+     if(browser_lang != "en-US") { document.querySelector("#lang").value = "es"; }
   }
 </script>
    </head>
@@ -44,6 +45,11 @@
       <tr><td><label for="run">run number:</label></td>
          <td><input name="runnum" type="text" size=1 value=1> </td></tr>
 
+      <tr><td><label for="lang">language</label></td>
+         <td><select id="lang">
+         <option>en</option>
+         <option>es</option>
+      </select></td></tr>
       </table>
       <input type="submit" value="Go!">
    </form>

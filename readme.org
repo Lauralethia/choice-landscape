@@ -54,6 +54,7 @@ This project is clojurescript that transpiles to javascript (see the [[https://g
 Using e.g. CIDER with figwheel-main:dev (C-c M-J in emacs on core.cljs)  
 ** figwheel urls
  * http://localhost:9500/ cards.html
+   * http://localhost:9500/figwheel-extra-main/cards
  * http://localhost:9500/figwheel-extra-main/auto-testing
 ** with repl
 #+begin_src clojure

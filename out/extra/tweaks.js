@@ -44,14 +44,16 @@ function ifchecked(name){
 function get_anchor(){
     let landscape =  document.querySelector("#landscape");
     let timing =  document.querySelector("#timingchoice");
+    let lang =  document.querySelector("#lang");
     //selectedOptions[landscape.selectedIndex].value;
     let ltype = "landscape=" + (landscape?landscape.value:"ocean");
     let ttype = "timing="    + (timing?timing.value:"random");
+    let langv = "lang="      + (lang?timing.value:"en");
     let tweakstr = Object.keys(tweaks)
                  .map(x=>ifchecked(x))
                  .filter(x=>x!="")
                  .join("&");
-    return("#" + ltype + "&" + ttype + (tweakstr?("&"+tweakstr):""))
+    return("#" + ltype + "&" + ttype+ "&" + langv + (tweakstr?("&"+tweakstr):""))
 }
 
 function add_landscape_choices(){

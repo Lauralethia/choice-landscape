@@ -87,17 +87,17 @@
 
        (update-settings u #"norev" [:reversal-block] false)
 
-       ;;; LOCATION settings
+;;; LOCATION settings
        (update-settings u #"where=practice" [:where] :practice)
        ;; MRI
        (update-settings u #"where=mr" [:where] :mri)
        (update-settings u #"where=mr" [:keycodes] settings/mri-glove-keys)
        (update-settings u #"where=mr" [:skip-captcha] true)
-       ; 20220727 - first iti is on first trial. should be set by MR timing
-       ;(update-settings u #"where=mr" [:iti-first] settings/MR-FIRST-ITI)
+                                        ; 20220727 - first iti is on first trial. should be set by MR timing
+                                        ;(update-settings u #"where=mr" [:iti-first] settings/MR-FIRST-ITI)
        (update-settings u #"where=mr" [:iti+end] settings/MR-END-ITI)
-       ; unlike to be need. iti is specfied for all trials in well-list for mr when using timing=
-       ; here for testing with randomly generated timings
+                                        ; unlike to be need. iti is specfied for all trials in well-list for mr when using timing=
+                                        ; here for testing with randomly generated timings
        (update-settings u #"where=mr" [:times :iti-dur] 2000)
        ;; EEG
        (update-settings u #"where=eeg" [:where] :eeg)
@@ -122,7 +122,7 @@
        ;; EEG,sEEG: sending ttl (but could use for anywhere)
        ;; fixed timing
        (update-settings u #"timing=randomA" [:left-best] false) ; A=right
-       (update-settings u #"timing=randomB" [:left-best] true)  ; B=left
+       (update-settings u #"timing=randomB" [:left-best] true) ; B=left
        (update-settings u #"timing=debug" [:timing-method] :debug)
        (update-settings u #"timing=practice" [:timing-method] :practice)
        (update-settings u #"timing=mra10min" [:timing-method] :mrA) ; right best
@@ -133,10 +133,12 @@
        (update-settings u #"timing=mrb2-short" [:timing-method] :mrB2)
        (update-settings u #"timing=quickrandom" [:nTrials] {:pairsInBlock 2 :devalue 2 :devalue-good 0})
 
+       ;; 20240515 - add language. only need if not default 'en'
+       (update-settings u #"lang=es" [:lang] :es) ; spanish
 
        ;; always have one forced deval so 0 is actually 1
        (update-settings u #"fewtrials"  [:nTrials] {:pairsInBlock 1 :devalue 0 :devalue-good 1})
-       ;;; landscapes wellcoin and ocean are spread out
+;;; landscapes wellcoin and ocean are spread out
        ;; wellcoin should match ocean in postions
        (update-settings u #"landscape=wellcoin"  [:bottom-y] 300)
        (update-settings u #"landscape=wellcoin"  [:avatar-home :y] 300)
@@ -155,4 +157,4 @@
        (update-settings u #"step=slow"  [:avatar-step-size] 1) 
        ;; update iti and walk dur based on new avatar and well step-sizes
        (update-walktime)
-)))
+       )))

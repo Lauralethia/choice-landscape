@@ -150,26 +150,61 @@
   (contains? #{:mri :eeg :seeg}
              (get-in state [:record :settings :where])))
 
+(def translations
+  "English and Spanish versions of instructions"
+  {:welcome {:en "Welcome to our game!"
+             :es "Bienvenidos al juego!"}
+   :button {:en [:div
+                 "You will use buttons to push "
+                 [:b {:class "indexfinger"} "left"] ", "
+                 [:b {:class "middlefinger"} "up"] ", and "
+                 [:b {:class "ringfinger"} "right."] [:br] [:br]
+                 "Use your " [:b {:class "ringfinger"} "ring finger" ]
+                 " to get the next instruction."
+                 ]
+            :es [:div
+                 "Usarás botones para presionar a la " [:br]
+                 [:b {:class "indexfinger"} "izquierda"] ", "
+                 [:b {:class "middlefinger"} "arriba"] ", y a la "
+                 [:b {:class "ringfinger"} "derecha."] [:br] [:br]
+                 "Usa tu  " [:b {:class "ringfinger"} "dedo anular" ]
+                 " para recibir la próxima instrucción."
+                 ]}
+   :avatar-1 {:en [:div "Before we start, pick a character!"
+                   [:br] "In the game, all characters are equal"]
+              :es [:div "Antes de empezar, ¡elegí un personaje!"
+                   [:br] "En el juego, todos los personajes son iguales."]}
+   :Use {:en "Use" :es "Usá"}
+   :button-up {:en [:span  "your " [:b {:class "middlefinger"} "middle finger"]]
+               :es [:span  "tu "   [:b {:class "middlefinger"} "dedo medio"]]}
+   :change-sel {:en [:span " to " [:u "change"] " your selection."]
+                :es [:span " para " [:u "cambiar"] " tu selección."]}
+
+   :choose-right {:en [:span  "your " [:b {:class "ringfinger"} "ring finger"]]
+                :es [:span  "tu " [:b {:class "ringfinger"} "dedo anular"]]}
+   :avatar-continue {:en " to choose and continue."
+                     :es " para elegir y continuar."}
+   }
+  )
+
+(defn lang [state] "get language setting"
+  (get-in state [:record :settings :lang] "en"))
+(defn text-for [key state] "get text of key using state setting's language"
+  (get-in translations [key (lang state)] (str "NO TRANSLATION " (lang state) )))
+
 (def INSTRUCTION
   [
    {:text (fn[state]
             (html
-             [:div [:h1  "Welcome to our game!"]
+             [:div [:h1  (text-for :welcome state)]
               [:br]
 
               (if (buttonbox? state) 
                 [:div
                  [:img {:src "imgs/fingers.png"}]
                  [:br]
-                 "You will use buttons to push "
-                 [:b {:class "indexfinger"} "left"] ", "
-                 [:b {:class "middlefinger"} "up"] ", and "
-                 [:b {:class "ringfinger"} "right."]
-                 [:br]
-                 [:br]
-                 "Use your " [:b {:class "ringfinger"} "ring finger" ]
-                 " to get the next instruction."
-                 ]
+                 (text-for :button state)]
+                ;; TODO: translate non-button box keyboard instructions
                 [:div 
                  "Push the keyboard's " [:b "right arrow key"]
                  " to get to the next instruction. "
@@ -179,8 +214,8 @@
     ;; NB. fullscreen in firefox removes background and centering
     ;;  on either .-body "main-container"
     :stop (fn[state] ;; (try (-> js/document
-                    ;;          (.getElementById "main-container")
-                    ;;          .requestFullscreen))
+            ;;          (.getElementById "main-container")
+            ;;          .requestFullscreen))
             state)
     :key nil}
    {:text (fn [state]
@@ -220,23 +255,21 @@
                          ;; go to next instruction
                          (update-to-from 1 2))
                      state))}
-   }
+    }
    {:text (fn[state]
             (html
-             [:div  "Before we start, pick a character!"
-              [:br]
-              "In the game, all characters are equal"
+             [:div (text-for :avatar-1 state)
               [:ul
-               [:li "Use "
+               [:li (text-for :Use state) " "
                 (if (buttonbox? state)
-                      [:span  "your " [:b {:class "middlefinger"} "middle finger"]]
-                      "the up arrow")
-                " to " [:u "change"] " your selection."]
-               [:li "Use "
+                  (text-for :button-up state)
+                  "the up arrow")
+                (text-for :change-sel state)]
+               [:li (text-for :Use state) " "
                 (if (buttonbox? state)
-                  [:span  "your " [:b {:class "ringfinger"} "ring finger"]]
+                  (text-for :choose-right state)
                   [:span "the " [:b "right arrow"]])
-                " to choose and continue"]]
+                (text-for :avatar-continue state)]]
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
@@ -267,7 +300,7 @@
    {:text (fn[state]
             (html [:div
                    (if  (contains? #{:ocean} (get-in state [:record :settings :vis-type]))
-                     ""                 ;; nothing to say if no pond/gold pile
+                     "" ;; nothing to say if no pond/gold pile
                      (str "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s."))
                    [:br]
                    "You will choose which " (item-name :well) " to get " (item-name :water) " from."
@@ -278,7 +311,7 @@
                                   (get-in state [:record :settings :where]))
                      "Use the button box to choose."
                      "Use the arrow keys on the keyboard: left, up, and right"
-                   )
+                     )
 
                    ]))}
    {:text (fn[state]
@@ -289,8 +322,8 @@
                    (when (not(contains? #{:mri :eeg :seeg} ;(contains? #{:online :practice})
                                         (get-in state [:record :settings :where])))
                      "Held keys misrepresent choice timing, leading to study disqualification."
-                   )]
-                   ))}
+                     )]
+                  ))}
    {:text (fn[state]
             (html [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
                    [:br] "when they have a " (item-name :bucket) "."
@@ -300,11 +333,11 @@
                    ]))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[state]
-                   (let [well-side (find-close-well state)]
-                     (-> state
-                         (assoc-in [:avatar :destination] (-> well-side val :pos))
-                         wells/wells-close
-                         (assoc-in [:wells (key well-side) :open] true))))
+             (let [well-side (find-close-well state)]
+               (-> state
+                   (assoc-in [:avatar :destination] (-> well-side val :pos))
+                   wells/wells-close
+                   (assoc-in [:wells (key well-side) :open] true))))
     :stop (fn[state]
             (-> state
                 (wells/wells-set-open-or-close [:left :up :right] true)
@@ -324,8 +357,8 @@
                    (assoc-in [:wells side :score] false))))
 
     :stop (fn[state]
-             (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
-   }
+            (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
+    }
    {:text (fn[state]
             (html [:div
                    "Othertimes, the "(item-name :well)" will be full of " (item-name :water)]))
@@ -337,7 +370,7 @@
                    (assoc-in [:wells side :score] true))))
 
     :stop (fn[state]
-             (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
+            (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
     }
    {:text (fn[state]
             (html [:div "Don't wait too long to choose."
@@ -347,7 +380,7 @@
                    ;; (instead RA/RS can give a nice "wake up" reminder
                    (when (not(contains? #{:mri :eeg :practice :seeg}
                                         (get-in state [:record :settings :where])))
-                    [:b "You will not get paid if you do not respond!"])
+                     [:b "You will not get paid if you do not respond!"])
                    ]))
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
@@ -385,16 +418,16 @@
                 ;; wells/wells-turn-off
                 (assoc-in [:wells (-> state find-far-well key) :active-at] 0)
                 ))}
-  {
-   ;; :pos (fn[state] (-> state (get-in [:avatar :pos])
-   ;;                    (update :y #(- % 150))
-   ;;                    (update :x #(- % 100))))
-   :start (fn[state] (-> state
-                        wells/wells-close
-                        (assoc-in [:phase :show-cross] true)))
-   :stop (fn[state] (-> state
-                       (assoc-in [:phase :show-cross] nil)
-                       (wells/wells-set-open-or-close [:left :up :right] true)))
+   {
+    ;; :pos (fn[state] (-> state (get-in [:avatar :pos])
+    ;;                    (update :y #(- % 150))
+    ;;                    (update :x #(- % 100))))
+    :start (fn[state] (-> state
+                          wells/wells-close
+                          (assoc-in [:phase :show-cross] true)))
+    :stop (fn[state] (-> state
+                         (assoc-in [:phase :show-cross] nil)
+                         (wells/wells-set-open-or-close [:left :up :right] true)))
     :text (fn[state]
             (html [:div "This white cross means you have to wait."
                    [:br] "Watch the cross until it disappears"
@@ -402,13 +435,13 @@
                    [:br] "you can choose the next " (item-name :well)" to visit"]))}
    {
     :pos (fn[state] (-> @current-settings :bar-pos
-                       (update :y #(- % 200))))
+                        (update :y #(- % 200))))
     :start (fn[state] (-> state
-                        (assoc-in [:water :score] 10)
-                        (assoc-in [:trial] (* 0.25 (count (get state :well-list ))))))
+                          (assoc-in [:water :score] 10)
+                          (assoc-in [:trial] (* 0.25 (count (get state :well-list ))))))
     :stop (fn[state] (-> state
-                        (assoc-in [:water :score] 0)
-                        (assoc-in [:trial] 0)))
+                         (assoc-in [:water :score] 0)
+                         (assoc-in [:trial] 0)))
     :text (fn[state]
             (html [:div "This bar lets you know how far along you are."
                    ;; [:br] "Blue shows how much water you've collected"
@@ -461,7 +494,7 @@
                       [:input
                        {:type :button :value "Test Sound"
                         :on-click (fn [e] (play-sound :reward))}]
-])
+                      ])
 
     ;; trigger test/blocking in read-keys
     ;; :key ...

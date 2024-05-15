@@ -54,27 +54,29 @@ used by MR to adjust ITI dur"
    :avatar-step-size 10 ; 20220428 - add here instead of hardcoded in avatar/move-avatar
    :step-sizes [70 0] ; 20211005 70 0; originally 70 150. see nofar/yesfar url tweaks
    :top-scale .66 ; perspective makes up seem farther away. scale move and disntace by this much
-   :bar-pos {:x 50 :y 500} ; where to position the progress bar
+   :bar-pos {:x 50 :y 500}        ; where to position the progress bar
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    ;; 20220519 - if not random, should be in fixed_timing.cljs
-   :timing-method :random  ;; :debug :mrA1 :mrB2
+   :timing-method :random ;; :debug :mrA1 :mrB2
+   ;; 20240515 - options are 'en' or 'es'. for instructions and and of task summary
+   :lang :en
    ;; 20220314 - 4th devalue block gets its own probalbities
    ;; initiall either 75/75/75 or 100/100/80 (see url_tweaks)
    :prob {:low 20 :mid 50 :high 100 :devalue-good {:good 75 :other 75}}
    :nTrials
-     {:pairsInBlock 12 ; see left-right pair 24 times in a block. likely 2 blocks
-      :devalue 12 ; pairs when lower prob wells are updated to 100%. after first 2. orginal 10 reps (30 total)
-      :devalue-good 12 ; 20220314=10 (init) devalue good well
-      }
+   {:pairsInBlock 12 ; see left-right pair 24 times in a block. likely 2 blocks
+    :devalue 12 ; pairs when lower prob wells are updated to 100%. after first 2. orginal 10 reps (30 total)
+    :devalue-good 12            ; 20220314=10 (init) devalue good well
+    }
 
-     :keycodes arrow-keycodes
+   :keycodes arrow-keycodes
    ;; 20220527 - location to send ttl for placing event info in recorded data
    ;; NB. timing will probably be terrible
    :local-ttl-server nil
 
    ;; 20230110
    ;; show flash white every phase or hold specified color per phase type
-   :pd-type :whiteflash ; vs :phasecolor
+   :pd-type :whiteflash  ; vs :phasecolor
    ;; 20220606 where coins/water will accumulate
    :pile-y nil
    })
