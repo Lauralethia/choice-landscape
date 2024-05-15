@@ -17,6 +17,7 @@ survey.tsv: raw.json
 
 bea_res_concat.tsv: $(wildcard /Volumes/L/bea_res/Data/Tasks/Habit/MR/1*_2*/*tsv)
 	cat_skiphead $? > $@
+# see /Volumes/Hera/Projects/Habit/mr/habit for making tsv files
 
 data_id-hidden.tsv: data.tsv
 data.tsv: raw.tsv
