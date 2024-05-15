@@ -1,0 +1,10 @@
+# 20240510 - psychopy cant run on newest python. using pyenv for
+#   pypy3.10-7.3.15
+#   git+https://github.com/psychopy/psychopy
+tornado
+pynput
+
+# other modules:
+# pyxid2      # Cedrus response box (loef EEG)
+# usb_1208FS  # DAQ (sEEG)
+# RTBox       # RTBox response box (sEEG)

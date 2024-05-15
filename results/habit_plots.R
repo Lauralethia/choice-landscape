@@ -2,106 +2,22 @@
 # 20220412FC - init copied in (WF)
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyr, dplyr, ggplot2, mgcv, mgcViz, tidyquant,cowplot)
+source('read_raw.R') # read_raw()
 theme_set(theme_cowplot())
 select <- dplyr::select
 
-side_label_to_num <- function(side) ifelse(side == 'left', 1, ifelse(side=='up', 2, ifelse(side=='right', 3, NA)))
-blocktype_to_num <- function(blocktype)
-    ifelse(   blocktype == 'init',                1,
-     ifelse(  blocktype == 'switch1',             2,
-      ifelse( blocktype %in% c("rev2","switch2"), 3,
-       ifelse(grepl('devalue', blocktype),        4,
-                                                  NA))))
-
-# make sure we get the blocks correctly
-test_blocktypenum<-function(){
-    testthat::expect_equal(blocktype_to_num('switch1'), 2)
-    testthat::expect_equal(blocktype_to_num('devalue_all_100'), 4)
-    testthat::expect_equal(blocktype_to_num('devalue_good_75'), 4)
-    testthat::expect_equal(blocktype_to_num(c('switch1','devalue_all_low')), c(2,4))
-    testthat::expect_false(rawdata$blocktype %>% unique %>% blocktype_to_num %>% is.na %>% any)
-}
-
-true.na <- function(x) !is.na(x) & x
-add_choice_cols <- function(data) {
-   data %>%
-   mutate(
-     choiceWell  = side_label_to_num(picked),
-     avoidedWell = side_label_to_num(avoided),
-     # what wells be chosen
-     farAvailable = choiceWell == farWell | avoidedWell == farWell,
-     initHighAval = choiceWell == initHigh | avoidedWell == initHigh,
-     # only care about high and best decisions
-     # NA needed for subsetting? cant use e.g.: choseFar = farAvailable & choiceWell == farWell,
-     choseFar        = ifelse(farAvailable, choiceWell == farWell, NA),
-     avoidedFar      = ifelse(farAvailable, avoidedWell == farWell, NA),
-     choseInitHigh   = ifelse(initHighAval, choiceWell == initHigh,NA),
-     avoidedInitHigh = ifelse(initHighAval, avoidedWell == initHigh,NA),
-     # 
-     blocknum = blocktype_to_num(blocktype),
-     choiceType = ifelse(true.na(choseFar), 'Far', ifelse(true.na(choseInitHigh), 'InitHigh', 'InitLow')))
-}
-read_raw <- function(fname="data.tsv") {
-
-  # exclude testing runs (IDs with our initials, or 'x')
-  BAD_IDS <- c("WWF|ACP|^x$")
-  MIN_TRIALS <- 90
-
-  rawdata <- read.csv(fname, sep='\t') %>% 
-    filter(!grepl(BAD_IDS, id)) %>%
-    mutate(vdate=ifelse(is.na(vdate)|vdate=="", paste0(timepoint, " 00:00:00"), vdate),
-           vdate=lubridate::ymd_hms(vdate),
-           age = as.numeric(age),
-           survey_age = as.numeric(survey_age),
-           age=ifelse(is.na(age),survey_age,age))
-    #filter(id != 'WWF34M' & id != 'ACP34F' & id != 'AP' & id != 'FC' & ver == '20211104v4-90max_pbar_moredeval')
-    #filter(ver == '20211025v3-longertrials')
-  
-  # have various combinations of blocks
-  #   init-switch1-devalue_all_100
-  #   init-switch1-devalue_all_100-devalue_all_low
-  blockseq_df <-
-      rawdata %>% group_by(id,ver,timepoint) %>%
-      arrange(trial) %>%
-      summarise(blockseq=paste0(unique(blocktype),collapse="-"))
-  
-  # set fawWell and initHigh side: 1 (left) ,2 (up), or 3 (right)
-  farProb <- max(rawdata$up_prob) # expect 100. but might be 95
-  first_trial_wellnames <- rawdata %>% filter(trial == 1) %>% 
-      mutate(
-          # best (was at one time far, likely all same distance now) 
-          farWell = ifelse(left_prob == farProb, 1, ifelse(up_prob==farProb, 2, ifelse(right_prob==farProb, 3, NA))),
-          # side that was first high (likely of 50/20) 
-          initHigh = ifelse(left_prob == 50, 1, ifelse(up_prob==50, 2, 3))) %>%
-      select(id, farWell, initHigh)
-
-  # make sure we have enough trials to use
-  total_trials <- rawdata %>%
-       group_by(id, vdate, age=survey_age) %>%
-       summarize(ntrials = max(trial)) %>%
-       filter(ntrials > MIN_TRIALS)
-   
-   
-  perSubj <- merge(total_trials, first_trial_wellnames, by='id')
-
-  rawdata %>%
-      merge(perSubj, by=c('id','vdate')) %>%
-      left_join(blockseq_df, by=c("id","ver","timepoint")) %>%
-  add_choice_cols 
-}
-
-read_summary <- function() read.csv("summary.csv", comment.char="")
+read_summary <- function() read.csv("lab.summary.csv", comment.char="")
 
 
 rawdata <<- NULL
-summary_data <<- NULL
+task_summary_data <<- NULL
 update_data  <- function(runMake=FALSE){
-   if(runMake) system("make summary.csv")
-   rawdata <<- read_raw("bea_res_concat.tsv")
-   summary_data <<- read_summary()
+   if(runMake) system("make all")
+   rawdata <<- read_raw("lab.data.tsv")
+   task_summary_data <<- read_summary()
 }
 
-# modifies globals rawdata and summary_data
+# modifies globals rawdata and task_summary_data
 update_data(runMake=FALSE)
 
 MAXTRIALS <- max(rawdata$trial) # 215 (as of 20220413)
@@ -129,7 +45,7 @@ subset_data <- function(rawdata, date_range, versions, task_selection, blockseq_
 
 all_runs <- function(rawdata){
     # TODO: better summary meterics. maybe use habit number
-    smry <- summary_data %>%
+    smry <- task_summary_data %>%
        select(id, ver, end=endtime, n_trials=n, perm,
               rt_mean,rt_sd,score,n_miss, n_keys_mean,
               avatar,understand,fun,feedback) %>%
@@ -295,7 +211,7 @@ plot_grp_rt_trace_mvavg <- function(data){
 pHabit_deval100 <- function(data) {
    # how often the "good" well is preferend
    # in the devalue_all_100 block
-   habitBeh <- data %>% merge(summary_data %>% select(id,ver,timepoint,perm),
+   habitBeh <- data %>% merge(task_summary_data %>% select(id,ver,timepoint,perm),
                               by=c("id","ver","timepoint")) %>%
        filter(grepl("devalue_all_100",blocktype)) %>%
        group_by(id, age.x, blockseq, task, perm) %>% 

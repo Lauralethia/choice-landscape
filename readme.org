@@ -13,6 +13,7 @@
   * clone and open out/index.html to start the task in a web browser (responses not saved).
     * NB. for where=mri and where=eeg, task ends presents "Download Data" with link to json file that can be saved locally/manually.
   * save [[https://github.com/LabNeuroCogDevel/psiclj][psiclj]] ([[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.jar][.jar]] or [[https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj.exe][.exe]]) in the root directory and launch as a local service to save to a sqlite3 file. (e.g. [[https://github.com/LabNeuroCogDevel/choice-landscape/blob/master/loeffeeg.bat][loeffeeg.bat]])
+  * See [[./WIN_INSTALL.bat]] for help with Windows (after installing [[https://www.psychopy.org/download.html][psychopy]])
  
 ** Heroku
  Using [[./Procfile][Procfile]] on heroku w/ ~addon:heroku-postgres~ and https://github.com/LabNeuroCogDevel/psiclj buildpack
