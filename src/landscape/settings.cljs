@@ -58,8 +58,6 @@ used by MR to adjust ITI dur"
    :wait-time 500 ; TODO: force movement at this speed? currently used only by well animation
    ;; 20220519 - if not random, should be in fixed_timing.cljs
    :timing-method :random ;; :debug :mrA1 :mrB2
-   ;; 20240515 - options are 'en' or 'es'. for instructions and and of task summary
-   :lang :en
    ;; 20220314 - 4th devalue block gets its own probalbities
    ;; initiall either 75/75/75 or 100/100/80 (see url_tweaks)
    :prob {:low 20 :mid 50 :high 100 :devalue-good {:good 75 :other 75}}
@@ -91,6 +89,8 @@ used by MR to adjust ITI dur"
     :use-photodiode? false  ;; for sEEG (maybe, not tested on hardware)
     :enforce-timeout true 
     :debug false
+    ;; 20240515 - options are 'en' or 'es'. for instructions and and of task summary
+    :lang :en
     :step-wise false        ;; make far well additional clicks
     :post-back-url false    ;; mturk (or maybe prolific) past back url
     :reversal-block true    ;; what is usually the 2nd block. reversal

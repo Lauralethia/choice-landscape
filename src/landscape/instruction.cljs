@@ -59,7 +59,7 @@
 
 (def items {
             :desert   {:en {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry" :carry "carry"}
-                       :es {:pond "estanque" :water "agua" :well "pozos" :fed "llena" :bucket "un balde" :dry "seco" :carry "llevan"}}
+                       :es {:pond "estanque" :water "agua" :well "pozo" :fed "llena" :bucket "un balde" :dry "seco" :carry "llevan"}}
 
             :mountain {:en {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty" :carry "dig"}}
             :wellcoin {:en {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty" :carry "carry"}}
@@ -153,8 +153,9 @@
   (contains? #{:mri :eeg :seeg}
              (get-in state [:record :settings :where])))
 
-(def translations
-  "English and Spanish versions of instructions"
+(defn translations []
+  "English and Spanish versions of instructions.
+  As a function returning giant dict each time b/c (item-name) must be run after @current-settings is updated."
   {:welcome {:en "Welcome to our game!"
              :es "Bienvenidos al juego!"}
    :button {:en [:div
@@ -187,26 +188,58 @@
                 :es [:span  "tu " [:b {:class "ringfinger"} "dedo anular"]]}
    :avatar-continue {:en " to choose and continue."
                      :es " para elegir y continuar."}
+   :fill-pond {:en (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can.")
+               :es (str "Tu objectivo es llenar este " (item-name :pond) " con " (item-name :water) " lo más rápido que puedas.")}
+   :much-water {:en (str "And get as much " (item-name :water) " as possible!")
+                :es (str "Y obtener tanta " (item-name :water) " como sea posible!")}
+   :fill-goal {:en (str "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s.")
+               :es (str "El " (item-name :pond) " se " (item-name :fed) " con " (item-name :water) " de los tres " (item-name :well) "s.")}
+   :choose-walk {:en [:span
+                      "You will choose which " (item-name :well) " to get " (item-name :water) " from."
+                      [:br]
+                      "Pick a " (item-name :well) " by walking to it!"]
+                 :es [:span
+                      "Vas a elegir de cuál " (item-name :well) " sacar " (item-name :water) "."
+                      [:br] "¡Elegí un " (item-name :well) " caminando hacia él!"]}
+   :button-box {:en "Use the button box to choose." :es "Usá las flechas para elegir."}
+   :quick-random-ocean {:en [:div "You want to get as much " (item-name :water) " as possible as quickly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]
+                        :es [:div "TODO"] }
+   :single-tap {:en [:span "Make choices with a single tap." [:br]
+                     [:b "Do not hold keys down."] [:br] [:br]]
+                :es [:span "Hacé elecciones con un solo toque." [:br]
+                     [:b "No mantengas las teclas presionadas."] [:br] [:br]]}
+   :only-bucket {:en [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
+                   [:br] "when they have a " (item-name :bucket) "."
+                   [:br]
+                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
+                   [:br] "the same amount of " (item-name :water) "."
+                   ]
+                 :es [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
+                   [:br] "when they have a " (item-name :bucket) "."
+                   [:br]
+                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
+                   [:br] "the same amount of " (item-name :water) "."
+                   ]}
    }
   )
 
-(defn lang [state] "get language setting"
-  (get-in state [:record :settings :lang] "en"))
-(defn text-for [key state] "get text of key using state setting's language"
-  (get-in translations [key (lang state)] (str "NO TRANSLATION " (lang state) )))
+(defn lang [] "get language setting"
+  (or (get @settings/current-settings :lang) "en"))
+(defn text-for [key] "get text of key using state setting's language"
+  (get-in (translations) [key (lang)] (str "NO TRANSLATION for " key " in " (lang) )))
 
 (def INSTRUCTION
   [
    {:text (fn[state]
             (html
-             [:div [:h1  (text-for :welcome state)]
+             [:div [:h1  (text-for :welcome)]
               [:br]
 
               (if (buttonbox? state) 
                 [:div
                  [:img {:src "imgs/fingers.png"}]
                  [:br]
-                 (text-for :button state)]
+                 (text-for :button)]
                 ;; TODO: translate non-button box keyboard instructions
                 [:div 
                  "Push the keyboard's " [:b "right arrow key"]
@@ -261,18 +294,18 @@
     }
    {:text (fn[state]
             (html
-             [:div (text-for :avatar-1 state)
+             [:div (text-for :avatar-1)
               [:ul
-               [:li (text-for :Use state) " "
+               [:li (text-for :Use) " "
                 (if (buttonbox? state)
-                  (text-for :button-up state)
+                  (text-for :button-up)
                   "the up arrow")
-                (text-for :change-sel state)]
-               [:li (text-for :Use state) " "
+                (text-for :change-sel)]
+               [:li (text-for :Use) " "
                 (if (buttonbox? state)
-                  (text-for :choose-right state)
+                  (text-for :choose-right)
                   [:span "the " [:b "right arrow"]])
-                (text-for :avatar-continue state)]]
+                (text-for :avatar-continue)]]
               [:div#pick-avatars
                (map (partial avatar-example state) (keys sprite/avatars))]]))
     :start identity
@@ -281,22 +314,21 @@
                   (update state :sprite-picked (partial next-sprite :down)))
           :up (fn[state]
                 (update state :sprite-picked (partial next-sprite :up)))}}
-   {:text (fn[_]
-            (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can"))
+   {:text (fn[_] (text-for :fill-pond))
     :pos (fn[_] {:x 50 :y 250})
     :skip (fn[state] (contains? #{:ocean} (get-in state [:record :settings :vis-type])))
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :active-at] time-cur))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))}
-   {:text (fn[_] (str "And get as much " (item-name :water) " as possible!"))
+   {:text (fn[_] (text-for :much-water))
     :pos (fn[_] {:x 50 :y 250})
     :skip (fn[state] (contains? #{:ocean} (get-in state [:record :settings :vis-type])))
     :start (fn[{:keys [water time-cur] :as state}]
              (assoc-in state [:water :level] 100))
     :stop (fn [{:keys [water time-cur] :as state}]
             (assoc-in state [:water] (water/water-state-fresh)))}
-   {:text (fn[_] (html [:div "You want to get as much " (item-name :water) " as possible as quickly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]))
+   {:text (fn[_] (html (text-for :quick-random-ocean)))
     :skip (fn[state] (not (contains? #{:ocean} (get-in state [:record :settings :vis-type]))))
     }
 
@@ -304,36 +336,24 @@
             (html [:div
                    (if  (contains? #{:ocean} (get-in state [:record :settings :vis-type]))
                      "" ;; nothing to say if no pond/gold pile
-                     (str "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s."))
-                   [:br]
-                   "You will choose which " (item-name :well) " to get " (item-name :water) " from."
-                   [:br]
-                   "Pick a " (item-name :well) " by walking to it!"
-                   [:br]
+                     (text-for :fill-goal))
+                   [:br] (text-for :choose-walk) [:br]
                    (if (contains? #{:mri :eeg :seeg}
                                   (get-in state [:record :settings :where]))
-                     "Use the button box to choose."
+                     (text-for :button-box)
                      "Use the arrow keys on the keyboard: left, up, and right"
                      )
 
                    ]))}
    {:text (fn[state]
-            (html [:div "Make choices with a single tap."
-                   [:br]
-                   [:b "Do not hold keys down."]
-                   [:br] [:br]
+            (html [:div (text-for :single-tap)
                    (when (not(contains? #{:mri :eeg :seeg} ;(contains? #{:online :practice})
                                         (get-in state [:record :settings :where])))
                      "Held keys misrepresent choice timing, leading to study disqualification."
                      )]
                   ))}
    {:text (fn[state]
-            (html [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
-                   [:br] "when they have a " (item-name :bucket) "."
-                   [:br]
-                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
-                   [:br] "the same amount of " (item-name :water) "."
-                   ]))
+            (html (text-for :only-bucket)))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[state]
              (let [well-side (find-close-well state)]
