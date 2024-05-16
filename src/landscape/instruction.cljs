@@ -59,7 +59,7 @@
 
 (def items {
             :desert   {:en {:pond "pond" :water "water" :well "well" :fed "fed"    :bucket "bucket" :dry "dry" :carry "carry"}
-                       :es {:pond "estanque" :water "agua" :well "pozo" :fed "llena" :bucket "un balde" :dry "seco" :carry "llevan"}}
+                       :es {:pond "estanque" :water "agua" :well "pozo" :fed "llena" :bucket "balde" :dry "seco" :carry "llevan"}}
 
             :mountain {:en {:pond "pile" :water "gold"  :well "mine" :fed "filled" :bucket "axe" :dry "empty" :carry "dig"}}
             :wellcoin {:en {:pond "pile" :water "gold"  :well "well" :fed "filled" :bucket "chest" :dry "empty" :carry "carry"}}
@@ -152,9 +152,24 @@
 (defn buttonbox? [state]
   (contains? #{:mri :eeg :seeg}
              (get-in state [:record :settings :where])))
+(defn mri? []
+  "Is task running in mri? Need to wait for '=' to start if mri.
+   Using settings global atom"
+  (contains? #{:mri} (get @settings/current-settings :where)))
+(defn online? []
+  "Is task running online? Used to give stronger wording about responding"
+  (not(contains? #{:mri :eeg :practice :seeg}
+                 (get @settings/current-settings :where))))
+(defn ocean? []
+  "Ocean vis-type is special. No pond/treasure to fill."
+  (contains? #{:ocean} (get @settings/current-settings :vis-type)))
+
+(defn using-far-well? []
+  "Different instructions when we have one well that takes longer to get to than others."
+  (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0)))
 
 (defn translations []
-  "English and Spanish versions of instructions.
+  "English and Spanish versions of instruction and 'good job' finish text (used by view.cljs).
   As a function returning giant dict each time b/c (item-name) must be run after @current-settings is updated."
   {:welcome {:en "Welcome to our game!"
              :es "Bienvenidos al juego!"}
@@ -185,7 +200,7 @@
                 :es [:span " para " [:u "cambiar"] " tu selección."]}
 
    :choose-right {:en [:span  "your " [:b {:class "ringfinger"} "ring finger"]]
-                :es [:span  "tu " [:b {:class "ringfinger"} "dedo anular"]]}
+                  :es [:span  "tu " [:b {:class "ringfinger"} "dedo anular"]]}
    :avatar-continue {:en " to choose and continue."
                      :es " para elegir y continuar."}
    :fill-pond {:en (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can.")
@@ -209,19 +224,137 @@
                 :es [:span "Hacé elecciones con un solo toque." [:br]
                      [:b "No mantengas las teclas presionadas."] [:br] [:br]]}
    :only-bucket {:en [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
-                   [:br] "when they have a " (item-name :bucket) "."
-                   [:br]
-                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
-                   [:br] "the same amount of " (item-name :water) "."
-                   ]
-                 :es [:div "You can only get " (item-name :water) " from " (item-name :well)  "s"
-                   [:br] "when they have a " (item-name :bucket) "."
-                   [:br]
-                   [:br] "All three " (item-name :bucket) "s " (item-name :carry)
-                   [:br] "the same amount of " (item-name :water) "."
-                   ]}
-   }
-  )
+                      [:br] "when they have a " (item-name :bucket) "."
+                      [:br]
+                      [:br] "All three " (item-name :bucket) "s " (item-name :carry)
+                      [:br] "the same amount of " (item-name :water) "."
+                      ]
+                 :es [:div "Solo podés sacar " (item-name :water) " de los pozos  " (item-name :well)  "s"
+                      [:br] "do tienen un " (item-name :bucket) "."
+                      [:br]
+                      [:br] "Los tres " (item-name :bucket) "s " (item-name :carry)
+                      [:br] "a misma cantidad de " (item-name :water) "."
+                      ]}
+   :empty-well {:en [:div
+                     (clojure.string/capitalize (item-name :well)) "s will not always have " (item-name :water) "."
+                     [:br]
+                     "Sometimes the " (item-name :well) " will be " (item-name :dry) "."]
+                :es [:div
+                     "Los " (item-name :well) "s no siempre tendrán " (item-name :water) "."
+                     [:br]
+                     "A veces, el "(item-name :well) "estará " (item-name :dry) "."]}
+   :full-well {:en [:div
+                    "Othertimes, the "(item-name :well)" will be full of " (item-name :water)]
+               :es [:div
+                    "Otras veces, "(item-name :well)"  el pozo estará lleno de " (item-name :water)]}
+   :must-respond {:en [:div "Don't wait too long to choose."
+                       [:br]
+                       "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
+                       ;; dont be harsh about payment when participant is in person
+                       ;; (instead RA/RS can give a nice "wake up" reminder
+                       (when (online?) [:b "You will not get paid if you do not respond!"])
+                       ]
+                  :es [:div "No esperes demasiado par."
+                       [:br]
+                       "¡Si vas muy lento, todos los " (item-name :well)"s los pozos estarán vacíos!" [:br]
+                       ;; dont be harsh about payment when participant is in person
+                       ;; (instead RA/RS can give a nice "wake up" reminder
+                       (when (online?) [:b "You will not get paid if you do not respond!"])
+                       ]}
+   :white-cross {:en [:div "This white cross means you have to wait." [:br]
+                      "Watch the cross until it disappears" [:br]
+                      "When it disappears," [:br]
+                      "You can choose the next " (item-name :well)" to visit."]
+                 :es [:div "Esta cruz blanca significa que tenés que esperar. " [:br]
+                      "Observá la cruz hasta que desaparezca." [:br]
+                      "Cuando desaparezca," [:br]
+                      "podés elegir el próximo " (item-name :well)" para visitar."]}
+   :progress-bar {:en [:div "this bar lets you know how far along you are."
+                       ;; [:br] "blue shows how much water you've collected"
+                       ;; [:br] "green shows how many times you have gone to a well"
+                       [:br] "You're done when the green bar reaches the end!"
+                       ]
+                  :es [:div "Esta barra te indica cuánto has avanzado." [:br]
+                       "¡Terminarás cuando la barra verde llegue al final!"]}
+   :different-wells {:en [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water) "."
+                          [:br] "Over time, a "(item-name :well)" may get better or worse"]
+                     :es [:div
+                          "Cada "(item-name :well)" es diferente y tiene una probabilidad diferente de tener "(item-name :water) "." [:br]
+                          "Con el tiempo, un "(item-name :well)" puede mejorar o empeorar."]}
+   :ready {:en [:div  {:style {:text-align "left"}}
+                "Ready? "
+                (if (not (mri?))
+                  " Push the right arrow to start!"
+                  [:p " Waiting for scanner."
+                   [:span {:style {:font-size "8px" :padding-left "20px"}}
+                    "= "
+                    [:a {:href "#" :on-click
+                         (fn[_] (-> js/window .-location .reload))} "refresh page"]]])
+                [:ul
+                 (when (not (ocean?))
+                   [:li "Fill the " (item-name :pond)
+                    " by visiting " (item-name :well) "s that give "
+                    (item-name :water)
+                    ". Try to avoid empty " (item-name :well) "s."])
+                 [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
+                 [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
+                 [:li "The amount of " (item-name :water)
+                  " when there is " (item-name :water)
+                  " is the same for all " (item-name :well) "s."]
+
+                 (when (online?) [:li  [:b "You must respond to be paid"]])
+                 [:li "Respond faster to finish sooner."]
+                 (when (using-far-well?)
+                   [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
+                 [:li "How often you visit a " (item-name :well)
+                  " does not change how often it gives " (item-name :water) ]
+                 [:li "Make choices with a single tap. Do not hold keys down."]]
+                [:input
+                 {:type :button :value "Test Sound"
+                  :on-click (fn [e] (play-sound :reward))}]
+                ]
+           :es [:div  {:style {:text-align "left"}}
+                "Listo? "
+                (if (not (mri?))
+                  " ¡Presioná la flecha derecha para comenzar!"
+                  [:p " Waiting for scanner."
+                   [:span {:style {:font-size "8px" :padding-left "20px"}}
+                    "= "
+                    [:a {:href "#" :on-click
+                         (fn[_] (-> js/window .-location .reload))} "refresh page"]]])
+                [:ul
+                 (when (not (ocean?))
+                   [:li "Llená el " (item-name :pond)
+                    " visitando " (item-name :well) "s que den "
+                    (item-name :water)
+                    ". Tratá de evitar los " (item-name :well) "s vacíos."])
+                 [:li " Algunos " (item-name :well) "s dan " (item-name :water) " con más frecuencia que otros."]
+                 [:li "La frecuencia con la que un " (item-name :well) " tiene " (item-name :water) "puede cambiar."]
+                 [:li "La cantidad de " (item-name :water)
+                  "cuando hay " (item-name :water)
+                  " es la misma para todos los " (item-name :well) "s."]
+
+                 (when (online?) [:li  [:b "You must respond to be paid"]])
+                 [:li "Respondé más rápido para terminar más pronto."]
+                 (when (using-far-well?)
+                   [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
+                 [:li "Con qué frecuencia visites un " (item-name :well)
+                  " no cambia la frecuencia con la que da " (item-name :water) ]
+                 [:li "Hacé elecciones con un solo toque. No mantengas las teclas presionadas."]]
+                [:input
+                 {:type :button :value "Testeo de sonido"
+                  :on-click (fn [e] (play-sound :reward))}]
+                ]}
+
+   ;; NB. these are used by view.cljs for end of task
+   ;;     (this function could be moved out of instructions to reflect it has
+   ;;      text for both instructions and finish)
+   :great-job {:en [:span [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
+                    [:br] "Thank you for contributing to our research!!"]
+               :es [:span [:h1 "¡Excelente trabajo!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
+                    [:br] "¡Gracias por contribuir a nuestra investigación!"]}
+   :download {:en "Download task data." :es "Descargar datos de la tarea."}
+   :close-window {:en "Close window." :es "Cerrar ventana"}})
 
 (defn lang [] "get language setting"
   (or (get @settings/current-settings :lang) "en"))
@@ -367,11 +500,7 @@
                 (assoc-in [:avatar :destination] (:avatar-home @current-settings))))
     }
 
-   {:text (fn[state]
-            (html [:div
-                   (clojure.string/capitalize (item-name :well)) "s will not always have " (item-name :water) "."
-                   [:br]
-                   "Sometimes the " (item-name :well) " will be " (item-name :dry) "."]))
+   {:text (fn[state] (html (text-for :empty-well)))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-close-well key)]
@@ -382,9 +511,7 @@
     :stop (fn[state]
             (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
     }
-   {:text (fn[state]
-            (html [:div
-                   "Othertimes, the "(item-name :well)" will be full of " (item-name :water)]))
+   {:text (fn[state] (html (text-for :full-well)))
     :pos (fn[state] (-> state find-close-well val position-next-to-well))
     :start (fn[{:keys [time-cur wells] :as  state}]
              (let [side (-> state find-close-well key)]
@@ -395,16 +522,7 @@
     :stop (fn[state]
             (assoc-in state [:wells (-> state find-close-well key) :active-at] 0))
     }
-   {:text (fn[state]
-            (html [:div "Don't wait too long to choose."
-                   [:br]
-                   "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
-                   ;; dont be harsh about payment when participant is in person
-                   ;; (instead RA/RS can give a nice "wake up" reminder
-                   (when (not(contains? #{:mri :eeg :practice :seeg}
-                                        (get-in state [:record :settings :where])))
-                     [:b "You will not get paid if you do not respond!"])
-                   ]))
+   {:text (fn[state] (html (text-for :must-respond)))
     :pos (fn[state] {:x 0 :y 100})
     :start wells/all-empty
     :stop wells/wells-turn-off
@@ -452,10 +570,7 @@
                          (assoc-in [:phase :show-cross] nil)
                          (wells/wells-set-open-or-close [:left :up :right] true)))
     :text (fn[state]
-            (html [:div "This white cross means you have to wait."
-                   [:br] "Watch the cross until it disappears"
-                   [:br] "When it disappears,"
-                   [:br] "you can choose the next " (item-name :well)" to visit"]))}
+            (html (text-for :white-cross)))}
    {
     :pos (fn[state] (-> @current-settings :bar-pos
                         (update :y #(- % 200))))
@@ -465,15 +580,8 @@
     :stop (fn[state] (-> state
                          (assoc-in [:water :score] 0)
                          (assoc-in [:trial] 0)))
-    :text (fn[state]
-            (html [:div "This bar lets you know how far along you are."
-                   ;; [:br] "Blue shows how much water you've collected"
-                   ;; [:br] "Green shows how many times you have gone to a well"
-                   [:br] "You're done when the green bar reaches the end!"
-                   ]))}
-   {:text (fn[state]
-            (html [:div "Each "(item-name :well)" is different, and has a different chance of having "(item-name :water) "."
-                   [:br] "Over time, a "(item-name :well)" may get better or worse"]))}
+    :text (fn[state] (html (text-for :progress-bar)))}
+   {:text (fn[state] (html (text-for :different-wells )))}
    {
     ;; in case we're skipping instructions:
     ;;  send avatar to actual home (might be off if we're in landscape=ocean
@@ -483,41 +591,7 @@
                  wells/wells-close
                  (assoc-in [:avatar :destination]
                            (:avatar-home @current-settings))))
-    :text (fn[state] [:div  {:style {:text-align "left"}}
-                      "Ready? "
-                      (if (not(contains? #{:mri} (get-in state [:record :settings :where])))
-                        " Push the right arrow to start!"
-                        [:p " Waiting for scanner."
-                         [:span {:style {:font-size "8px" :padding-left "20px"}}
-                          "= "
-                          [:a {:href "#" :on-click
-                               (fn[_] (-> js/window .-location .reload))} "refresh page"]]])
-                      [:ul
-                       (when (not (contains? #{:ocean}
-                                             (get-in state [:record :settings :vis-type])))
-                         [:li "Fill the " (item-name :pond)
-                          " by visiting " (item-name :well) "s that give "
-                          (item-name :water)
-                          ". Try to avoid empty " (item-name :well) "s."])
-                       [:li "Some " (item-name :well) "s give " (item-name :water) " more often than others."]
-                       [:li "How often a " (item-name :well) " has " (item-name :water) " might change."]
-                       [:li "The amount of " (item-name :water)
-                        " when there is " (item-name :water)
-                        " is the same for all " (item-name :well) "s."]
-
-                       (when (not(contains? #{:mri :eeg :practice :seeg}
-                                            (get-in state [:record :settings :where])))
-                         [:li  [:b "You must respond to be paid"]])
-                       [:li "Respond faster to finish sooner."]
-                       (when (-> @settings/current-settings (get-in [:step-sizes 1]) (> 0))
-                         [:li "The far " (item-name :well) " takes more time to use. You will finish slower when using it."])
-                       [:li "How often you visit a " (item-name :well)
-                        " does not change how often it gives " (item-name :water) ]
-                       [:li "Make choices with a single tap. Do not hold keys down."]]
-                      [:input
-                       {:type :button :value "Test Sound"
-                        :on-click (fn [e] (play-sound :reward))}]
-                      ])
+    :text (fn[state] (text-for :ready))
 
     ;; trigger test/blocking in read-keys
     ;; :key ...

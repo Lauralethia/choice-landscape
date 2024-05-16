@@ -265,19 +265,19 @@
         blob (js/Blob. [jsonstr] {"type" "application/json"})]
     (.createObjectURL js/URL blob)))
 
+
 (defn done-view [state]
   (html [:div#instruction
-         [:h1 "Great Job!"] ;[:h3 "You filled the pond!"]; TODO pond might be mine
-         [:br] "Thank you for contributing to our research!!"
+         (instruction/text-for :great-job)
          ;; if online, show compeltion code
          (if (contains? #{:online} (get-in state [:record :settings :where]))
            [:div
-             [:br] "Your responses have been recorded. " [:br]
-             ;; code defaults to WXYZ1. hopefully it's been updated since finish
-             [:div.confirmcode "Your completion code is " [:br]
-                       [:h3 (get-in state [:record :mturk :code] )] [:br]
-                       "Save it for your records." [:br]]
-             [:span "You can close this page."]])
+            [:br] "Your responses have been recorded. " [:br]
+            ;; code defaults to WXYZ1. hopefully it's been updated since finish
+            [:div.confirmcode "Your completion code is " [:br]
+             [:h3 (get-in state [:record :mturk :code] )] [:br]
+             "Save it for your records." [:br]]
+            [:span "You can close this page."]])
          ;; when mri, offer to download json
          (if (contains? #{:mri :eeg :practice :seeg} (get-in state [:record :settings :where]))
            [:div [:a
@@ -292,12 +292,12 @@
                                   (get-in state [:record :start-time :browser])
                                   ".json")
                    :href (-> state :record create-json-url)
-                   } "download task data"]
+                   } (instruction/text-for :download)]
             [:br]
             ;; might be blocked:
             ;;   Scripts may not close windows that were not opened by script.
             ;; about:config -> dom.allow_scripts_to_close_windows
-            [:a {:on-click (fn[_] (js/window.close)) :href "#" }"close window"]
+            [:a {:on-click (fn[_] (js/window.close)) :href "#" }(instruction/text-for :close-window)]
             [:br]
 
             ;; 'dec' b/c one extra trial = "done" screen
