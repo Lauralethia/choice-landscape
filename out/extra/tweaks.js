@@ -48,7 +48,7 @@ function get_anchor(){
     //selectedOptions[landscape.selectedIndex].value;
     let ltype = "landscape=" + (landscape?landscape.value:"ocean");
     let ttype = "timing="    + (timing?timing.value:"random");
-    let langv = "lang="      + (lang?timing.value:"en");
+    let langv = "lang="      + (lang?lang.value:"en");
     let tweakstr = Object.keys(tweaks)
                  .map(x=>ifchecked(x))
                  .filter(x=>x!="")
@@ -74,10 +74,25 @@ function add_timing_choices(){
    f.innerHTML += html;
 }
 
+function add_language(){
+ let html = '<tr><td><label for="lang">language</label></td>\
+         <td><select id="lang">\
+         <option>en</option>\
+         <option>es</option>\
+      </select></td></tr>';
+
+   let f =  document.querySelector("#task_setting_tweaks");
+   f.innerHTML += html;
+
+   //var browser_lang = navigator.language || navigator.userLanguage;
+   //if(browser_lang != "en-US") { document.querySelector("#lang").value = "es"; }
+}
+
 // put tweak checkboxs in link
 function add_tweaks(){
    add_landscape_choices();
    add_timing_choices();
+   add_language();
 
    let f =  document.querySelector("#task_setting_tweaks");
    Object.keys(tweaks).forEach(x =>
