@@ -236,7 +236,7 @@
                       [:br] "a misma cantidad de " (item-name :water) "."
                       ]}
    :empty-well {:en [:div
-                     (clojure.string/capitalize (item-name :well)) "s will not always have " (item-name :water) "."
+                     "These "(item-name :well) "s will not always have " (item-name :water) "."
                      [:br]
                      "Sometimes the " (item-name :well) " will be " (item-name :dry) "."]
                 :es [:div
