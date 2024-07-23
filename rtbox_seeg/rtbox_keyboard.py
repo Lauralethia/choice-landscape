@@ -3,7 +3,7 @@ import time
 import sys
 import signal
 from pynput.keyboard import Controller
-sys.path.insert(0,'/home/abel/luna_habit/RTBox_py') # or PYTHONPATH=~/luna_habit/RTBox/python
+sys.path.insert(0,'/home/luna/luna_habit/RTBox_py') # or PYTHONPATH=~/luna_habit/RTBox/python
 import RTBox
 
 # this would run in background. and exit (killing background). ideal for running in e.g ipython

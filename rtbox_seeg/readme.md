@@ -1,12 +1,45 @@
-2022-05-11 WF
+# 2024-07-23 WF -- new laptop
+  * `useradd luna -m -G $(groups | tr ' ' ,); passwd luna` # same as abel_lab
+  * see apt install same as below. added default-jre python3-usb1 
+  * get libuldaq
+    ```
+    curl https://github.com/mccdaq/uldaq/releases/download/v1.2.1/libuldaq-1.2.1.tar.bz2 -C ../ xjvf - # ../libuldaq-1.2.1/
+    cd ../libuldaq-1.2.1; ./configure; make; sudo make install
+    # ls /usr/local/lib/*daq*; # /usr/local/lib/libuldaq.so.1.2.1
+
+    python3 -m pip install uldaq --user
+    ```
+  *  usb1208 (daq) 
+  ```
+  git clone https://github.com/wjasper/Linux_Drivers.git ~/luna_habit/usb1208fs-linux-drivers
+  ```
+
+  * `sudo dmesg -w` dB104
+   ```
+   [142973.830815] usb 1-2.3: Product: USB <-> Serial
+   [142973.830817] usb 1-2.3: Manufacturer: FTDI
+   [142973.837800] ftdi_sio 1-2.3:1.0: FTDI USB Serial Device converter detected
+   [142973.837841] usb 1-2.3: Detected FT232B
+   [142973.838213] usb 1-2.3: FTDI USB Serial Device converter now attached to ttyUSB1
+   ```
+
+  * psiclj
+  ```
+wget https://github.com/LabNeuroCogDevel/psiclj/releases/download/v0.2.3/psiclj-heroku
+chmod +x psiclj-heroku
+   ```
+    
+# 2022-05-11 WF
  * copy current task. but might want to use online version anyway
  * DAQ box python tools (uldaq), RTBox (pyserial pynput psychopy)
 
     ```
-    sudo apt install python3-pip swig libusb-1.0-0-dev
+    sudo apt install python3-pip swig libusb-1.0-0-dev libusb-dev default-jre python3-usb1 
     # swig for pocketsphinx for psychopy
     # libusb for uldaq
+
     python3 -m pip install uldaq pip pynput pyserial psychopy wxpython ipython --user
+	python3 -m pip install -r ../requirements.txt # tornado for web bridge
     ```
  * RTBox
 git clone https://github.com/xiangruili/RTBox_py
@@ -40,7 +73,9 @@ Hello from the pygame community. https://www.pygame.org/contribute.html
 median_RT = 0.2; std = 0.072; N = 10
 ----
 
-https://pypi.org/project/uldaq/
+https://pypi.org/project/uldaq/ 
+
+https://github.com/mccdaq/uldaq/releases/download/v1.2.1/libuldaq-1.2.1.tar.bz2
 
  # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/abel/luna_habit/libuldaq-1.2.1/src/.libs/" 
 

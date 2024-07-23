@@ -193,4 +193,5 @@ https://gist.github.com/bigfive/4256993
 ** TODO add animation to devcards
    still haven't figured out. but animating for the instruction choice screen helped debug bad frames
 ** TODO record start and end volume (did anyone turn it down?)
-
+* sEEG system
+  need libuldaq and rtbox, see [[file:rtbox_seeg/readme.md]]

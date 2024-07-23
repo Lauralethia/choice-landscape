@@ -111,8 +111,8 @@ class DAQ(Hardware):
     NB!! binary on (>=128) or off (<128)
     DOES NOT encode 0-255, but 0/1
     """
-    def __init__(self, verbose=False, daq_path='/home/lncd/luna_habit/usb1208fs-linux-drivers/USB/python'):
-        # git clone https://github.com/wjasper/Linux_Drivers.git /home/lncd/luna_habit/usb1208fs-linux-drivers/
+    def __init__(self, verbose=False, daq_path='/home/luna/luna_habit/usb1208fs-linux-drivers/USB/python'):
+        # git clone https://github.com/wjasper/Linux_Drivers.git /home/luna/luna_habit/usb1208fs-linux-drivers/
         # make install usbs, add udevrules
         sys.path.insert(0, daq_path)
         from usb_1208FS import usb_1208FS
@@ -235,7 +235,7 @@ class Cedrus():
 
 
 class RTBox():
-    def __init__(self, hw, kb=None, verbose=False, lib='/home/lncd/luna_habit/RTBox_py'):
+    def __init__(self, hw, kb=None, verbose=False, lib='/home/luna/luna_habit/RTBox_py'):
         self.run = True
         self.verbose = True
         self.kb = kb
@@ -244,7 +244,7 @@ class RTBox():
         # numbers as they are on the button box instead of as an array
         self.sendLUR = {1:Key.left, 2:Key.up, 3:Key.up, 4:Key.right}
 
-        # git clone https://github.com/xiangruili/RTBox_py /home/lncd/luna_habit/RTBox_py/
+        # git clone https://github.com/xiangruili/RTBox_py /home/luna/luna_habit/RTBox_py/
         sys.path.insert(0, lib)  # or PYTHONPATH=~/luna_habit/RTBox/python
         import RTBox
         box = RTBox.RTBox()
