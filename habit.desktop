@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Habit Task
+Icon=org.gnome.Terminal
+Exec=/home/luna/habit
+Terminal=true
+Type=Application
