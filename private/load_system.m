@@ -1,6 +1,10 @@
 function system = load_system(varargin)
    fprintf('# loading system (daq, TODO: audio)\n');
    system = struct('hid',load_daq(varargin{:}));
+   system.keys.up = KbName('UpArrow');
+   system.keys.right = KbName('RightArrow');
+   system.keys.left = KbName('LeftArrow');
+
 end
 
 function hid = load_daq(varargin)

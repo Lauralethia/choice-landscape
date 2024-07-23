@@ -8,21 +8,23 @@ function tex_struct = load_textures(w, varargin)
   for f = imgs'
      [~, fname, ~]  = fileparts(f.name); fname(fname=='-')='_';
      [img, ~, alpha] = imread(fullfile(f.folder,f.name));
-     img(:,:,4) = alpha;
+     if size(img,2) >= 2
+         img(:,:,4) = alpha;
+     end
      % TODO: scale images to screen size
 
      % sprites within one file. have animations frames in a grid
      if ismember(fname, avatar_sprites)
         % 4 rows 3 cols
         sprites = cell(4,4);
-        [x,y,_] =size(img);
+        [x,y,z] =size(img); % z was missing, added 20240723 SDM
         h= floor(y/4);
         wd = floor(x/4); 
         for i=1:4; for j=1:4;
           ii=(i-1)*h+1; jj=(j-1)*h+1;
           img_sub = img(jj:(jj+wd-1),ii:(ii+h-1),:);
           tmp_tex = Screen('MakeTexture',w, img_sub);
-          sprites(i,j) = tmp_tex;
+          sprites(i,j) = {tmp_tex};
         end;end
         tex_struct.(fname) = sprites;
      else

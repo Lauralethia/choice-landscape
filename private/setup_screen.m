@@ -17,7 +17,7 @@ function w = setup_screen(varargin)
 end
 
 function w = testscreen()
-  bg = [0 0 0];
+  bg = [254 227 180];
   screen = 0;
   res = [0 0 800 600];
   Screen('Preference', 'SkipSyncTests', 2);

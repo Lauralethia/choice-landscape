@@ -7,8 +7,9 @@ function timing = load_events(varargin)
    timing(i).event_name = 'choice';
    timing(i).func = @choice;
    timing(i).chance = [1,1,1]; % left, up, right
-   timing(i).max_rt = 2;
+   timing(i).max_rt = 20;
    timing(i).i = i;
+   timing(i).choices = ['up','right'];
 
    i=i+1;
    timing(i).event_name = 'isi';

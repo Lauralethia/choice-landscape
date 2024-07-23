@@ -9,6 +9,9 @@ function [onset, output] = instructions(system, number, varargin)
 
    % run
    onset = Screen('Flip', system.w, 0);
-   acceptkeys = KbName({'Space','Left','Up','Right','Return','1'});
-   [output.k output.rt] = waitForKeys(acceptkeys,Inf);
-end
+   acceptkeys = KbName({'space','LeftArrow','UpArrow','RightArrow','Return','1'}); %changed these to add Arrow - seems that pyschotoolbox didnt recognize just "left" -SDM 20240723
+
+    [output.k output.rt] = waitForKeys(acceptkeys,Inf);
+ 
+
+end    
