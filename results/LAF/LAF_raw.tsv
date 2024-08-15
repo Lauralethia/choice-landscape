@@ -1,0 +1,20 @@
+id	task	vdate	timepoint	run	ver	avatar	trial	block	score	rt	n_keys	first_key_rt	first_key	picked	picked_prob	picked_step	avoided	avoided_prob	avoided_step	iti_onset	chose_onset	waiting_onset	feedback_onset	timeout_onset	trial_choices	survey_age
+LAF	habit_eeg		20240815	1	eeg_1	alien	1	Lc20Uc50Rf100	true	886	1	861	39	right	100	2	left	20	1	743037.6	744041.1	744927.5	745078		left-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	2	Lc20Uc50Rf100	false	1020	4	42	39	left	20	1	up	50	1	745278.7	746299	747319.1	747469.7		left-up	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	3	Lc20Uc50Rf100	true	703	1	691	39	right	100	2	up	50	1	747653.7	748690.6	749393.1	749560.4		up-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	4	Lc20Uc50Rf100	true	903	1	891	37	left	50	1	up	20	1	749744.3	750747.8	751650.9	751868.4		left-up	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	5	Lc50Uc20Rf100	true	468	1	452	39	right	100	2	left	50	1	752052.3	753072.5	753540.8	753724.8		left-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	6	Lc50Uc20Rf100	true	569	2	388	37	right	100	2	up	20	1	753942.3	754945.8	755514.4	755715.1		up-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	7	Lc50Uc20Rf100	true	50	2	28	39	right	100	2	up	100	1	755932.5	756952.532	757003	757187		up-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	8	Lc100Uc100Rf100	true	636	3	110	39	left	100	1	up	100	1	757370.9	758391.1	759026.7	759210.6		left-up	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	9	Lc100Uc100Rf100	true	301	1	278	37	left	100	1	right	100	2	759411.3	760448.098	760749.266	760933.2		left-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	10	Lc100Uc100Rf100	true	703	1	684	39	right	100	2	up	100	1	761117.3	762154.1	762856.7	763040.6		up-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	11	Lc100Uc100Rf100	true	518	1	480	37	left	100	1	right	100	2	763241.3	764261.5	764779.9	764930.6		left-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	12	Lc100Uc100Rf100	true	84	1	61	37	left	100	1	up	100	1	765131.2	766151.5	766235	766419.1		left-up	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	13	Lc100Uc100Rf100									up	75	1	766619.7	767623.2			769630.2	up-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	14	Lc75Uc75Rf75									left	75	1	770081.8	771118.7			773125.7	left-up	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	15	Lc75Uc75Rf75	true	234	1	191	37	left	75	1	right	75	2	773594	774597.6	774831.6	774982.2		left-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	16	Lc75Uc75Rf75	true	652	1	636	39	right	75	2	up	75	1	775166.1	776169.6	776822	777039.3		up-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	17	Lc75Uc75Rf75	true	535	1	496	37	left	75	1	right	75	2	777256.8	778293.8	778829	778979.5		left-right	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	18	Lc75Uc75Rf75	false	502	1	477	37	left	75	1	up	75	1	779196.9	780200.4	780702.1	780869.4		left-up	NA
+LAF	habit_eeg		20240815	1	eeg_1	alien	19													781053.3						NA
