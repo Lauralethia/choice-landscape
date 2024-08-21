@@ -3,6 +3,7 @@ function tex_struct = load_textures(w, varargin)
   fprintf('# loading textures\n');
   imgs = [dir('out/imgs/*.png')];
 
+  
   avatar_sprites = {'astronaut', 'shark','lizard_blue', 'alient_green'};
   well_sprites = {'chest_sprites', 'wellcoin_sprites'};
   for f = imgs'

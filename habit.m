@@ -12,6 +12,7 @@ function info = habit(varargin)
    system.tex = load_textures(system.w, varargin{:});
 
    %% instructions
+   
    [onset, output] = instructions(system, 1);
 
    %% start timing and data collection

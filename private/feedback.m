@@ -5,9 +5,9 @@ function [onset, output] = feedback(system, t, record)
    % reach back in time and find the previous choice event
    choice = record(t.i-2).output,
    if choice.score
-      msg = 'REWARD!'
+      msg = 'REWARD!';
    else
-      msg = 'NO REWARD!'
+      msg = 'NO REWARD!';
    end
 
    % TODO: find chosen direction using choice.key

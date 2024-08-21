@@ -13,7 +13,7 @@ function timing = load_events(varargin)
 
    i=i+1;
    timing(i).event_name = 'isi';
-   timing(i).dur = 2;
+   timing(i).dur = 4;
    timing(i).cross_color = [0,0,255];%blue
    timing(i).func = @fixation;
    timing(i).onset=0; % as soon as choice ends
@@ -21,9 +21,9 @@ function timing = load_events(varargin)
 
    i=i+1;
    timing(i).event_name = 'feedback';
-   timing(i).dur = 2;
+   timing(i).dur = 3;
    timing(i).func = @feedback;
-   timing(i).onset=timing(i-1).dur
+   timing(i).onset=timing(i-1).dur;
    timing(i).i = i;
 
    i=i+1;
@@ -31,7 +31,7 @@ function timing = load_events(varargin)
    timing(i).dur = 3;
    timing(i).cross_color = [255,255,255]; % white
    timing(i).func = @fixation;
-   timing(i).onset=timing(i-1).dur
+   timing(i).onset=timing(i-1).dur;
    timing(i).i = i;
 
 end
