@@ -47,7 +47,7 @@ if rt > 0
     well_prob = t.chance(idx);
     output.score = (rand(1) <= well_prob);
 else
-    output.score = 0
+    output.score = 0;
 end
 oupput.onset_ideal = ideal;
 output.key = k;
