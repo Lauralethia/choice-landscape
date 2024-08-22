@@ -11,6 +11,22 @@ Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
 chest_w = 40;chest_h = 40;  %TODO: use sprite
 % TODO: use DrawTextures (many at once)
 
+[screenWidth, screenHeight] = Screen('WindowSize', system.w);
+
+% Define the size of the white box (e.g., 100x100 pixels)
+boxWidth = 200;
+boxHeight = 200;
+
+% Calculate the position of the box in the lower right corner
+% The coordinates are in the form [left, top, right, bottom]
+boxRect = [screenWidth - boxWidth, screenHeight - boxHeight, screenWidth, screenHeight];
+
+% Define the color white (white = [255 255 255])
+black = [0 0 0];
+
+% Draw the white box
+Screen('FillRect', system.w, black, boxRect);
+
 % chest graphics
 Screen('DrawTexture', system.w, system.tex.chest,...
     [], [ system.pos.left.x system.pos.left.y system.pos.left.x+chest_w system.pos.left.y+chest_h] );

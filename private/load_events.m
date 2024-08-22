@@ -47,7 +47,7 @@ for block = 1:nblocks
 
         i=i+1;
         timing(i).event_name = 'iti';
-        timing(i).dur = 2;
+        timing(i).dur = 1;
         timing(i).cross_color = [255,255,255]; % white
         timing(i).func = @fixation;
         timing(i).onset = timing(i-1).dur;
