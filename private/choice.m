@@ -1,13 +1,15 @@
 function [onset, output] = choice(system, t, varargin)
 
+keys = [];
+
 ideal = GetSecs()+t.onset;
-  background(system);
-Screen('DrawTexture', system.w, system.tex.astronaut{1,1});
+Screen('DrawTexture', system.w, system.tex.ocean_bottom); % Show the background again
+Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
+    [], [system.pos.character.x system.pos.character.y system.pos.character.x+60 system.pos.character.y+80] );
 
 %% positon choice options
-chest_w = 27;chest_h = 27;  %TODO: use sprite
+chest_w = 40;chest_h = 40;  %TODO: use sprite
 % TODO: use DrawTextures (many at once)
-keys = [];
 
 % chest graphics
 Screen('DrawTexture', system.w, system.tex.chest,...
@@ -16,6 +18,7 @@ Screen('DrawTexture', system.w, system.tex.chest,...
     [], [ system.pos.up.x system.pos.up.y system.pos.up.x+chest_w system.pos.up.y+chest_h] );
 Screen('DrawTexture', system.w, system.tex.chest,...
     [], [ system.pos.right.x system.pos.right.y system.pos.right.x+chest_w system.pos.right.y+chest_h] );
+
 % add keys to chests
 if ismember('right', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...

@@ -32,7 +32,7 @@ for block = 1:nblocks
 
         i=i+1;
         timing(i).event_name = 'isi';
-        timing(i).dur = 2;
+        timing(i).dur = 1;
         timing(i).cross_color = [0,0,255]; % blue
         timing(i).func = @fixation;
         timing(i).onset = 0; % as soon as choice ends
