@@ -24,6 +24,8 @@ Screen('FillRect', system.w, white, boxRect);
 %onset = t.onset + system.starttime; % abs time
 ideal = t.onset + GetSecs(); % relative time
 onset = Screen('Flip', system.w, ideal);
+fprintf('fixation %f %f %f\n',ideal, onset, onset-ideal)
 output.onset_ideal = ideal;
 output.onset = onset;
+
 end

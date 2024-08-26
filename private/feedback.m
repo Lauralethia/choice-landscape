@@ -20,7 +20,7 @@ Screen('FillRect', system.w, black, boxRect);
 
 
 % reach back in time and find the previous choice event
-choice = record(t.i-2).output, 
+choice = record(t.i-2).output; 
 if choice.score
     msg = 'REWARD!';
     DrawFormattedText(system.w, msg ,...

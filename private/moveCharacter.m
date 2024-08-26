@@ -1,11 +1,9 @@
-function [onset, output] = choice(system, t, varargin)
+function [onset, output] = moveCharacter(system, t, record, varargin)
 
-keys = [system.keys.left system.keys.up system.keys.right];
-
+%redraw the scene
 ideal = GetSecs()+t.onset;
 Screen('DrawTexture', system.w, system.tex.ocean_bottom); % Show the background again
-Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
-    [], [system.pos.character.x system.pos.character.y system.pos.character.x+60 system.pos.character.y+80] );
+
 
 %% positon choice options
 chest_w = 40;chest_h = 40;  %TODO: use sprite
@@ -54,34 +52,34 @@ if ismember('up', t.choices)
 
 end
 
+choice = record(t.i-1).output;
+if strcmp(choice.pick, 'right')
 
-onset = Screen('Flip', system.w, ideal);
+    Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
+        [], [system.pos.right.x system.pos.right.y system.pos.right.x+60 system.pos.right.y+80] );
+    onset = Screen('Flip', system.w, ideal);
 
-[k rt] = waitForKeys(keys, onset + t.max_rt);
 
-if rt > 0
-    idx = find(keys == k,1);
-    well_prob = t.chance(idx);
-    output.score = (rand(1) <= well_prob);
-    if idx == 1
-        output.pick = 'left';
+elseif strcmp(choice.pick, 'left')
 
-    elseif idx == 2
-        output.pick = 'up';
+    Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
+        [], [system.pos.left.x system.pos.left.y system.pos.left.x+60 system.pos.left.y+80] );
+    onset = Screen('Flip', system.w, ideal);
 
-    elseif idx == 3
-        output.pick = 'right';
+elseif strcmp(choice.pick, 'up')
 
-    end
+    Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
+        [], [system.pos.up.x system.pos.up.y system.pos.up.x+60 system.pos.up.y+80] );
+    onset = Screen('Flip', system.w, ideal);
+
 else
-    output.score = 0;
-    output.pick = 'none';
+    Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
+        [], [system.pos.character.x system.pos.character.y system.pos.character.x+60 system.pos.character.y+80] );
+    onset = Screen('Flip', system.w, ideal);
+
+
 end
+
 output.onset_ideal = ideal;
-output.key = k;
-output.rt = rt;
-
-
-
-% TODO: animate avatar walk in while loop?
+output.onset = onset;
 end

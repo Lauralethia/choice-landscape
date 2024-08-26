@@ -19,5 +19,5 @@ pos.right.x = (screenWidth/2) + 200;
 pos.right.y = (screenHeight/2) + 300;
 
 pos.character.x = (screenWidth/2);
-pos.character.y = (screenHeight/2) + 200;
+pos.character.y = (screenHeight/2) + 300;
 

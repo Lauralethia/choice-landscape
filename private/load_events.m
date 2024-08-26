@@ -16,6 +16,7 @@ for block = 1:nblocks
         i = i+1;
         timing(i).event_name = 'choice';
         timing(i).func = @choice;
+        timing(i).dur = 2;
         
         % Set chance values depending on the block
         if block == 1
@@ -26,23 +27,30 @@ for block = 1:nblocks
             timing(i).chance = [0.5,1,0.5]; % left, up, right
         end
         
-        timing(i).max_rt = 20;
+        timing(i).max_rt = timing(i).dur;
         timing(i).i = i;
         timing(i).choices = selected_choices; % Assign the random choices to this trial
+       
+        if i>1
+            timing(i).onset = timing(i-1).onset + timing(i-1).dur; % as soon as choice ends
+        else
+            timing(i).onset = 0;
+        end
+
 
         i=i+1;
         timing(i).event_name = 'isi';
         timing(i).dur = 1;
         timing(i).cross_color = [0,0,255]; % blue
-        timing(i).func = @fixation;
-        timing(i).onset = 0; % as soon as choice ends
+        timing(i).func = @moveCharacter;
+        timing(i).onset = timing(i-1).onset + timing(i-1).dur; % as soon as choice ends
         timing(i).i = i;
 
         i=i+1;
         timing(i).event_name = 'feedback';
-        timing(i).dur = 2;
+        timing(i).dur = 1;
         timing(i).func = @feedback;
-        timing(i).onset = timing(i-1).dur;
+        timing(i).onset = timing(i-1).onset + timing(i-1).dur;
         timing(i).i = i;
 
         i=i+1;
@@ -50,7 +58,7 @@ for block = 1:nblocks
         timing(i).dur = 1;
         timing(i).cross_color = [255,255,255]; % white
         timing(i).func = @fixation;
-        timing(i).onset = timing(i-1).dur;
+        timing(i).onset = timing(i-1).onset + timing(i-1).dur;
         timing(i).i = i;
 
     end
