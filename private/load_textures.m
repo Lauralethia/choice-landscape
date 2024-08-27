@@ -1,4 +1,4 @@
-function tex_struct = load_textures(w, varargin)
+function [tex_struct] = load_textures(w, varargin)
 % read images into struct of named textures tex_struct.ocean_bottom == 32
 fprintf('# loading textures\n');
 imgs = [dir('out/imgs/*.png')];
@@ -52,6 +52,29 @@ for f = imgs'
             end
         end
     tex_struct.(fname) = sprites;
+
+    elseif ismember(fname, well_sprites)
+        %2 rows, 7 columns
+        wellsprites = cell(7,2);
+        [x,y,z] =size(img); 
+        h= floor(x/2);
+        wd = floor(y/7);
+   
+        blackPixels = img(:,:,1) == 0 & img(:,:,2) == 0 & img(:,:,3) == 0;
+        alpha(blackPixels) = 0;
+
+        img(:,:,4)= alpha; 
+
+        for i=1:7 % i is width
+            for j=1:2 % j is height
+                 ii=(i-1)*wd+1; 
+                 jj=(j-1)*h+1;
+                img_sub = img(jj:(jj+h-1),ii:(ii+wd-1),:);
+                tmp_tex = Screen('MakeTexture',w, img_sub);
+                wellsprites(i,j) = {tmp_tex};
+            end
+        end
+    tex_struct.(fname) = wellsprites;
     else
         tex_struct.(fname) = Screen('MakeTexture',w, img);
     end

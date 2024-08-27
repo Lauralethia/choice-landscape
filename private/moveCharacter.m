@@ -22,13 +22,13 @@ if strcmp(choice.pick, 'right')
             [], [xPosition system.pos.right.y xPosition+60 system.pos.right.y+80] );
         onset = Screen('Flip', system.w, ideal);
         % Optional: Add a small delay to control the speed of movement
-        WaitSecs(0.05);
+        WaitSecs(0.02);
 
     end
 
 elseif strcmp(choice.pick, 'left')
 
-    distance = (system.pos.right.x-20) - system.pos.character.x;
+    distance = system.pos.character.x - (system.pos.left.x+20) ;
     steps = distance/xStep;
     for x = 1:steps
 
@@ -44,13 +44,13 @@ elseif strcmp(choice.pick, 'left')
             [], [xPosition system.pos.left.y xPosition+60 system.pos.left.y+80] );
         onset = Screen('Flip', system.w, ideal);
         % Optional: Add a small delay to control the speed of movement
-        WaitSecs(0.05);
+        WaitSecs(0.02);
 
     end
 
 elseif strcmp(choice.pick, 'up')
 
-    distance = system.pos.character.y - (system.pos.up.y+20);
+    distance = system.pos.character.y - (system.pos.up.y+40);
     steps = distance/xStep;
     for y = 1:steps
 
@@ -65,7 +65,7 @@ elseif strcmp(choice.pick, 'up')
             [], [system.pos.character.x yPosition system.pos.character.x+60 yPosition+80] );
         onset = Screen('Flip', system.w, ideal);
         % Optional: Add a small delay to control the speed of movement
-        WaitSecs(0.05);
+        WaitSecs(0.02);
 
     end
 

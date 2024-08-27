@@ -20,7 +20,7 @@ for block = 1:nblocks
         
         % Set chance values depending on the block
         if block == 1
-            timing(i).chance = [1,1,1]; % left, up, right
+            timing(i).chance = [0,1,1]; % left, up, right
         elseif block == 2
             timing(i).chance = [0.5,0.5,1]; % left, up, right
         elseif block == 3

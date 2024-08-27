@@ -22,6 +22,9 @@ Screen('FillRect', system.w, black, boxRect);
 % reach back in time and find the previous choice event
 choice = record(t.i-2).output; 
 if choice.score
+    
+    openChest(system, t, record)
+    Screen('DrawTexture', system.w, system.tex.ocean_bottom);
     msg = 'REWARD!';
     DrawFormattedText(system.w, msg ,...
         'center','center', [255,255,255]);
@@ -32,6 +35,9 @@ if choice.score
     % Play the audio
     sound(cash, cashFs);
 else
+
+    openChest(system, t, record)
+    Screen('DrawTexture', system.w, system.tex.ocean_bottom);
     msg = 'NO REWARD!';
     DrawFormattedText(system.w, msg ,...
         'center','center', [255,255,255]);

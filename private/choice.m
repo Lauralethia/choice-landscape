@@ -29,24 +29,24 @@ black = [0 0 0];
 Screen('FillRect', system.w, black, boxRect);
 
 % chest graphics
-Screen('DrawTexture', system.w, system.tex.chest,...
+Screen('DrawTexture', system.w, system.tex.chest_sprites{1,1},...
     [], [ system.pos.left.x system.pos.left.y system.pos.left.x+chest_w system.pos.left.y+chest_h] );
-Screen('DrawTexture', system.w, system.tex.chest,...
+Screen('DrawTexture', system.w, system.tex.chest_sprites{1,1},...
     [], [ system.pos.up.x system.pos.up.y system.pos.up.x+chest_w system.pos.up.y+chest_h] );
-Screen('DrawTexture', system.w, system.tex.chest,...
+Screen('DrawTexture', system.w, system.tex.chest_sprites{1,1},...
     [], [ system.pos.right.x system.pos.right.y system.pos.right.x+chest_w system.pos.right.y+chest_h] );
 
 % add keys to chests
 if ismember('right', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...
-        [], [ system.pos.right.x system.pos.right.y system.pos.right.x+chest_w system.pos.right.y+chest_h] );
+        [], [ system.pos.right.x+10 system.pos.right.y+10 system.pos.right.x+chest_w system.pos.right.y+chest_h] );
     keys = [keys system.keys.right];
 
 end
 
 if ismember('left', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...
-        [], [ system.pos.left.x system.pos.left.y system.pos.left.x+chest_w system.pos.left.y+chest_h] );
+        [], [ system.pos.left.x+10 system.pos.left.y+10 system.pos.left.x+chest_w system.pos.left.y+chest_h] );
     keys = [keys system.keys.left];
 
 
@@ -54,7 +54,7 @@ end
 
 if ismember('up', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...
-        [], [ system.pos.up.x system.pos.up.y system.pos.up.x+chest_w system.pos.up.y+chest_h] );
+        [], [ system.pos.up.x+10 system.pos.up.y+10 system.pos.up.x+chest_w system.pos.up.y+chest_h] );
     keys = [keys system.keys.up];
 
 
