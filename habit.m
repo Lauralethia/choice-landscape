@@ -10,7 +10,8 @@ function info = habit(varargin)
    system.w = setup_screen(varargin{:});
    system.pos = setup_pos(system.w, varargin{:});
    system.tex = load_textures(system.w, varargin{:});
-
+   correctTrials = 0;
+   
    %% instructions
    if 0
        [onset, output] = instructions(system, 1);
@@ -29,7 +30,7 @@ function info = habit(varargin)
       else
           t.onset= timing(i-1).dur;
       end
-      [onset, output] = t.func(system, t, record);
+      [onset, output] = t.func(system, t, record, correctTrials);
       record(i).event_name = t.event_name;
       record(i).output = output;
       record(i).onset = onset;

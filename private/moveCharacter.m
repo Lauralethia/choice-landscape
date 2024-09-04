@@ -2,6 +2,16 @@ function [onset, output] = moveCharacter(system, t, record, varargin)
 
 ideal = GetSecs()+t.onset;
 
+if t.i < 3
+    correctTrials = 0;
+
+else
+
+    correctTrials = record(t.i-3).output.correctTrials;
+
+end
+
+
 color = [0 0 0];
 
 choice = record(t.i-1).output;
@@ -11,9 +21,10 @@ if strcmp(choice.pick, 'right')
     steps = distance/xStep;
     for x = 1:steps
         drawScreen(system, t, color)
+        totalCount(system, correctTrials);
 
         xPosition = system.pos.character.x + (x * xStep);
-       
+
         % Determine the current frame (1, 2, 3, or 4) based on the current step
         currentFrame = mod(x - 1, 4) + 1;
 
@@ -32,10 +43,10 @@ elseif strcmp(choice.pick, 'left')
     for x = 1:steps
 
         drawScreen(system, t, color, varargin)
-
+        totalCount(system, correctTrials);
 
         xPosition = system.pos.character.x - (x * xStep);
-         
+
         % Determine the current frame (1, 2, 3, or 4) based on the current step
         currentFrame = mod(x - 1, 4) + 1;
 
@@ -54,9 +65,10 @@ elseif strcmp(choice.pick, 'up')
     for y = 1:steps
 
         drawScreen(system, t, color, varargin)
+        totalCount(system, correctTrials);
 
         yPosition = system.pos.character.y - (y * xStep);
-         
+
         % Determine the current frame (1, 2, 3, or 4) based on the current step
         currentFrame = mod(y - 1, 4) + 1;
 

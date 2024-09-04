@@ -8,6 +8,19 @@ DrawFormattedText(system.w, '+' ,'center','center', t.cross_color);
 
 progressBar(system, t)
 
+if t.i < 3
+    correctTrials = 0;
+
+else
+
+    correctTrials = varargin{1}(t.i-1).output.correctTrials;
+
+end
+
+totalCount(system, correctTrials);
+
+
+
 % Define the size of the white box (e.g., 100x100 pixels)
 boxWidth = 200;
 boxHeight = 200;

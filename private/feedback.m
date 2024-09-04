@@ -1,4 +1,4 @@
-function [onset, output] = feedback(system, t, record)
+function [onset, output] = feedback(system, t, record, correctTrials)
 ideal = t.onset + GetSecs(); % relative time
 
 Screen('DrawTexture', system.w, system.tex.ocean_bottom);
@@ -18,14 +18,21 @@ black = [0 0 0];
 % Draw the white box
 Screen('FillRect', system.w, black, boxRect);
 
-
 % reach back in time and find the previous choice event
-choice = record(t.i-2).output; 
+choice = record(t.i-2).output;
+
+if t.i > 3
+    correctTrials = record(t.i-4).output.correctTrials; 
+
+end 
+
 if choice.score
-    
+
     openChest(system, t, record)
     Screen('DrawTexture', system.w, system.tex.ocean_bottom);
-    progressBar(system, t)
+    progressBar(system, t);
+    correctTrials = correctTrials + 1; 
+    totalCount(system, correctTrials);
     msg = 'REWARD!';
     DrawFormattedText(system.w, msg ,...
         'center','center', [255,255,255]);
@@ -39,7 +46,8 @@ else
 
     openChest(system, t, record)
     Screen('DrawTexture', system.w, system.tex.ocean_bottom);
-    progressBar(system, t)
+    progressBar(system, t);
+    totalCount(system, correctTrials);
     msg = 'NO REWARD!';
     DrawFormattedText(system.w, msg ,...
         'center','center', [255,255,255]);
@@ -57,4 +65,5 @@ end
 
 onset = Screen('Flip', system.w, ideal);
 output.ideal = ideal;
+output.correctTrials = correctTrials; 
 end

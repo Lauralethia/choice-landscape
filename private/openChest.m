@@ -6,6 +6,13 @@ ideal = GetSecs()+t.onset;
 color = [0 0 0];
 chest_w = 40;chest_h = 40;  %TODO: use sprite
 
+if t.i <= 3
+    correctTrials = 0;
+else
+    correctTrials = record(t.i-4).output.correctTrials;
+end
+
+
 if strcmp(choice.pick, 'right')
     if choice.score
         for x = 1:7
@@ -18,7 +25,10 @@ if strcmp(choice.pick, 'right')
             Screen('DrawTexture', system.w, system.tex.chest_sprites{x,1},...
                 [], [ system.pos.right.x system.pos.right.y system.pos.right.x+chest_w system.pos.right.y+chest_h] );
 
+            totalCount(system, correctTrials);
+
             onset = Screen('Flip', system.w, ideal);
+
             % Optional: Add a small delay to control the speed of movement
             WaitSecs(0.05);
         end
@@ -35,7 +45,10 @@ if strcmp(choice.pick, 'right')
             Screen('DrawTexture', system.w, system.tex.chest_sprites{x,2},...
                 [], [ system.pos.right.x system.pos.right.y system.pos.right.x+chest_w system.pos.right.y+chest_h] );
 
+            totalCount(system, correctTrials);
+
             onset = Screen('Flip', system.w, ideal);
+
             % Optional: Add a small delay to control the speed of movement
             WaitSecs(0.05);
 
@@ -53,6 +66,7 @@ elseif strcmp(choice.pick, 'left')
 
             Screen('DrawTexture', system.w, system.tex.chest_sprites{x,1},...
                 [], [ system.pos.left.x system.pos.left.y system.pos.left.x+chest_w system.pos.left.y+chest_h] );
+            totalCount(system, correctTrials);
 
             onset = Screen('Flip', system.w, ideal);
             % Optional: Add a small delay to control the speed of movement
@@ -70,6 +84,7 @@ elseif strcmp(choice.pick, 'left')
 
             Screen('DrawTexture', system.w, system.tex.chest_sprites{x,2},...
                 [], [ system.pos.left.x system.pos.left.y system.pos.left.x+chest_w system.pos.left.y+chest_h] );
+            totalCount(system, correctTrials);
 
             onset = Screen('Flip', system.w, ideal);
             % Optional: Add a small delay to control the speed of movement
@@ -94,6 +109,7 @@ elseif strcmp(choice.pick, 'up')
 
             Screen('DrawTexture', system.w, system.tex.chest_sprites{x,1},...
                 [], [ system.pos.up.x system.pos.up.y system.pos.up.x+chest_w system.pos.up.y+chest_h] );
+            totalCount(system, correctTrials);
 
             onset = Screen('Flip', system.w, ideal);
             % Optional: Add a small delay to control the speed of movement
@@ -112,6 +128,7 @@ elseif strcmp(choice.pick, 'up')
 
             Screen('DrawTexture', system.w, system.tex.chest_sprites{x,2},...
                 [], [ system.pos.up.x system.pos.up.y system.pos.up.x+chest_w system.pos.up.y+chest_h] );
+            totalCount(system, correctTrials);
 
             onset = Screen('Flip', system.w, ideal);
             % Optional: Add a small delay to control the speed of movement

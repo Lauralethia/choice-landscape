@@ -8,7 +8,19 @@ Screen('DrawTexture', system.w, system.tex.ocean_bottom); % Show the background 
 Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
     [], [system.pos.character.x system.pos.character.y system.pos.character.x+60 system.pos.character.y+80] );
 
-progressBar(system, t)
+progressBar(system, t);
+
+if t.i < 3
+    correctTrials = 0;
+
+else
+
+    correctTrials = varargin{1}(t.i-2).output.correctTrials;
+
+end
+
+totalCount(system, correctTrials);
+
 
 %% positon choice options
 chest_w = 40;chest_h = 40;  %TODO: use sprite
