@@ -4,14 +4,13 @@ ideal = GetSecs()+t.onset;
 
 color = [0 0 0];
 
-
 choice = record(t.i-1).output;
 xStep = 10;
 if strcmp(choice.pick, 'right')
     distance = (system.pos.right.x-40) - system.pos.character.x;
     steps = distance/xStep;
     for x = 1:steps
-        drawScreen(system, t, color, varargin)
+        drawScreen(system, t, color)
 
         xPosition = system.pos.character.x + (x * xStep);
        

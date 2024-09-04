@@ -19,7 +19,8 @@ function info = habit(varargin)
    %% start timing and data collection
    record(length(timing)) = struct();
    system.starttime = GetSecs();
-
+    
+   
    %% run through events
    for i=1:length(timing)
       t = timing(i); % undoing the fixed onsets

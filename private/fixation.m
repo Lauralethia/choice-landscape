@@ -6,6 +6,8 @@ DrawFormattedText(system.w, '+' ,'center','center', t.cross_color);
 
 [screenWidth, screenHeight] = Screen('WindowSize', system.w);
 
+progressBar(system, t)
+
 % Define the size of the white box (e.g., 100x100 pixels)
 boxWidth = 200;
 boxHeight = 200;

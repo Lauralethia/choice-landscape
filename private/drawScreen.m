@@ -50,4 +50,7 @@ if ismember('up', t.choices)
 
 end
 
+progressBar(system, t)
+
+
 end

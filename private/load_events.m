@@ -1,6 +1,6 @@
 function timing = load_events(varargin)
 
-fprintf('# loading event timing\n');
+% fprintf('# loading event timing\n');
 
 nblocks = 3;
 ntrials = 5;

@@ -25,6 +25,7 @@ if choice.score
     
     openChest(system, t, record)
     Screen('DrawTexture', system.w, system.tex.ocean_bottom);
+    progressBar(system, t)
     msg = 'REWARD!';
     DrawFormattedText(system.w, msg ,...
         'center','center', [255,255,255]);
@@ -38,6 +39,7 @@ else
 
     openChest(system, t, record)
     Screen('DrawTexture', system.w, system.tex.ocean_bottom);
+    progressBar(system, t)
     msg = 'NO REWARD!';
     DrawFormattedText(system.w, msg ,...
         'center','center', [255,255,255]);
