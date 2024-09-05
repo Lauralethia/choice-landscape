@@ -15,7 +15,7 @@ boxRect = [screenWidth - boxWidth, screenHeight - boxHeight, screenWidth, screen
 % Define the color
 black = [0 0 0];
 
-% Draw the white box
+% Draw the  box
 Screen('FillRect', system.w, black, boxRect);
 
 % reach back in time and find the previous choice event
@@ -27,43 +27,39 @@ if t.i > 3
 end 
 
 if choice.score
-
-    openChest(system, t, record)
-    Screen('DrawTexture', system.w, system.tex.ocean_bottom);
-    progressBar(system, t);
-    correctTrials = correctTrials + 1; 
-    totalCount(system, correctTrials);
-    msg = 'REWARD!';
-    DrawFormattedText(system.w, msg ,...
-        'center','center', [255,255,255]);
-
     % Load an audio file
     [cash, cashFs] = audioread('out/audio/cash.mp3');
 
+    onset = openChest(system, t, record);
     % Play the audio
     sound(cash, cashFs);
-else
-
-    openChest(system, t, record)
-    Screen('DrawTexture', system.w, system.tex.ocean_bottom);
+   
     progressBar(system, t);
+    correctTrials = correctTrials + 1;
     totalCount(system, correctTrials);
-    msg = 'NO REWARD!';
-    DrawFormattedText(system.w, msg ,...
-        'center','center', [255,255,255]);
+    coinPile(system, correctTrials)
+    dropCoin(system,t, correctTrials);
 
+
+
+else
     % Load an audio file
     [buzz, buzzFs] = audioread('out/audio/buzzer.mp3');
+   
+    onset = openChest(system, t, record);
 
     % Play the audio
     sound(buzz, buzzFs);
+    progressBar(system, t);
+    totalCount(system, correctTrials);
+    
+   
 end
 
 % TODO: find chosen direction using choice.key
 % TODO: show open/closed chest over choice location
 % TODO: animate chest sprite
 
-onset = Screen('Flip', system.w, ideal);
 output.ideal = ideal;
 output.correctTrials = correctTrials; 
 end

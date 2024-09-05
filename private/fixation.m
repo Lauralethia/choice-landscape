@@ -1,15 +1,23 @@
 function [onset, output] = fixation(system, t, varargin)
 
 % show the background
-Screen('DrawTexture', system.w, system.tex.ocean_bottom);
-DrawFormattedText(system.w, '+' ,'center','center', t.cross_color);
-
 [screenWidth, screenHeight] = Screen('WindowSize', system.w);
+
+color = [255 255 255];
+
+drawScreen(system, t, color, varargin)
+
+% Set the font size to make the '+' bigger
+Screen('TextSize', system.w, 75); 
+
+% draw fixation cross
+DrawFormattedText(system.w, '+' ,system.pos.up.x,screenHeight/2 + (screenHeight/4), t.cross_color);
+
 
 progressBar(system, t)
 
 if t.i < 3
-    correctTrials = 0;
+    correctTrials = varargin{1}(t.i-3).output.score;
 
 else
 
@@ -18,22 +26,7 @@ else
 end
 
 totalCount(system, correctTrials);
-
-
-
-% Define the size of the white box (e.g., 100x100 pixels)
-boxWidth = 200;
-boxHeight = 200;
-
-% Calculate the position of the box in the lower right corner
-% The coordinates are in the form [left, top, right, bottom]
-boxRect = [screenWidth - boxWidth, screenHeight - boxHeight, screenWidth, screenHeight];
-
-% Define the color white (white = [255 255 255])
-white = [255 255 255];
-
-% Draw the white box
-Screen('FillRect', system.w, white, boxRect);
+coinPile(system, correctTrials)
 
 
 %onset = t.onset + system.starttime; % abs time

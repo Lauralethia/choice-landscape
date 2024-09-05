@@ -15,15 +15,17 @@ end
 color = [0 0 0];
 
 choice = record(t.i-1).output;
-xStep = 10;
+xStep = 15;
 if strcmp(choice.pick, 'right')
-    distance = (system.pos.right.x-40) - system.pos.character.x;
-    steps = distance/xStep;
+    distance = (system.pos.right.x-60) - system.pos.character.x;
+    steps = round(distance/xStep);
     for x = 1:steps
         drawScreen(system, t, color)
         totalCount(system, correctTrials);
+        coinPile(system, correctTrials)
 
         xPosition = system.pos.character.x + (x * xStep);
+        output.xPositionEnd = xPosition; 
 
         % Determine the current frame (1, 2, 3, or 4) based on the current step
         currentFrame = mod(x - 1, 4) + 1;
@@ -38,20 +40,23 @@ if strcmp(choice.pick, 'right')
 
 elseif strcmp(choice.pick, 'left')
 
-    distance = system.pos.character.x - (system.pos.left.x+20) ;
-    steps = distance/xStep;
+    distance = system.pos.character.x - (system.pos.left.x+50) ;
+    steps = round(distance/xStep);
     for x = 1:steps
 
         drawScreen(system, t, color, varargin)
         totalCount(system, correctTrials);
+        coinPile(system, correctTrials)
 
         xPosition = system.pos.character.x - (x * xStep);
+        output.xPositionEnd = xPosition; 
 
         % Determine the current frame (1, 2, 3, or 4) based on the current step
         currentFrame = mod(x - 1, 4) + 1;
 
         Screen('DrawTexture', system.w, system.tex.astronaut{currentFrame,2},...
             [], [xPosition system.pos.left.y xPosition+60 system.pos.left.y+80] );
+        
         onset = Screen('Flip', system.w, ideal);
         % Optional: Add a small delay to control the speed of movement
         WaitSecs(0.02);
@@ -66,8 +71,11 @@ elseif strcmp(choice.pick, 'up')
 
         drawScreen(system, t, color, varargin)
         totalCount(system, correctTrials);
+        coinPile(system, correctTrials)
+
 
         yPosition = system.pos.character.y - (y * xStep);
+        output.yPositionEnd = yPosition; 
 
         % Determine the current frame (1, 2, 3, or 4) based on the current step
         currentFrame = mod(y - 1, 4) + 1;

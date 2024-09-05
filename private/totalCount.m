@@ -31,6 +31,4 @@ DrawFormattedText(system.w, correctText, textXpos, textYpos, [0 0 0]);
 
 
 
-
-
 end

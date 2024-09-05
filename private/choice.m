@@ -10,6 +10,7 @@ Screen('DrawTexture', system.w, system.tex.astronaut{1,1},...
 
 progressBar(system, t);
 
+
 if t.i < 3
     correctTrials = 0;
 
@@ -20,10 +21,12 @@ else
 end
 
 totalCount(system, correctTrials);
+coinPile(system, correctTrials)
+
 
 
 %% positon choice options
-chest_w = 40;chest_h = 40;  %TODO: use sprite
+chest_w = 60; chest_h = 60;  %TODO: use sprite
 % TODO: use DrawTextures (many at once)
 
 [screenWidth, screenHeight] = Screen('WindowSize', system.w);
@@ -53,14 +56,14 @@ Screen('DrawTexture', system.w, system.tex.chest_sprites{1,1},...
 % add keys to chests
 if ismember('right', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...
-        [], [ system.pos.right.x+10 system.pos.right.y+10 system.pos.right.x+chest_w system.pos.right.y+chest_h] );
+        [], [ system.pos.right.x+20 system.pos.right.y+20 system.pos.right.x+chest_w system.pos.right.y+chest_h] );
     keys = [keys system.keys.right];
 
 end
 
 if ismember('left', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...
-        [], [ system.pos.left.x+10 system.pos.left.y+10 system.pos.left.x+chest_w system.pos.left.y+chest_h] );
+        [], [ system.pos.left.x+20 system.pos.left.y+20 system.pos.left.x+chest_w system.pos.left.y+chest_h] );
     keys = [keys system.keys.left];
 
 
@@ -68,7 +71,7 @@ end
 
 if ismember('up', t.choices)
     Screen('DrawTexture', system.w, system.tex.key,...
-        [], [ system.pos.up.x+10 system.pos.up.y+10 system.pos.up.x+chest_w system.pos.up.y+chest_h] );
+        [], [ system.pos.up.x+20 system.pos.up.y+20 system.pos.up.x+chest_w system.pos.up.y+chest_h] );
     keys = [keys system.keys.up];
 
 
