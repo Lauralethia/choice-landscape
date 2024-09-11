@@ -27,13 +27,14 @@ if t.i > 3
 end 
 
 if choice.score
+
     % Load an audio file
     [cash, cashFs] = audioread('out/audio/cash.mp3');
 
     onset = openChest(system, t, record);
     % Play the audio
     sound(cash, cashFs);
-   
+    
     progressBar(system, t);
     correctTrials = correctTrials + 1;
     totalCount(system, correctTrials);
@@ -43,11 +44,12 @@ if choice.score
 
 
 else
+
     % Load an audio file
     [buzz, buzzFs] = audioread('out/audio/buzzer.mp3');
    
     onset = openChest(system, t, record);
-
+    
     % Play the audio
     sound(buzz, buzzFs);
     progressBar(system, t);

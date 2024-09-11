@@ -11,7 +11,6 @@ else
 
 end
 
-
 color = [0 0 0];
 
 choice = record(t.i-1).output;

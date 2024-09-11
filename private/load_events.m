@@ -3,7 +3,7 @@ function timing = load_events(varargin)
 % fprintf('# loading event timing\n');
 
 nblocks = 3;
-ntrials = 5;
+ntrials = 15;
 i = 0; 
 
 for block = 1:nblocks
@@ -16,7 +16,7 @@ for block = 1:nblocks
         i = i+1;
         timing(i).event_name = 'choice';
         timing(i).func = @choice;
-        timing(i).dur = 1;
+        timing(i).dur = 2;
         
         % Set chance values depending on the block
         if block == 1
@@ -48,7 +48,7 @@ for block = 1:nblocks
 
         i=i+1;
         timing(i).event_name = 'feedback';
-        timing(i).dur = .2;
+        timing(i).dur = .1;
         timing(i).func = @feedback;
         timing(i).onset = timing(i-1).onset + timing(i-1).dur;
         timing(i).i = i;
