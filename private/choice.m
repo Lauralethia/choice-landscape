@@ -79,6 +79,7 @@ end
 
 
 onset = Screen('Flip', system.w, ideal);
+sendDaqs(system);
 
 [k rt] = waitForKeys(keys, onset + t.max_rt);
 

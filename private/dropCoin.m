@@ -12,7 +12,7 @@ yStep = 10; % Step size for animating the coin downward
 coinSize = 20; % 20x20 pixels
 
 % Parameters
-coins_per_row = 15; % Number of coins per row
+coins_per_row = 20; % Number of coins per row
 row_spacing = coinSize + 20; % Vertical spacing between rows
 yPos_start = screenHeight / 3; % Initial vertical position
 xPos_start = screenWidth / 3; % Initial horizontal position
