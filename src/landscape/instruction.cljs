@@ -172,7 +172,7 @@
   "English and Spanish versions of instruction and 'good job' finish text (used by view.cljs).
   As a function returning giant dict each time b/c (item-name) must be run after @current-settings is updated."
   {:welcome {:en "Welcome to our game!"
-             :es "Bienvenidos al juego!"}
+             :es "¡Bienvenidos al juego!"}
    :button {:en [:div
                  "You will use buttons to push "
                  [:b {:class "indexfinger"} "left"] ", "
@@ -206,7 +206,7 @@
    :fill-pond {:en (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can.")
                :es (str "Tu objectivo es llenar este " (item-name :pond) " con " (item-name :water) " lo más rápido que puedas.")}
    :much-water {:en (str "And get as much " (item-name :water) " as possible!")
-                :es (str "Y obtener tanta " (item-name :water) " como sea posible!")}
+                :es (str "¡Y obtener tanta " (item-name :water) " como sea posible!")}
    :fill-goal {:en (str "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s.")
                :es (str "El " (item-name :pond) " se " (item-name :fed) " con " (item-name :water) " de los tres " (item-name :well) "s.")}
    :choose-walk {:en [:span
@@ -215,7 +215,7 @@
                       "Pick a " (item-name :well) " by walking to it!"]
                  :es [:span
                       "Vas a elegir de cuál " (item-name :well) " sacar " (item-name :water) "."
-                      [:br] "¡Elegí un " (item-name :well) " caminando hacia él!"]}
+                      [:br] "Elegí un " (item-name :well) " caminando hacia él."]}
    :button-box {:en "Use the button box to choose." :es "Usá las flechas para elegir."}
    :quick-random-ocean {:en [:div "You want to get as much " (item-name :water) " as possible as quickly as you can!" [:br]  "Each " (item-name :well) " may or may not have " (item-name :water) " inside." ]
                         :es [:div "TODO"] }
@@ -229,11 +229,11 @@
                       [:br] "All three " (item-name :bucket) "s " (item-name :carry)
                       [:br] "the same amount of " (item-name :water) "."
                       ]
-                 :es [:div "Solo podés sacar " (item-name :water) " de los pozos  " (item-name :well)  "s"
-                      [:br] "do tienen un " (item-name :bucket) "."
+                 :es [:div "Solo podés sacar " (item-name :water) " de los " (item-name :well)  "s"
+                      [:br] "cuando tienen un " (item-name :bucket) "."
                       [:br]
                       [:br] "Los tres " (item-name :bucket) "s " (item-name :carry)
-                      [:br] "a misma cantidad de " (item-name :water) "."
+                      [:br] "la misma cantidad de " (item-name :water) "."
                       ]}
    :empty-well {:en [:div
                      "These "(item-name :well) "s will not always have " (item-name :water) "."
@@ -242,11 +242,11 @@
                 :es [:div
                      "Los " (item-name :well) "s no siempre tendrán " (item-name :water) "."
                      [:br]
-                     "A veces, el "(item-name :well) "estará " (item-name :dry) "."]}
+                     "...A veces, el "(item-name :well) " estará " (item-name :dry) "."]}
    :full-well {:en [:div
                     "Othertimes, the "(item-name :well)" will be full of " (item-name :water)]
                :es [:div
-                    "Otras veces, "(item-name :well)"  el pozo estará lleno de " (item-name :water)]}
+                    "Otras veces, el "(item-name :well)"  estará lleno de " (item-name :water)]}
    :must-respond {:en [:div "Don't wait too long to choose."
                        [:br]
                        "If you're too slow, all the " (item-name :well)"s  will be empty!" [:br]
@@ -254,9 +254,9 @@
                        ;; (instead RA/RS can give a nice "wake up" reminder
                        (when (online?) [:b "You will not get paid if you do not respond!"])
                        ]
-                  :es [:div "No esperes demasiado par."
+                  :es [:div "No esperes demasiado para elegir."
                        [:br]
-                       "¡Si vas muy lento, todos los " (item-name :well)"s los pozos estarán vacíos!" [:br]
+                       "Si vas muy lento, todos los " (item-name :well)"s los pozos estarán vacíos" [:br]
                        ;; dont be harsh about payment when participant is in person
                        ;; (instead RA/RS can give a nice "wake up" reminder
                        (when (online?) [:b "You will not get paid if you do not respond!"])
@@ -329,7 +329,7 @@
                     (item-name :water)
                     ". Tratá de evitar los " (item-name :well) "s vacíos."])
                  [:li " Algunos " (item-name :well) "s dan " (item-name :water) " con más frecuencia que otros."]
-                 [:li "La frecuencia con la que un " (item-name :well) " tiene " (item-name :water) "puede cambiar."]
+                 [:li "La frecuencia con la que un " (item-name :well) " tiene " (item-name :water) " puede cambiar."]
                  [:li "La cantidad de " (item-name :water)
                   "cuando hay " (item-name :water)
                   " es la misma para todos los " (item-name :well) "s."]
