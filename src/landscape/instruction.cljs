@@ -204,7 +204,7 @@
    :avatar-continue {:en " to choose and continue."
                      :es " para elegir y continuar."}
    :fill-pond {:en (str "You want to fill this " (item-name :pond) " with " (item-name :water) " as fast as you can.")
-               :es (str "Tu objectivo es llenar este " (item-name :pond) " con " (item-name :water) " lo más rápido que puedas.")}
+               :es (str "Tu objetivo es llenar este " (item-name :pond) " con " (item-name :water) " lo más rápido que puedas.")}
    :much-water {:en (str "And get as much " (item-name :water) " as possible!")
                 :es (str "¡Y obtener tanta " (item-name :water) " como sea posible!")}
    :fill-goal {:en (str "The " (item-name :pond) " is " (item-name :fed) " by the three " (item-name :well) "s.")
