@@ -34,7 +34,7 @@ function [key,RT] = waitForKey(acceptkeysidx,timeout)
          %NB! we only pick the first (in order of acceptkeys)
          % if subject is holding down more than one key, will not record both!
          % will warn to screen about mutliple pushes though
-         key=find(keyCode(acceptkeysidx) ,1);
+         key=acceptkeysidx(find(keyCode(acceptkeysidx) ,1)); % this needs the value of the key (80, 79, or 82) not 1,2,3 for right left and up, otherwise it was always saying the score was 0 cause the incorrect key was pressed - SM
          if(nnz(keyCode(acceptkeysidx) ) > 1)
            fprintf('WARNING: multple good button pushes! reporting first button is pushed\n');
          end
