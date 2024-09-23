@@ -331,7 +331,7 @@
                  [:li " Algunos " (item-name :well) "s dan " (item-name :water) " con más frecuencia que otros."]
                  [:li "La frecuencia con la que un " (item-name :well) " tiene " (item-name :water) " puede cambiar."]
                  [:li "La cantidad de " (item-name :water)
-                  "cuando hay " (item-name :water)
+                  " cuando hay " (item-name :water)
                   " es la misma para todos los " (item-name :well) "s."]
 
                  (when (online?) [:li  [:b "You must respond to be paid"]])
